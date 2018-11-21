@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Running and Outdoor Temperature</title>
+    <meta name="description" content="It is no surprise to anyone who tried to run in the heat that it is harder than when the outdoor temperature is more pleasant. But how much harder is it, and how can this be quantified? With summer in full swing in the southern hemisphere, I decided to ta...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="training data analysis">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html">
+    <link rel="next" href="/2017/12/arduino-inclinometer.html">
+    <link rel="prev" href="/2018/01/equipment-usage-and-costs.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Running and Outdoor Temperature</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-12-21" pubdate="true">2017-12-21</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
+  </header>
+
+<p>It is no surprise to anyone who tried to run in the heat that it is harder than when the outdoor temperature is more pleasant. But how much harder is it, and how can this be quantified? With summer in full swing in the southern hemisphere, I decided to take a look at how running is affected by temperature.</p>
+<!-- more-->
+
+<p>Between 2011 and today, I have recorded 741 running sessions in my <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> database. Out of these sessions, some were run without my Garmin watch and for some of them either the GPS or the heart rate monitor has misbehaved, recording invalid data. This has left me with 700 sessions for which I have accurate speed, heart rate and weather data.</p>
+
+<h2 id="temperature">Temperature</h2>
+
+<p>In Western Australia we have plenty of hot days, especially during summer. Whenever possible, I try to run when the temperature outside is reasonable, but this is not always possible. Below is the distribution of my running sessions with regards to outdoor temperature, as you can see I prefer to run when the temperature outside is between about 18 and 23 ℃.</p>
+
+<div class="figure"><img src="/img/a007/temperature-hist.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>Temperature does not tell the whole story about how it feels outside: humidity and barometric pressure also have an influence on the comfort level. Many weather applications can show a &ldquo;feels like&rdquo; temperature which takes into account humidity and barometric pressure. There are several formulas for calculating this &ldquo;feels like&rdquo; temperature. I experimented with several of them and I decided to use <a href="https://en.wikipedia.org/wiki/Humidex">Humidex</a>, mainly because it can be simply calculated and it matched my own perceived feel for the temperature. I have been using Humidex for a while now, and every time I record a run, I check this value to see if it seems OK. So far, I have been happy with this formula. Below is a distribution of my running sessions with regards to Humidex. Compared to the temperature distribution, the entire plot is shifted to the right, indicating that the &ldquo;feels like&rdquo; temperature for my runs is a lot warmer that temperature would indicate. It seems that the &ldquo;feels like&rdquo; temperature when I prefer to run is somewhere between 21 and 26 ℃.</p>
+
+<div class="figure"><img src="/img/a007/humidex-hist.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="efficiency-factor">Efficiency Factor</h2>
+
+<p>We need a metric to describe the efficiency of running and compare it with temperature. A good metric seems to be <a href="https://www.trainingpeaks.com/blog/efficiency-factor-and-decoupling/">efficiency factor</a> which is simply the ratio of the <em>running speed</em> and <em>heart rate</em>:</p>
+
+<pre><code>EF = Running_Speed / Heart_Rate
+</code></pre>
+
+<p>This ratio ties together the <strong>effort</strong> required by the run, as measured by the <strong>heart rate</strong> and the <strong>power output</strong> of the run, as measured by the <strong>running speed</strong>. An individual EF value has no meaning, and EF values cannot be compared between two athletes, but tracking the EF for an individual athlete can show if they are improving or not: maintaining the same running speed at a lower heart rate means that the athlete has improved and will result in a higher EF. An increased EF can also result from being able to maintain a higher running speed at the same heart rate.</p>
+
+<p>The efficiency factor is a great metric, since it is independent of the type of run: a high intensity run will have a higher average heart rate than a slow easy run, but it will also have a higher speed, so the overall EF of these two running sessions should be about the same. It will never be probably identical, since heart rate is affected by other factors such as outdoor temperature and how fresh or tired the athlete is.</p>
+
+<p>Another factor that can influence EF is how hilly the running course is: when running uphill, the running speed will decrease while heart rate will increase (to put it differently, it is harder to run uphill than it is on the flat). In such a case, EF will be lower than if running on a flat course. To compensate for this, the notion of <strong>grade adjusted pace</strong> (GAP) is introduced: this takes into account the running speed and the current slope and produces an equivalent speed as if the run happened on flat ground. When running uphill, GAP will be higher than the actual pace, while running downhill it will be lower. As with "feels like&rsquo; temperature, there are several algorithms for GAP, the one I implemented is the one from Strava, which you can find described <a href="https://medium.com/strava-engineering/an-improved-gap-model-8b07ae8886c3">here</a>. When calculating EF, the speed is first adjusted for grade, this ensures that the calculated EF values take into account how hilly the running course was.</p>
+
+<h2 id="comparing-efficiency-factor-with-temperature">Comparing efficiency factor with temperature</h2>
+
+<p>I calculated the efficiency factor for all my running sessions and plotted them against the &ldquo;feels like&rdquo; temperature for the run. This is the gray dot could in the plot below. There are several EF values for each temperature, except the extremes where there are only a few data points. This is because EF actually tracks fitness level and over the 6 years of data my fitness level varied quite a bit, being low at the start of a season and high at the end of the season. To smooth things out, I calculated the average EF for all sessions at a certain temperature, these re the big orange dots on the plot. It is now quite apparent that there is a correlation between the efficiency factor and temperature. I fitted a second degree polynomial over these data points to obtain a smooth line (the blue dashed line) on the plot.</p>
+
+<div class="figure"><img src="/img/a007/humidex-ga-ef-scatter.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The fitted polynomial allows estimating the efficiency factor given a temperature value as follows:</p>
+
+<pre><code>EF = 1.8347990118 + 0.0114733678 * humidex - 0.0002975829 * (humidex ^ 2)</code></pre>
+
+<p>The above formula indicates that the maximum EF of 1.95 is at 19.28 ℃, so this is the optimal temperature for me to run &mdash; intuitively, this is about right. We can do more with this formula, for example, we can determine how much HR increases with temperature if the same running speed is maintained (EF ratio represents the percentage of EF drop when compare to the best EF at 19.28 ℃):</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td></td>
+    <td>19.28 ℃</td>
+    <td>20 ℃</td>
+    <td>25 ℃</td>
+    <td>30 ℃</td>
+    <td>35 ℃</td>
+    <td>40 ℃</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>EF</td>
+    <td>1.95</td>
+    <td>1.95</td>
+    <td>1.94</td>
+    <td>1.91</td>
+    <td>1.87</td>
+    <td>1.82</td></tr>
+   <tr>
+    <td>EF ratio</td>
+    <td>100%</td>
+    <td>100%</td>
+    <td>99.5%</td>
+    <td>98.2%</td>
+    <td>96.2%</td>
+    <td>93.4%</td></tr>
+   <tr>
+    <td>HR</td>
+    <td>150</td>
+    <td>150</td>
+    <td>151</td>
+    <td>153</td>
+    <td>156</td>
+    <td>161</td></tr>
+   <tr>
+    <td>HR</td>
+    <td>160</td>
+    <td>160</td>
+    <td>161</td>
+    <td>163</td>
+    <td>166</td>
+    <td>171</td></tr>
+   <tr>
+    <td>HR</td>
+    <td>170</td>
+    <td>170</td>
+    <td>171</td>
+    <td>173</td>
+    <td>177</td>
+    <td>182</td></tr></tbody></table></div>
+
+<p>Alternatively, we can determine how much running speed will have to decrease to keep a constant heart rate when temperature increases:</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td></td>
+    <td>19.28 ℃</td>
+    <td>20 ℃</td>
+    <td>25 ℃</td>
+    <td>30 ℃</td>
+    <td>35 ℃</td>
+    <td>40 ℃</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>EF</td>
+    <td>1.95</td>
+    <td>1.95</td>
+    <td>1.94</td>
+    <td>1.91</td>
+    <td>1.87</td>
+    <td>1.82</td></tr>
+   <tr>
+    <td>EF ratio</td>
+    <td>100%</td>
+    <td>100%</td>
+    <td>99.5%</td>
+    <td>98.2%</td>
+    <td>96.2%</td>
+    <td>93.4%</td></tr>
+   <tr>
+    <td>Pace (min/km)</td>
+    <td>6:00</td>
+    <td>6:00</td>
+    <td>6:02</td>
+    <td>6:06</td>
+    <td>6:14</td>
+    <td>6:25</td></tr>
+   <tr>
+    <td>Pace (min/km)</td>
+    <td>5:00</td>
+    <td>5:00</td>
+    <td>5:02</td>
+    <td>5:05</td>
+    <td>5:12</td>
+    <td>5:21</td></tr>
+   <tr>
+    <td>Pace (min/km)</td>
+    <td>4:30</td>
+    <td>4:30</td>
+    <td>4:31</td>
+    <td>4:35</td>
+    <td>4:41</td>
+    <td>4:49</td></tr>
+   <tr>
+    <td>Pace (min/km)</td>
+    <td>4:00</td>
+    <td>4:00</td>
+    <td>4:01</td>
+    <td>4:04</td>
+    <td>4:09</td>
+    <td>4:17</td></tr></tbody></table></div>
+
+<p>So how useful is this? The above data is from a single athlete (me), and I am acclimatized to heat, as I live in a hot climate. The above values match my empirical experience on how to adjust my running as the heat increases.</p>
+
+<p>How about <strong>running in the cold</strong>? The EF values seem to decrease as temperature drops. I have much less data for running in the cold and you can also see that the average EF data points don&rsquo;t follow the fitted line as closely as they do for higher temperatures. I have no direct use for this data, so for now I didn&rsquo;t calculate any tables for cold temperatures.</p>
+
+<h2 id="technicalities">Technicalities</h2>
+
+<p>The data was extracted from ab <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> database, containing all my training history data, using a <a href="http://www.racket-lang.org/">Racket</a> script, while the polynomial model fitting was done in <a href="https://www.r-project.org/">R</a> and <a href="https://www.rstudio.com/">R Studio</a>. The plots were generated using the Racket built-in plot package.</p>
+
+<p>The scripts used to generate the data can be found in this <a href="https://gist.github.com/alex-hhh/41b94005339724421b9832c74fe54d92">GitHub Gist</a>.</p>
+
+<p>I tried to fit several models, but the best fit was the EF with GAP compared to humidex. If you want to check fit the parameters, you can find them <a href="https://gist.github.com/alex-hhh/41b94005339724421b9832c74fe54d92#file-fit-summary-txt">here</a>.</p>
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2018/01/equipment-usage-and-costs.html">&larr; <em>Equipment Usage and Costs</em></a>
+    </li>
+    <li class="next">
+      <a href="/2017/12/arduino-inclinometer.html"><em>Arduino Inclinometer</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

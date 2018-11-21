@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Bike Trainer</title>
+    <meta name="description" content="I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current pos...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="bike trainer, activitylog2">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2017/11/bike-trainer.html">
+    <link rel="next" href="/2017/09/marathon-training-2017-statistics.html">
+    <link rel="prev" href="/2017/11/quantifying-fatigue.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Bike Trainer</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-11-14" pubdate="true">2017-11-14</time> :: <span class="tags"><a href="/tags/bike-trainer.html">bike trainer</a>, <a href="/tags/activitylog2.html">activitylog2</a></span></p>
+  </header>
+
+<p>I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.</p>
+<!-- more-->
+
+<div class="figure"><img src="/img/a003/bike-trainer.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The trainer itself comes with a basic control application which displays speed, power and cadence plus, it allows controlling the resistance manually. Different vendors also provide monthly subscriptions for more sophisticated training applications. However, I find it more interesting and challenging to write my own application to control the trainer. In doing so, I learned how to communicate with ANT+ devices, how to extend the <code class="brush: racket">pasteboard%</code> object to display a map on the background and a few things about the GPX tracks.</p>
+
+<h2 id="running-the-application">Running the application</h2>
+
+<p><strong>Equipment</strong> You need the following equipment to run the application:</p>
+
+<ul>
+ <li>An ANT+ FE-C capable bike trainer (all recent trainers should work)</li>
+ <li>A bike to put on the trainer</li>
+ <li>An ANT+ Heart Rate Monitor (optional)</li>
+ <li>An ANT+ USB dongle</li></ul>
+
+<p><strong>GPX Track</strong> You will also need a GPX file, which contains the GPS track to ride. If you don&rsquo;t have any, here are two sample ones:</p>
+
+<ul>
+ <li><a href="https://drive.google.com/uc?export=download&amp;id=1_EvQnSEBy6fcjYKqcENYJKf1wWaojWyZ">Guilford Hills</a></li>
+ <li><a href="https://drive.google.com/uc?export=download&amp;id=1jlOLyG0MXTezoSwCdSGWDiaFO9MolRj8">Mt Adelaide and Clarence</a></li></ul>
+
+<p><strong>Telemetry Server</strong> Communicating with the application is done using a separate application, a <a href="https://github.com/alex-hhh/TrainerControl">TelemetryServer</a>. Follow the instructions in that projects README file to build and run it.</p>
+
+<p><strong>Source Code</strong> for the application is on the <a href="https://github.com/alex-hhh/ActivityLog2/tree/bike-trainer">bike-trainer branch</a> of the ActivityLog2 project, with all relevant files in the <code>bike-trainer</code> folder.</p>
+
+<p>To run the application, first start the telemetry server, than open the <code>bike-trainer.rkt</code> file in DrRacket and click &ldquo;Run&rdquo; (or Ctrl-R). You will need to connect to the telemetry server by typing the following in the Racket interaction window (7500 is the TCP port number it will connect to):</p>
+
+<pre><code>(connect 7500)</code></pre>
+
+<p>Once that is done, the live telemetry data should show up on the top of the window. You can load a GPX track, click &ldquo;Start&rdquo; and start pedaling. The current location should advance on the map and the trainer resistance will change depending on the slope at the current location.</p>
+
+<h3 id="running-the-application-in-demo-mode">Running the application in demo mode</h3>
+
+<p>The <code>demo-telemetry-server.rkt</code> utility can be used to supply pre-defined telemetry values to the bike trainer application. This can be used to test the application without a bike trainer, or to simply run the application in demo mode.</p>
+
+<p>To run the server, you will need a CSV file with telemetry data. A CSV file in the required format can be exported by selecting an existing activity and using the &ldquo;Activity / Export track data (CSV)&hellip;&rdquo;. You can also download a sample CSV file <a href="https://drive.google.com/uc?export=download&amp;id=1Zgzrj5IqER7Qf4AzrMc3i3gVa5ePqg_W">here</a>.</p>
+
+<p>The server can be run from the command line as:</p>
+
+<pre><code>racket demo-telemetry-server.rkt -f telemetry-data.csv</code></pre>
+
+<p>Alternatively, the server can send telemetry directly from an existing session from the ActivityLog2 database. You will need the session id, which you can find by opening a session and using the &ldquo;Activity/Copy session id to clipboard&hellip;&rdquo; menu item. You can than use the following command:</p>
+
+<pre><code>racket demo-telemetry-server.rkt -s SESSION-ID
+</code></pre>
+
+<p>Once started, the bike-trainer application will connect to this server to receive telemetry values.</p>
+
+<div style="text-align:center">
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/D1E2fSQFy7k" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<h2 id="technical-details">Technical details</h2>
+
+<p>The implementation is on the <a href="https://github.com/alex-hhh/ActivityLog2/tree/bike-trainer">bike-trainer branch</a> of the ActivityLog2 project, with all relevant files in the <code>bike-trainer</code> folder.</p>
+
+<p>As part of the ActivityLog2 application, I already had the most important ingredient: a map widget with all the necessary map utilities. I decided to use a <code class="brush: racket">pasteboard%</code> for the main application window, with the map being displayed as the background and all the other views implemented as <code class="brush: racket">snip%</code> objects.</p>
+
+<p>A &ldquo;current location&rdquo; concept was added to the <code>map-widget%</code>: when a current location is set using <code>set-current-location</code>, a red circle will be drawn at that location. Also the current location is &ldquo;tracked&rdquo;, meaning that the map is slowly panned so that the current location is always displayed on the screen. This is currently non-configurable, see <code>track-current-location</code>.</p>
+
+<p>Also, the <code>map-widget%</code> was updated to act as a <code>pasteboard%</code>. The map is drawn as the pasteboard background, and the pasteboard can be accessed using <code>get-pasteboard</code> and snips can be inserted. Mouse handling has changes: click and drag events are used to pan the map around and mouse events with the &ldquo;Control&rdquo; key pressed are passed to the pasteboard%. This means that selecting and moving snips around is done while the &ldquo;control&rdquo; key is pressed.</p>
+
+<p>Training data is overlaid on top of the map using snips:</p>
+
+<ul>
+ <li>a <a href="https://github.com/alex-hhh/ActivityLog2/blob/bike-trainer/bike-trainer/telemetry-snip.rkt">telemetry-snip%</a> is used for each of the telemetry values (heart  rate, power, speed, cadence, etc)</li>
+ <li>an <a href="https://github.com/alex-hhh/ActivityLog2/blob/bike-trainer/bike-trainer/elevation-profile-snip.rkt">elevation-profile-snip%</a> is used to display the elevation  profile on the map</li>
+ <li>a <a href="https://github.com/alex-hhh/ActivityLog2/blob/bike-trainer/bike-trainer/message-snip.rkt">message-snip%</a> is used to display messages</li></ul>
+
+<p>The simulation state (current location on the map and how it changes with the speed) is implemented in the <a href="https://github.com/alex-hhh/ActivityLog2/blob/bike-trainer/bike-trainer/sim-state.rkt">sim-state.rkt</a> file. A <code>sim-state</code> structure is defined containing all relevant data for the simulation along with functions to update it. I decided to experiment with &ldquo;functional updating&rdquo; of the state: all update functions return a new updated simulation state, rather than updating the existing state. This has resulted in elegant code in the simulation-task (see below)</p>
+
+<p>The main application is in the <a href="https://github.com/alex-hhh/ActivityLog2/blob/bike-trainer/bike-trainer/bike-trainer.rkt">bike-trainer.rkt</a> file, which sets up the widgets and starts the <code>simulation-task</code> procedure in a separate thread. This procedure reads telemetry data from the trainer and updates the simulation state.</p>
+
+<h3 id="communicating-with-the-trainer">Communicating with the trainer</h3>
+
+<p>The bike trainer sends and receives data using the wireless ANT+ protocol, the same as my heart rate monitor and power meter on the bike. On the PC side, the data is sent and received using an ANT+ USB dongle (an ANT Stick). The ANT+ protocol documentation is available from <a href="https://www.thisisant.com">www.thisisant.com</a>, although you have to sign up and upgrade your account to &ldquo;Adopter&rdquo;. This costs nothing, but you need agree to keep all documents confidential and not further distribute the documentation.</p>
+
+<p>The ANT+ communication part is implemented as a C++ server application, <a href="https://github.com/alex-hhh/TrainerControl">TrainerControl</a>, the server accepts TCP connections and sends telemetry data (heart rate, power, speed and cadence) and receives commands over that connection. It uses <a href="http://libusb.info/">libusb</a> for the USB communication, since I wanted my code to be portable. The application currently builds on Windows, but ultimately, I would like to port it to a Raspberry PI running Linux.</p>
+
+<p><em>Why not use Racket for the ANT+ communication?</em> I could have used the Racket Foreign Function Interface (FFI) to provide bindings for libusb, and write the entire ANT+ implementation in Racket. I didn&rsquo;t do it mostly because I took the path of least resistance: I already had experience using libusb from C++ and had no experience with using Racket FFI.</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>This application is very much in its early stages, only a proof of concept. I&rsquo;d like to expand it to include structured workouts and data recording as well as package it into an application that is ready to use. However, all this will have to wait until next year: summer has arrived here in Australia and I can start riding outdoors again.</p>
+<!-- link definitions-->
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2017/11/bike-trainer.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2017/11/bike-trainer.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2017/11/quantifying-fatigue.html">&larr; <em>Quantifying Fatigue</em></a>
+    </li>
+    <li class="next">
+      <a href="/2017/09/marathon-training-2017-statistics.html"><em>Marathon Training 2017 Statistics</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

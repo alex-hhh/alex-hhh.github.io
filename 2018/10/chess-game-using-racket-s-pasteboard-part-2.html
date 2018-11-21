@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Chess Game Using Racket's Pasteboard (part 2)</title>
+    <meta name="description" content="This is a continuation of the previous blog post, where the racket `pasteboard%` features are explored by implementing a Chess Game Board. In this blog post we look at how to restrict piece movements to chess board squares, permit only valid moves and imp...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html">
+    <link rel="next" href="/2018/10/chess-game-using-racket-s-pasteboard.html">
+    <link rel="prev" href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-10-19" pubdate="true">2018-10-19</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>This is a continuation of the <a href="/2018/10/chess-game-using-racket-s-pasteboard.html">previous blog post</a>, where the racket <code>pasteboard%</code> features are explored by implementing a Chess Game Board. In this blog post we look at how to restrict piece movements to chess board squares, permit only valid moves and implement turn based game play.</p>
+<!-- more-->
+
+<h2 id="place-the-piece-on-a-square-after-it-is-moved">Place the piece on a square after it is moved</h2>
+
+<p>In the last version of the chess board program could we could place any inserted piece in its correct location, and pieces were also repositioned if the board size changed, however, the user can still drag pieces around with the mouse to any place on the board. To address that, we need to override the <code>after-interactive-move</code> method of the <code>pasteboard%</code>, which called every time the user completes a snip drag operation. The method receives a <code>mouse-event%</code> object for the last event of the drag operation and this event object contains the mouse coordinates for where the chess piece was moved to. We can use these coordinates to determine the square location for the destination: this is done in the <code>xy-&gt;location</code> function, as with other functions, this function queries the size of the board, so that the location is always determined correctly:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">xy-&gt;location</span> <span class="n">board</span> <span class="n">x</span> <span class="n">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">canvas-width</span> <span class="n">canvas-height</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">c</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">board</span> <span class="n">get-canvas</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">c</span> <span class="n">get-size</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">square-width</span> <span class="n">square-height</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">canvas-width</span> <span class="mi">8</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">canvas-height</span> <span class="mi">8</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">rank</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">y</span> <span class="n">square-height</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">x</span> <span class="n">square-width</span><span class="p">))))</span>
+  <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="n">rank</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>xy-&gt;location</code> function makes use of the <code>rank-file-&gt;location</code> function, which constructs a chess board location from a rank and file value, its definition is shown below:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="n">rank</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="mi">0</span> <span class="n">rank</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._raise-argument-error))" style="color: inherit">raise-argument-error</a></span> <span class="o">'</span><span class="ss">rank</span> <span class="s2">"integer between 0 <a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a> 7"</span> <span class="n">rank</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="mi">0</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span> <span class="mi">8</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._raise-argument-error))" style="color: inherit">raise-argument-error</a></span> <span class="o">'</span><span class="ss">rank</span> <span class="s2">"integer between 0 <a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a> 7"</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string))" style="color: inherit">string</a></span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="o">'</span><span class="p">(</span><span class="sc">#\a</span> <span class="sc">#\b</span> <span class="sc">#\c</span> <span class="sc">#\d</span> <span class="sc">#\e</span> <span class="sc">#\f</span> <span class="sc">#\g</span> <span class="sc">#\h</span><span class="p">)</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="o">'</span><span class="p">(</span><span class="sc">#\8</span> <span class="sc">#\7</span> <span class="sc">#\6</span> <span class="sc">#\5</span> <span class="sc">#\4</span> <span class="sc">#\3</span> <span class="sc">#\2</span> <span class="sc">#\1</span><span class="p">)</span> <span class="n">rank</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>after-interactive-move</code> method finds the selected piece using <code>find-next-selected-snip</code>, determines the location where the piece was dragged with the mouse and tells the chess piece about it by calling <code>set-location</code>. A call to <code>position-piece</code> will than place the piece at its new position. <code>after-interactive-move</code> will also check if the destination square is occupied by another piece and removes it from the board. At this point, the code does not check what color piece is at the destination, or that the move is actually valid according to chess rules, this will be done later:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the chess-board% definition remains unchanged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">piece</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">find-next-selected-snip</span> <span class="no">#f</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="n">xy-&gt;location</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-x</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-y</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">target-piece</span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">target-piece</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">piece</span> <span class="n">target-piece</span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">target-piece</span> <span class="n">set-location</span> <span class="no">#f</span><span class="p">)</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._remove))" style="color: inherit">remove</a></span> <span class="n">target-piece</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">set-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+      <span class="p">(</span><span class="n">position-piece</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">piece</span><span class="p">))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The above method makes use of a <code>piece-at-location</code> function to find a chess piece at a specified location on the chess board, this function simply iterates over all the pieces on the board, using <code>get-location</code> to determine if the piece is the correct one:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="n">board</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">((</span><span class="n">snip</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">board</span> <span class="n">find-first-snip</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">snip</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">get-location</span><span class="p">))</span>
+            <span class="n">snip</span>
+            <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">next</span><span class="p">)))</span>
+        <span class="no">#f</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<hr />
+
+<p><strong>NOTE:</strong> If you read the <code>pasteboard%</code> documentation, you might notice that this class also has an <code>after-move-to</code> method, which can also be overridden. However, this method is invoked every time a snip is moved, including as a result of a call to the <code>move</code> method. If snips are moved inside an <code>after-move-to</code> method they will trigger another call to the <code>after-move-to</code> method, and this needs to be handled carefully otherwise <code>after-move-to</code> will be called recursively in an infinite sequence of calls. It is best to only override this method to implement functionality that does not require further moving of snips.</p>
+
+<hr />
+
+<p>You can find the updated program in this <a href="https://gist.github.com/alex-hhh/95530cb80d9ab81102428f5b506e2dee">GitHub Gist</a> and the result of running it is shown below. Note how the chess pieces snap to the closest square when they are moved with the mouse and any piece at the destination square is removed from the board. So far, however, the program allows any move to be made, and we will fix that, but in the next section we&rsquo;ll look at how to provide better visual feedback when moving pieces.</p>
+
+<div class="figure"><img src="/img/a018/chess-board4low.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="highlight-the-target-square-during-a-drag-operation">Highlight the target square during a drag operation</h2>
+
+<p>Since this tutorial is about <code>pasteboard%</code> and graphics, it might be interesting to update the previous program to highlight the destination square as a chess piece is dragged across the board with the mouse, as this will allow us to explore some more <code>pasteboard%</code> methods.</p>
+
+<p>We will need a function which can highlight a square, the function would simply draw another square at a specified location on the board with a <code>brush%</code>, which is used for the background of the square, and a <code>pen%</code>, which draws the outline. In anticipation of further use, this method is more complex than we strictly need now, as it allows specifying the brush and pen colors separately, and if any of these are <code>#f</code>, the relevant part is not drawn, therefore, to just draw the outline, you can specify #f for the <code>color-name</code> and a valid pen color:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="n">color-name</span> <span class="n">border-color-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">rank</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span> <span class="p">(</span><span class="n">location-&gt;rank-file</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">brush</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">color-name</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">((</span><span class="n">base</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="n">color-name</span><span class="p">))</span>
+               <span class="p">(</span><span class="n">color</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/objcreation.html#(def._((lib._racket/private/class-internal..rkt)._make-object))" style="color: inherit">make-object</a></span> <span class="n">color%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">base</span> <span class="n">red</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">base</span> <span class="n">green</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">base</span> <span class="n">blue</span><span class="p">)</span> <span class="mf">0.3</span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-brush-list</span> <span class="n">find-or-create-brush</span> <span class="n">color</span> <span class="o">'</span><span class="ss">solid</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-brush-list</span> <span class="n">find-or-create-brush</span> <span class="s2">"black"</span> <span class="o">'</span><span class="ss">transparent</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pen</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">border-color-name</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-pen-list</span> <span class="n">find-or-create-pen</span> <span class="n">border-color-name</span> <span class="mi">2</span> <span class="o">'</span><span class="ss">solid</span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-pen-list</span> <span class="n">find-or-create-pen</span> <span class="s2">"black"</span> <span class="mi">1</span> <span class="o">'</span><span class="ss">transparent</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-pen</span> <span class="n">pen</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-brush</span> <span class="n">brush</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">dc-width</span> <span class="n">dc-height</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-size</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">cell-width</span> <span class="n">cell-height</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">dc-width</span> <span class="mi">8</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">dc-height</span> <span class="mi">8</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">draw-rectangle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span> <span class="n">cell-width</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">rank</span> <span class="n">cell-height</span><span class="p">)</span> <span class="n">cell-width</span> <span class="n">cell-height</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Since the highlighted square is not part of the interactive section of the <code>pasteboard%</code> it needs to be drawn as part of the <code>on-paint</code> method, together with the chess board background. The <code>on-paint</code> method does not know if a mouse drag operation is in progress and where it is at, so the <code>chess-board%</code> object will hold a <code>highlight-location</code> value, which will be managed by methods that do have access to the mouse position and drag operation status:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the chess-board% definition remains unchanged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">highlight-location</span> <span class="no">#f</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-paint</span> <span class="n">before?</span> <span class="n">dc</span> <span class="o">.</span> <span class="n">other</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">before?</span>
+        <span class="p">(</span><span class="n">draw-chess-board</span> <span class="n">dc</span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">highlight-location</span>
+          <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n">highlight-location</span> <span class="no">#f</span> <span class="s2">"indianred"</span><span class="p">))))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The state of the <code>highlight-location</code> variable is maintained by three methods: <code>on-interactive-move</code>, <code>on-move-to</code>, and <code>after-interactive-move</code>.</p>
+
+<p>First, we override the <code>on-interactive-move</code> method, which is called once only, when the mouse drag operation starts, and receives the mouse event that started the drag. In this method, we look for the selected snip and calculate the difference between the mouse event coordinates and the snip position &mdash; this represents the place on the snip where the mouse picked it up. This information is stored in the pasteboard object as <code>drag-dx</code>, <code>drag-dy</code> variables and it is needed because <code>after-interactive-move</code> will position the snip in the square where the mouse pointer is, not where the top-left corner of the dragged snip is:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the chess-board% definition remains unchanged...</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">drag-dx</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">drag-dy</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">on-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">piece</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">find-next-selected-snip</span> <span class="no">#f</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/boxes.html#(def._((quote._~23~25kernel)._box))" style="color: inherit">box</a></span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/boxes.html#(def._((quote._~23~25kernel)._box))" style="color: inherit">box</a></span> <span class="mi">0</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-snip-location</span> <span class="n">piece</span> <span class="n">x</span> <span class="n">y</span> <span class="no">#f</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">drag-dx</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/boxes.html#(def._((quote._~23~25kernel)._unbox))" style="color: inherit">unbox</a></span> <span class="n">x</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">drag-dy</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-y</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/boxes.html#(def._((quote._~23~25kernel)._unbox))" style="color: inherit">unbox</a></span> <span class="n">y</span><span class="p">))))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Next, we need to override the <code>on-move-to</code> method, which is called each time a snip is moved and it receives the <code>x</code>, <code>y</code> coordinates where the snip would be moved to &mdash; these coordinates represent the top left corner of the snip. This method is invoked even if a snip is moved as a result of a call to <code>move</code>, but the <code>dragging?</code> flag indicates if this is a move resulting from dragging with the mouse or not. In this method, we can determine the location where the chess piece would be placed by applying the <code>drag-dx</code> and <code>drag-dy</code> offsets to the snip position and set <code>highlight-location</code> to this location. Since the background needs a redraw, we also queue a refresh call with the canvas. Note that the method implementation is careful not to call refresh if the target location has not actually changed &mdash; this avoids too many redraws during a drag operation:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the chess-board% definition remains unchanged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">on-move-to</span> <span class="n">snip</span> <span class="n">x</span> <span class="n">y</span> <span class="n">dragging?</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">dragging?</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="n">xy-&gt;location</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">drag-dx</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">y</span> <span class="n">drag-dy</span><span class="p">))))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">highlight-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">highlight-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">)))))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, the <code>after-interactive-move</code> method is updated to set <code>highlight-location</code> to <code>#f</code>, since the piece drag has now terminated and the highlighted location does not need to be drawn anymore.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the chess-board% definition remains unchanged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="c1">;; rest of the `after-interactive-move` definition remains unchanged...</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">highlight-location</span> <span class="no">#f</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>You can find the updated program in this <a href="https://gist.github.com/alex-hhh/d5eca4403146d2b384712bd0cb892daa">GitHub Gist</a> and the result of running it is shown below. We will look next at how to validate the moves and only permit valid ones on the chess board.</p>
+
+<div class="figure"><img src="/img/a018/chess-board5low.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="restrict-movement-according-to-game-rules">Restrict movement according to game rules</h2>
+
+<p>In the current state, pieces can be moved only on the board squares, but the actual validity of a move is not considered: for example a pawn can only move forward one square, and the user should not be able to move the piece to just any location on the board. We can implement this easily by adding a <code>valid-moves</code> method to the <code>chess-piece%</code> class, which will return a list of valid moves for the piece, than we can update the <code>after-interactive-move</code> to check the validity of the destination location against this list. First let&rsquo;s update the <code>after-interactive-move</code> method: note that the piece location is updated and any piece at the target location is only removed if the move is valid, also, if the piece location is not updated, <code>position-piece</code> will simply move the piece back to its original location.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+
+    <span class="c1">;; rest of the `chess-board%` definition remains unchanged</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">piece</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">find-next-selected-snip</span> <span class="no">#f</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="n">xy-&gt;location</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-x</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">event</span> <span class="n">get-y</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">valid-moves</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">valid-moves</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/base..rkt)._member))" style="color: inherit">member</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="n">valid-moves</span><span class="p">)</span> <span class="c1">;; NEW PART: check if a move is valid</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">set-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">target-piece</span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">target-piece</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">piece</span> <span class="n">target-piece</span><span class="p">)))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">target-piece</span> <span class="n">set-location</span> <span class="no">#f</span><span class="p">)</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._remove))" style="color: inherit">remove</a></span> <span class="n">target-piece</span><span class="p">))))</span>
+      <span class="p">(</span><span class="n">position-piece</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">piece</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">highlight-location</span> <span class="no">#f</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="extending-chess-piece-to-supply-the-list-of-valid-moves">Extending <code>chess-piece%</code> to supply the list of valid moves</h3>
+
+<p>The <code>chess-piece%</code> object needs to have a <code>valid-moves</code> method which returns a list of valid moves for this piece, considering the type of the piece, its current location and the location of other pieces on the board. Since each piece type (king, queen, knight, etc) has a different set of moves, we could sub-class <code>chess-piece%</code> to provide the different behavior. However, it is actually simpler to provide stand-alone functions for each chess piece type and supply this function to the <code>chess-piece%</code> constructor, so we extend the constructor with a <code>moves</code> argument, which is a function taking the board and the current location, and returning the list of moves. We also need to add a <code>color</code> method to the <code>chess-piece%</code> object: to determine the color we simply look at the piece name: if it is upper case, it is a white piece, otherwise it is black. The overall changes to the class are quite small:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-piece%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">snip%</span>
+    <span class="c1">;; rest of the `chess-piece%` definition remains unchanged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init-field))" style="color: inherit">init-field</a></span> <span class="n">name</span> <span class="n">glyph</span> <span class="n">font</span> <span class="n">size</span> <span class="n">moves</span> <span class="p">[</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="no">#f</span><span class="p">])</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">color</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-upcase))" style="color: inherit">string-upcase</a></span> <span class="n">name</span><span class="p">)</span> <span class="n">name</span><span class="p">)</span> <span class="o">'</span><span class="ss">white</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">valid-moves</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">admin</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-admin</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">admin</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>        <span class="c1">; can be #f is the snip is not owned</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">board</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">admin</span> <span class="n">get-editor</span><span class="p">)))</span>
+              <span class="p">(</span><span class="n">moves</span> <span class="n">board</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))</span>
+            <span class="c1">;; Return an empty list if this piece is not on a board</span>
+            <span class="o">'</span><span class="p">())))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p><code>make-chess-piece</code> can also be updated to supply the right <code>moves</code> function for a corresponding chess piece, this is done by extending the <code>chess-piece-data</code> hash table and just retrieving the information for it. In fact, the <code>chess-piece-data</code> table provides a compact way to define the things that make each <code>chess-piece%</code> individual: its mnemonic, the glyph used for rendering and the function used to determine its valid moves:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-piece-data</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></span>
+   <span class="s2">"K"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2654</span> <span class="p">(</span><span class="n">king-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"Q"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2655</span> <span class="p">(</span><span class="n">queen-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"R"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2656</span> <span class="p">(</span><span class="n">rook-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"B"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2657</span> <span class="p">(</span><span class="n">bishop-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"N"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2658</span> <span class="p">(</span><span class="n">knight-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"P"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u2659</span> <span class="p">(</span><span class="n">pawn-moves</span> <span class="o">'</span><span class="ss">white</span><span class="p">))</span>
+   <span class="s2">"k"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265A</span> <span class="p">(</span><span class="n">king-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+   <span class="s2">"q"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265B</span> <span class="p">(</span><span class="n">queen-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+   <span class="s2">"r"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265C</span> <span class="p">(</span><span class="n">rook-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+   <span class="s2">"b"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265D</span> <span class="p">(</span><span class="n">bishop-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+   <span class="s2">"n"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265E</span> <span class="p">(</span><span class="n">knight-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))</span>
+   <span class="s2">"p"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="sc">#\u265F</span> <span class="p">(</span><span class="n">pawn-moves</span> <span class="o">'</span><span class="ss">black</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-chess-piece</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span> <span class="p">[</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="no">#f</span><span class="p">])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">glyph</span> <span class="n">moves</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">chess-piece-data</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">font</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-font-list</span> <span class="n">find-or-create-font</span> <span class="mi">20</span> <span class="o">'</span><span class="ss">default</span> <span class="o">'</span><span class="ss">normal</span> <span class="o">'</span><span class="ss">normal</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">chess-piece%</span> <span class="p">[</span><span class="n">name</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">]</span> <span class="p">[</span><span class="n">glyph</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string))" style="color: inherit">string</a></span> <span class="n">glyph</span><span class="p">)]</span> <span class="p">[</span><span class="n">font</span> <span class="n">font</span><span class="p">]</span>
+                    <span class="p">[</span><span class="n">size</span> <span class="mi">35</span><span class="p">]</span> <span class="p">[</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">]</span> <span class="p">[</span><span class="n">moves</span> <span class="n">moves</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The last thing we need to do is implement the actual move functions, which implement the actual game logic. There are six move functions, one for each type of chess piece on the board: <code>king-moves</code>, <code>queen-moves</code>, <code>rook-moves</code>, <code>bishop-moves</code>, <code>knight-moves</code> and <code>pawn-moves</code>. These functions are implemented in about 100 lines of Racket code, but only the <code>pawn-moves</code> is listed below, you can find all of them in the full listing in <a href="https://gist.github.com/alex-hhh/c7f3782d189482bcd73aabf272dff09c">this GitHub gist</a>. The code looks complex, but it only checks various locations on the board for the valid moves to see of they are occupied by friendly or enemy pieces:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">valid-rank?</span> <span class="n">rank</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="n">rank</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">rank</span> <span class="mi">8</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">valid-file?</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span> <span class="mi">8</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">((</span><span class="n">pawn-moves</span> <span class="n">color</span><span class="p">)</span> <span class="n">board</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">direction</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">color</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span> <span class="mi">-1</span> <span class="mi">1</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">rank</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)</span> <span class="p">(</span><span class="n">location-&gt;rank-file</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">moves</span> <span class="o">'</span><span class="p">())</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="n">valid-rank?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span><span class="p">))</span>
+    <span class="c1">;; can move forward if that square is not occupied</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">candidate</span> <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span><span class="p">)</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="n">board</span> <span class="n">candidate</span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">moves</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">candidate</span> <span class="n">moves</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="n">valid-rank?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span> <span class="n">direction</span><span class="p">))</span>
+          <span class="c1">;; can move two squares forward if the pawn is in its original location</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">color</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">rank</span> <span class="mi">6</span><span class="p">))</span>
+                    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">color</span> <span class="o">'</span><span class="ss">black</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">rank</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">candidate</span> <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span> <span class="n">direction</span><span class="p">)</span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">)))</span>
+              <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="n">board</span> <span class="n">candidate</span><span class="p">)</span>
+                <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">moves</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">candidate</span> <span class="n">moves</span><span class="p">))))))))</span>
+    <span class="c1">;; can move forward left if that square is occupied</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="n">valid-file?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sub1))" style="color: inherit">sub1</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">candidate</span> <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sub1))" style="color: inherit">sub1</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">piece</span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="n">board</span> <span class="n">candidate</span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">piece</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">color</span><span class="p">))))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">moves</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">candidate</span> <span class="n">moves</span><span class="p">))))))</span>
+    <span class="c1">;; can move forward right if that square is occupied</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="n">valid-file?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">candidate</span> <span class="p">(</span><span class="n">rank-file-&gt;location</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">rank</span> <span class="n">direction</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._file))" style="color: inherit">file</a></span><span class="p">))))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">piece</span> <span class="p">(</span><span class="n">piece-at-location</span> <span class="n">board</span> <span class="n">candidate</span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">piece</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">color</span><span class="p">))))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">moves</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">candidate</span> <span class="n">moves</span><span class="p">)))))))</span>
+
+  <span class="n">moves</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="highlight-valid-moves-and-opponent-controlled-squares">Highlight valid moves and opponent controlled squares</h3>
+
+<p>The <code>valid-moves</code> method can also be used to highlight squares that are controlled by the opponent as well as the valid moves for the selected piece. Just as with highlighting the current location, the actual drawing of the controlled squares is done in the <code>on-paint</code> method, and since this method has no access to the game logic itself, it relies on two lists of locations <code>valid-move-locations</code> for the location where the selected piece can move and <code>opponent-move-locations</code> where the opponent pieces can move to. The <code>after-select</code> method is called when a piece is selected or unselected and we can override this method to calculate the valid moves lists. The <code>after-interactive-move</code> also needs to keep track of the <code>valid-move-locations</code>, since the location of the selected piece changes after a move:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+    <span class="c1">;; rest of the chess-board% definition remains unchanged</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">valid-move-locations</span> <span class="o">'</span><span class="p">())</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">opponent-move-locations</span> <span class="o">'</span><span class="p">())</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-paint</span> <span class="n">before?</span> <span class="n">dc</span> <span class="o">.</span> <span class="n">other</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">before?</span>
+        <span class="p">(</span><span class="n">draw-chess-board</span> <span class="n">dc</span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">((</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">valid-move-locations</span><span class="p">)))</span>
+          <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="no">#f</span> <span class="s2">"seagreen"</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">((</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">opponent-move-locations</span><span class="p">)))</span>
+          <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="s2">"firebrick"</span> <span class="no">#f</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">highlight-location</span>
+          <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n">highlight-location</span> <span class="no">#f</span> <span class="s2">"indianred"</span><span class="p">))))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-select</span> <span class="n">snip</span> <span class="n">on?</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">on?</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">valid-move-locations</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">valid-moves</span><span class="p">))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">opponent-move-locations</span>
+                  <span class="p">(</span><span class="n">collect-opponent-moves</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">color</span><span class="p">))))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">opponent-move-locations</span> <span class="o">'</span><span class="p">())</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">valid-move-locations</span> <span class="o">'</span><span class="p">())))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="c1">;; rest of the `after-interactive-move` definition remains unchanged</span>
+
+      <span class="c1">;; Note: piece is still selected, but the valid moves are relative to</span>
+      <span class="c1">;; the new position</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">valid-move-locations</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">valid-moves</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>collect-opponent-moves</code> function is used by <code>after-select</code> to get the list of all possible move locations that can be made by the opponent color. The function simply collects all valid moves from the opponent pieces and removes duplicates from them:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">collect-opponent-moves</span> <span class="n">board</span> <span class="n">color</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">moves</span> <span class="o">'</span><span class="p">())</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">((</span><span class="n">snip</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">board</span> <span class="n">find-first-snip</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">snip</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">color</span><span class="p">)</span> <span class="n">color</span><span class="p">)</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">moves</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._append))" style="color: inherit">append</a></span> <span class="n">moves</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">valid-moves</span><span class="p">))))</span>
+      <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">next</span><span class="p">))))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._remove-duplicates))" style="color: inherit">remove-duplicates</a></span> <span class="n">moves</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>You can find the updated program in this <a href="https://gist.github.com/alex-hhh/c7f3782d189482bcd73aabf272dff09c">GitHub gist</a> and the result of running it is shown below. We will look next at how to implement turn based game play.</p>
+
+<div class="figure"><img src="/img/a018/chess-board6low.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="turn-based-game-play">Turn based game play</h2>
+
+<p>The last thing we need to implement a proper chess game is to keep track of which color has to move next, as currently, any color piece can be moved at any time. We will also update the <code>pasteboard%</code> to display a message if the user tries to move a piece of the wrong color.</p>
+
+<p>We&rsquo;ll start by adding support to display a message on top of the game play board. The message is not interactive, so it will be drawn from the <code>on-paint</code> function, however, since the message needs to be drawn on top of the chess pieces, it will be drawn on the second invocation of <code>on-paint</code>, when the <code>before?</code> argument is <code>#f</code>. The message is stored in the <code>message</code> field and is updated by the <code>set-message</code> method, this method also sets up a timer to clear the message after a predefined interval (2 seconds in our case) and also requests a canvas refresh, as without that, the <code>pasteboard%</code> does not know that it needs a redraw:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+    <span class="c1">;; Rest of the chess-board% definition remains unchnaged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">message</span> <span class="no">#f</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">message-timer</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">timer%</span>
+           <span class="p">[</span><span class="n">notify-callback</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span>
+                              <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">message</span> <span class="no">#f</span><span class="p">)</span>
+                              <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))]))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">set-message</span> <span class="n">m</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">message</span> <span class="n">m</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">message-timer</span> <span class="n">start</span> <span class="mi">2000</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-canvas</span><span class="p">)</span> <span class="n">refresh</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-paint</span> <span class="n">before?</span> <span class="n">dc</span> <span class="o">.</span> <span class="n">other</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">before?</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+            <span class="p">(</span><span class="n">draw-chess-board</span> <span class="n">dc</span><span class="p">)</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">((</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">valid-move-locations</span><span class="p">)))</span>
+              <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="no">#f</span> <span class="s2">"seagreen"</span><span class="p">))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">((</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">opponent-move-locations</span><span class="p">)))</span>
+              <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="s2">"firebrick"</span> <span class="no">#f</span><span class="p">))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">highlight-location</span>
+              <span class="p">(</span><span class="n">highlight-square</span> <span class="n">dc</span> <span class="n">highlight-location</span> <span class="no">#f</span> <span class="s2">"indianred"</span><span class="p">)))</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">message</span> <span class="c1">;; NEW PART: show a message, if any, on top</span>
+            <span class="p">(</span><span class="n">display-message</span> <span class="n">dc</span> <span class="n">message</span><span class="p">))))</span>
+
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The actual drawing of the message is done in the <code>display-message</code> function, which is shown below. The function calculates the text position such that the message is always displayed in the middle of the board:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">display-message</span> <span class="n">dc</span> <span class="n">message</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">font</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-font-list</span> <span class="n">find-or-create-font</span> <span class="mi">24</span> <span class="o">'</span><span class="ss">default</span> <span class="o">'</span><span class="ss">normal</span> <span class="o">'</span><span class="ss">normal</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">[</span><span class="n">w</span> <span class="n">h</span> <span class="n">_1</span> <span class="n">_2</span><span class="p">]</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-text-extent</span> <span class="n">message</span> <span class="n">font</span> <span class="no">#t</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">dc-width</span> <span class="n">dc-height</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-size</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-width</span> <span class="n">w</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-height</span> <span class="n">h</span><span class="p">)</span> <span class="mi">2</span><span class="p">)))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">brush</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-brush-list</span> <span class="n">find-or-create-brush</span> <span class="s2">"bisque"</span> <span class="o">'</span><span class="ss">solid</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pen</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-pen-list</span> <span class="n">find-or-create-pen</span> <span class="s2">"black"</span> <span class="mi">1</span> <span class="o">'</span><span class="ss">transparent</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-brush</span> <span class="n">brush</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-pen</span> <span class="n">pen</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">draw-rectangle</span> <span class="mi">0</span> <span class="n">y</span> <span class="n">dc-width</span> <span class="n">h</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-font</span> <span class="n">font</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">set-text-foreground</span> <span class="s2">"firebrick"</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">draw-text</span> <span class="n">message</span> <span class="n">x</span> <span class="n">y</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To maintain the color that can move next, we can use a <code>turn</code> field to store the piece color <code>'white'</code> or <code>'black</code>. The <code>can-interactive-move?</code> method is invoked by the <code>pasteboard%</code> to check if a snip can be moved with the mouse. We can override this method to return <code>#t</code> if the selected piece color is the same as the value of <code>turn</code>, and <code>#f</code> otherwise. This method also calls <code>set-message</code> to display a message if the user tries to move a piece of the wrong color. The <code>after-interactive-move</code> also needs to be updated to alternate the colors for <code>turn</code> after a successful move. As a help for the user, the <code>after-select</code> method is also updated to display a message if the user selects a piece of the wrong color, however the selection is still allowed, so the valid moves squares are still highlighted &mdash; even though the wrong color piece can be selected, it will not move as <code>can-interactive-move?</code> will prevent that:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">chess-board%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">pasteboard%</span>
+    <span class="c1">;; Rest of the chess-board% definition remains unchnaged...</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">turn</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">can-interactive-move?</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">piece</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">find-next-selected-snip</span> <span class="no">#f</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">color</span><span class="p">))</span>
+        <span class="p">(</span><span class="n">set-message</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"It's <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> turn to move"</span>
+                      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span> <span class="s2">"white's"</span> <span class="s2">"black's"</span><span class="p">))))</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">piece</span> <span class="n">color</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-interactive-move</span> <span class="n">event</span><span class="p">)</span>
+      <span class="c1">;; rest of `after-interactive-move` definiton remains unchanged...</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/base..rkt)._member))" style="color: inherit">member</a></span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="n">valid-moves</span><span class="p">)</span>
+        <span class="c1">;; rest of the lines unchanged...</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">turn</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span> <span class="o">'</span><span class="ss">black</span> <span class="o">'</span><span class="ss">white</span><span class="p">))))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">after-select</span> <span class="n">snip</span> <span class="n">on?</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">on?</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+            <span class="c1">;; rest of the lines unchanged...</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">color</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">set-message</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"It's <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> turn to move"</span>
+                            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._eq~3f))" style="color: inherit">eq?</a></span> <span class="n">turn</span> <span class="o">'</span><span class="ss">white</span><span class="p">)</span> <span class="s2">"white's"</span> <span class="s2">"black's"</span><span class="p">)))))</span>
+          <span class="c1">;; rest of the lines unchanged...</span>
+          <span class="p">))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>You can find the updated program in this <a href="https://gist.github.com/alex-hhh/f6ea1a5cba92914272f1ce8c66e55455">GitHub gist</a> and the result of running it is shown below. While this program is significantly more complex than what we started with, it is still only 440 lines of code and it implements an almost complete chess game play &mdash; there are a few rules missing, such as castling and en-passant capture, but since they don&rsquo;t contribute anything to learning about Racket <code>pasteboard%</code> objects, they were left out, feel free to take the program and extend it.</p>
+
+<div class="figure"><img src="/img/a018/chess-board7low.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>If you try to use the program for a bit, you might notice that the <code>pasteboard%</code> implements behavior that is not useful in a chess game: one can select and move multiple pieces, move pieces with the keyboard or deleting pieces from the board by pressing delete. In the next post, we&rsquo;ll look at how to fix these problems.</p>
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html">&larr; <em>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</em></a>
+    </li>
+    <li class="next">
+      <a href="/2018/10/chess-game-using-racket-s-pasteboard.html"><em>Chess Game Using Racket&rsquo;s Pasteboard</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

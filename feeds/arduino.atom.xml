@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+ <title type="text">The Blog of Alex Harsányi: Posts tagged 'arduino'</title>
+ <link rel="self" href="http://alex-hhh.github.io/feeds/arduino.atom.xml" />
+ <link href="http://alex-hhh.github.io/tags/arduino.html" />
+ <id>urn:http-alex-hhh-github-io:-tags-arduino-html</id>
+ <updated>2018-05-18T23:45:18Z</updated>
+ <entry>
+  <title type="text">Arduino 433Mhz Receiver -- Reading Keyfobs</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-reading-keyfobs-html</id>
+  <published>2018-05-18T23:45:18Z</published>
+  <updated>2018-05-18T23:45:18Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+ <entry>
+  <title type="text">Arduino Inclinometer Improvements</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=arduino&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-03-arduino-inclinometer-improvements-html</id>
+  <published>2018-03-09T10:07:27Z</published>
+  <updated>2018-03-09T10:07:27Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;After using the &lt;a href="/2017/12/arduino-inclinometer.html"&gt;inclinometer&lt;/a&gt; for a while, it became apparent that the functionality was too basic. I extended it, so the unit tracks maximum pitch and roll values seen, displays the pitch and roll direction and can perform calibration on demand, so the unit does not have to acquire its orientation each time it is started up. I also built a better enclosure for it.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=arduino&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+ <entry>
+  <title type="text">Arduino Inclinometer</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2017/12/arduino-inclinometer.html?utm_source=arduino&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2017-12-arduino-inclinometer-html</id>
+  <published>2017-12-09T03:09:26Z</published>
+  <updated>2017-12-09T03:09:26Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;My brother-in-law got himself a 4WD and wanted an inclinometer module to display the roll and pitch of the vehicle while going on his adventures. I build one using an Arduino Nano and an accelerometer module.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/12/arduino-inclinometer.html?utm_source=arduino&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry></feed>

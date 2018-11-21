@@ -1,0 +1,9 @@
+# -*- mode: conf -*-
+*~
+\#*\#
+.\#*
+scratch*
+.DS_Store
+Thumbs.db
+*.diff
+*.patch

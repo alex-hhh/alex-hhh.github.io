@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+ <title type="text">The Blog of Alex Harsányi: Posts tagged 'bike trainer'</title>
+ <link rel="self" href="http://alex-hhh.github.io/feeds/bike-trainer.atom.xml" />
+ <link href="http://alex-hhh.github.io/tags/bike-trainer.html" />
+ <id>urn:http-alex-hhh-github-io:-tags-bike-trainer-html</id>
+ <updated>2017-11-13T21:58:09Z</updated>
+ <entry>
+  <title type="text">Bike Trainer</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=bike-trainer&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2017-11-bike-trainer-html</id>
+  <published>2017-11-13T21:58:09Z</published>
+  <updated>2017-11-13T21:58:09Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=bike-trainer&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry></feed>

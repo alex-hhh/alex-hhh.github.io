@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Fatigue and Running Form</title>
+    <meta name="description" content="My Garmin FR920 watch keeps track of _running form_ related measurements: Cadence, Stride, Ground Contact Time and Vertical Oscillation. Given that I collected a lot of data during my last Marathon training, I decided to have a look at how running form ch...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="training data analysis">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2017/11/fatigue-and-running-form.html">
+    <link rel="next" href="/2017/11/quantifying-fatigue.html">
+    <link rel="prev" href="/2017/12/arduino-inclinometer.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Fatigue and Running Form</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-11-28" pubdate="true">2017-11-28</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
+  </header>
+
+<p>My Garmin FR920 watch keeps track of <em>running form</em> related measurements: Cadence, Stride, Ground Contact Time and Vertical Oscillation. Given that I collected a lot of data during my last Marathon training, I decided to have a look at how running form changes as I get more tired during a run.</p>
+<!-- more-->
+
+<p>During my last Marathon training season, my watch recorded 440179 data points from 97 running sessions for a total distance of 1347 km or 122 hours of running. Some of these are long and easy runs and some are interval training runs &mdash; there is a large variety of running paces at different fatigue levels. I wrote another <a href="../2017/marathon-training-2017-statistics.html">blog post</a> about some statistics from this data, but this post focuses on fatigue and how it affects Cadence, Stride, Ground Contact Time and Vertical Oscillation.</p>
+
+<p>I wrote a separate post about how I decided to <a href="../2017/quantifying-fatigue.html">quantify fatigue</a> accumulated during a run workout. The plots in this post use that method to group data points into five fatigue levels.</p>
+
+<h2 id="cadence--stride-vs-fatigue">Cadence + Stride vs Fatigue</h2>
+
+<p>Running pace (how fast you run), is composed of two elements: <strong>cadence</strong> &mdash; how many steps one takes each minute and <strong>stride</strong> &mdash; how long is each step. The plot below plots the cadence vs. stride for each data point, the points being colored by fatigue. Each point also represents a running pace value, The lines on the plot represent the &ldquo;constant pace&rdquo; lines: pace is &ldquo;stride&rdquo; (the length of each step) multiplied by &ldquo;cadence&rdquo; (how many steps each minute). For example, to maintain a 4:00 min/km pace at a cadence of 90 steps/minute, the stride would have to be 1.38 meters. To maintain the same pace at a cadence of 80 steps/minute, the stride would have to increase to 1.56 meters.</p>
+
+<div class="figure"><img src="/img/a005/cad+stride-fatigue.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p><em>A note on cadence values:</em> Originally, running cadence was measured by counting number of steps taken with one leg, either left or right. A few years ago, Garmin switched to measuring cadence by counting steps from both legs. I prefer the old style, where a cadence of 90 means &ldquo;90 steps taken with the right (or left) leg only&rdquo;. If you prefer the newer style, just multiply everything by 2. For example, an &ldquo;old style&rdquo; 90 SPM becomes 180 SPM when counting each leg.</p>
+
+<h2 id="density-plots-for-each-running-form-metric">Density plots for each running form metric</h2>
+
+<p>The plots below show how the density profile (a histogram, really) for each of the running metrics. Ground Contact Time, or GCT, is the time the foot is in contact with the ground at each step. Vertical Oscillation, or VOSC, is the amount of up-down bouncing the body makes while running. It is measured in millimeters.</p>
+
+<p>The cadence, GCT and VOSC density profiles do not seem change much during the course of a run. There are some humps in the plot mainly because I did intervals at hard and severe fatigue levels and I maintain a higher cadence during these.</p>
+
+<p>Stride (the length of each step) is the only measurement that shows a clear shift towards lower values as fatigue increases.</p>
+
+<hr />
+
+<div class="figure"><img src="/img/a005/cad-density.svg" alt="" />
+ <p class="caption"></p></div>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td>Fatigue Level</td>
+    <td>Mean Cadence (SPM)</td>
+    <td>StdDev</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>none</td>
+    <td>83.60</td>
+    <td>2.96</td></tr>
+   <tr>
+    <td>mild</td>
+    <td>83.33</td>
+    <td>3.90</td></tr>
+   <tr>
+    <td>moderate</td>
+    <td>82.96</td>
+    <td>3.31</td></tr>
+   <tr>
+    <td>heavy</td>
+    <td>82.65</td>
+    <td>2.96</td></tr>
+   <tr>
+    <td>severe</td>
+    <td>83.13</td>
+    <td>2.72</td></tr></tbody></table></div>
+
+<hr />
+
+<div class="figure"><img src="/img/a005/stride-density.svg" alt="" />
+ <p class="caption"></p></div>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td>Fatigue Level</td>
+    <td>Mean Stride (meters)</td>
+    <td>StdDev</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>none</td>
+    <td>1.10</td>
+    <td>0.0714</td></tr>
+   <tr>
+    <td>mild</td>
+    <td>1.12</td>
+    <td>0.0808</td></tr>
+   <tr>
+    <td>moderate</td>
+    <td>1.11</td>
+    <td>0.0783</td></tr>
+   <tr>
+    <td>heavy</td>
+    <td>1.09</td>
+    <td>0.0759</td></tr>
+   <tr>
+    <td>severe</td>
+    <td>1.07</td>
+    <td>0.0767</td></tr></tbody></table></div>
+
+<hr />
+
+<div class="figure"><img src="/img/a005/gct-density.svg" alt="" />
+ <p class="caption"></p></div>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td>Fatigue Level</td>
+    <td>Mean GCT (ms)</td>
+    <td>StdDev</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>none</td>
+    <td>284</td>
+    <td>18.42</td></tr>
+   <tr>
+    <td>mild</td>
+    <td>285</td>
+    <td>19.08</td></tr>
+   <tr>
+    <td>moderate</td>
+    <td>286</td>
+    <td>16.48</td></tr>
+   <tr>
+    <td>heavy</td>
+    <td>289</td>
+    <td>15.78</td></tr>
+   <tr>
+    <td>severe</td>
+    <td>287</td>
+    <td>15.00</td></tr></tbody></table></div>
+
+<hr />
+
+<div class="figure"><img src="/img/a005/vosc-density.svg" alt="" />
+ <p class="caption"></p></div>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td>Fatigue Level</td>
+    <td>Mean VOSC (mm)</td>
+    <td>StdDev</td></tr></thead>
+  <tbody>
+   <tr>
+    <td>none</td>
+    <td>67</td>
+    <td>5.13</td></tr>
+   <tr>
+    <td>mild</td>
+    <td>69</td>
+    <td>5.50</td></tr>
+   <tr>
+    <td>moderate</td>
+    <td>69</td>
+    <td>4.82</td></tr>
+   <tr>
+    <td>heavy</td>
+    <td>69</td>
+    <td>4.55</td></tr>
+   <tr>
+    <td>severe</td>
+    <td>68</td>
+    <td>4.98</td></tr></tbody></table></div>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>I&rsquo;m not sure what conclusions to draw from this data, apart from the fact that the plots look pretty. The only running form metric that seems to change as I get more tired is the stride, which gets shorter.</p>
+
+<p>The script used to generate the plots in this blog post is available <a href="https://gist.github.com/alex-hhh/5743eb50e792aae6c9859c50f62b5517">here</a></p>
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2017/11/fatigue-and-running-form.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2017/11/fatigue-and-running-form.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2017/12/arduino-inclinometer.html">&larr; <em>Arduino Inclinometer</em></a>
+    </li>
+    <li class="next">
+      <a href="/2017/11/quantifying-fatigue.html"><em>Quantifying Fatigue</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

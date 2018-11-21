@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Arduino Inclinometer Improvements</title>
+    <meta name="description" content="After using the inclinometer for a while, it became apparent that the functionality was too basic. I extended it, so the unit tracks maximum pitch and roll values seen, displays the pitch and roll direction and can perform calibration on demand, so the un...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="arduino">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html">
+    <link rel="next" href="/2018/02/interactive-overlays-with-the-racket-plot-package.html">
+    <link rel="prev" href="/2018/03/interactive-overlays-with-the-racket-plot-package-update.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Arduino Inclinometer Improvements</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-03-09" pubdate="true">2018-03-09</time> :: <span class="tags"><a href="/tags/arduino.html">arduino</a></span></p>
+  </header>
+
+<p>After using the <a href="/2017/12/arduino-inclinometer.html">inclinometer</a> for a while, it became apparent that the functionality was too basic. I extended it, so the unit tracks maximum pitch and roll values seen, displays the pitch and roll direction and can perform calibration on demand, so the unit does not have to acquire its orientation each time it is started up. I also built a better enclosure for it.</p>
+<!-- more-->
+
+<div class="figure"><img src="/img/a011/inclinometer-installed.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="source-code">Source code</h2>
+
+<p>The source code for this project is available on <a href="https://github.com/alex-hhh/Arduino_Inclinometer">GitHub</a>, a <a href="/2017/12/arduino-inclinometer.html">previous blog post</a> describes the parts list and hardware connections, the required Arduino libraries and how to build the software. It might be a good idea to at least briefly read the previous blog post, as this one does not go into the details explained there.</p>
+
+<h2 id="new-enclosure">New enclosure</h2>
+
+<p>I was not happy with the original enclosure that I used for this project, as it was too big for the actual board. I also, unwisely, soldered the buzzer onto the PCB assembly and the buzzer was too tall, so I had to cut out a bit of the box to make room for the buzzer. The end result was not very nice, so I decided to look for another enclosure.</p>
+
+<p>I spent a lot of time looking for plastic enclosures in electronics shops, but all the ones I found were either too big or too small. In the end, I found some mints in a tin box in a lolly shop, and the tin box was the exact size needed for my project. So the tin box only cost about $5.50 and I also got some mints.</p>
+
+<p>The new box fit perfectly the two new buttons (reset and calibrate) plus the PCB assembly and the buzzer, which I removed from the board and attached it to some wires, so the placement was more flexible.</p>
+
+<hr />
+
+<div id="myCarousel" class="carousel slide" data-ride="carousel"><!-- Indicators--> 
+ <ol class="carousel-indicators">
+  <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+  <li data-target="#myCarousel" data-slide-to="1"></li>
+  <li data-target="#myCarousel" data-slide-to="2"></li>
+  <li data-target="#myCarousel" data-slide-to="3"></li>
+  <li data-target="#myCarousel" data-slide-to="4"></li>
+  <li data-target="#myCarousel" data-slide-to="5"></li>
+  <li data-target="#myCarousel" data-slide-to="6"></li>
+  <li data-target="#myCarousel" data-slide-to="7"></li>
+  <li data-target="#myCarousel" data-slide-to="8"></li>
+  <li data-target="#myCarousel" data-slide-to="9"></li>
+  <li data-target="#myCarousel" data-slide-to="10"></li></ol> <!-- Wrapper for slides--> 
+ <div class="carousel-inner">
+  <div class="item active"><img src="/img/a011/assembly-1.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-2.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-3.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-4.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-5.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-6.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-7.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-8.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-9.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-10.jpg" alt="Accelerometer Assembly" /></div> 
+  <div class="item"><img src="/img/a011/assembly-11.jpg" alt="Accelerometer Assembly" /></div></div> <!-- Left and right controls--> <a class="left carousel-control" href="#myCarousel" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span> <span class="sr-only">Previous</span></a> <a class="right carousel-control" href="#myCarousel" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span> <span class="sr-only">Next</span></a></div>
+
+<h2 id="making-room-in-the-data-memory">Making room in the data memory</h2>
+
+<p>The first version of the program used most of the available data memory on the Arduino Nano board, with only 311 bytes remaining for function calls and local variables:</p>
+
+<blockquote>
+ <p>Sketch uses 19538 bytes (63%) of program storage space. Maximum is 30720 bytes.</p>
+ <p>Global variables use 1737 bytes (84%) of dynamic memory, leaving 311 bytes for local variables. Maximum is 2048 bytes.</p>
+ <p>Low memory available, stability problems may occur.</p></blockquote>
+
+<p>Before I could make any enhancements, which would use even more data memory, I had to free up some of this data memory. One thing I found out about the ATmega328P chip, which is what the Arduino Nano uses, is that string constants are stored in data space. For example, a simple <code>Serial.println("Hello")</code>, uses 6 bytes of data space (the string &ldquo;Hello&rdquo; and the terminating 0). Six bytes might not seem much on a normal computer, but the ATmega328P chip only has 2048 bytes of data memory.</p>
+
+<p>The ATmega328P has a memory space to hold programs and a memory space to hold data. With my sketch, I had 11&prime;182 bytes of program space left and I looked for a way for it to store some data. The program space cannot be changed at runtime, so it can only hold constant data, but the strings are constants, so they could be stored there.</p>
+
+<p>The Arduino programing environment has the <a href="https://www.arduino.cc/reference/en/language/variables/utilities/progmem/">PROGMEM</a> construct, which instructs the compiler to store the data in program memory. Unfortunately, this makes accessing the data more complicated, as the data stored in program memory cannot be accessed directly.</p>
+
+<p>To put the constant strings into program memory, each string has to be declared using <code>PROGMEM</code> and all the strings have to be put in a separate table, <code>string_table</code>, which is also declared using <code>PROGMEM</code>. To print out a string, first it has to be copied back into a local buffer (which is in data memory), using <code>strcpy_P</code>, than it can be used. I wrote the <code>oled_print_from_progmem</code> function which wraps all this process and can be used to display constant strings, it uses an index instead of the string directly, but I also defined convenient constants for these strings.</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="k">const</span> <span class="kt">char</span> <span class="n">string_0</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="s">"Roll"</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="n">string_1</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="s">"Pitch"</span><span class="p">;</span> <span class="c1">// ... other strings ommited</span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">string_table</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">string_0</span><span class="p">,</span> <span class="n">string_1</span><span class="p">,</span> <span class="c1">// ... other strings ommited</span>
+<span class="p">};</span>
+
+<span class="c1">// Name the string indices, for easy of use</span>
+<span class="cp">#define ROLL_STR 0</span>
+<span class="cp">#define PITCH_STR 1</span>
+
+<span class="kt">void</span> <span class="nf">oled_print_from_progmem</span><span class="p">(</span><span class="kt">int</span> <span class="n">text_size</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">string_index</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span>
+    <span class="n">oled</span><span class="p">.</span><span class="n">setTextSize</span><span class="p">(</span><span class="n">text_size</span><span class="p">);</span>
+    <span class="n">oled</span><span class="p">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+    <span class="n">strcpy_P</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">pgm_read_word</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">string_table</span><span class="p">[</span><span class="n">string_index</span><span class="p">])));</span>
+    <span class="n">oled</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The strings where using the most of the memory, however, I also put the CRC constant table in PROGMEM, this is used by the CRC function that validates the calibration stored in EEPROM (this is described below).</p>
+
+<p>The end result is that, after adding functionality, and more data to the program, I still ended up 347 data memory available, compared with 311 bytes when I started:</p>
+
+<blockquote>
+ <p>Sketch uses 21474 bytes (69%) of program storage space. Maximum is 30720 bytes.</p>
+ <p>Global variables use 1701 bytes (83%) of dynamic memory, leaving 347 bytes for local variables. Maximum is 2048 bytes.</p>
+ <p>Low memory available, stability problems may occur.</p></blockquote>
+
+<h2 id="updated-display-interface">Updated display interface</h2>
+
+<p>The display of the unit was updated to show more information: the direction of the pitch and roll (up, down, left or right) is now displayed if the angle exceeds 1 degree, the maximum roll and pitch angles are also displayed. A &ldquo;hold max&rdquo; function will prevent the maximum angles to be updated, if that is the case, the max angles will blink.</p>
+
+<div class="figure"><img src="/img/a011/display.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<h3 id="obtaining-forward-backward-and-left-right-information-for-pitch-and-roll-angles">Obtaining forward-backward and left-right information for pitch and roll angles</h3>
+
+<p>The previous code could calculate the roll and pitch angles, but it would not display the direction. That is, it might display a 2 degree roll but it would not show if it was left or right. For large angles, the direction is obvious for anyone who sits in the car, but for small angles, it is not. I extended the <code>calculate_pitch</code> function to return a negative angle if the vehicle is pitched up and a positive angle if it is pitched down. Similarly, the <code>calculate_roll</code> function was extended to return a negative angle for a left roll and a positive angle for a right roll. The display code was than updated to look at the sign of these angles and display the &ldquo;up&rdquo;, &ldquo;down&rdquo;, &ldquo;left&rdquo; and &ldquo;right&rdquo; strings, as appropriate.</p>
+
+<p>When using the <a href="https://en.wikipedia.org/wiki/Dot_product">dot product</a> to calculate angles, the angles always come out as positive, but we can look at the individual components of the acceleration vector to determine the orientation:</p>
+
+<ul>
+ <li>the X axis is the forward-backward axis, so if the X component of the vector  is positive, the &ldquo;down&rdquo; direction is pointing up, so the vehicle is pitched  upwards</li>
+ <li>the Y axis is the left-right axis, so if the Y component of the vector is  positive, the &ldquo;down&rdquo; direction is pointing to the right, so the vehicle is  rolling to the right.</li></ul>
+
+<p>The updated code is shown below, <a href="/2017/12/arduino-inclinometer.html#calculating-pitch-and-roll">this</a> section shows how the angles are actually calculated.</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kt">float</span> <span class="nf">calculate_pitch</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="p">{</span>
+    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
+    <span class="kt">float</span> <span class="n">pitch_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
+    <span class="n">vnormalize</span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">pitch</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">pitch</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pitch_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">angle</span><span class="p">;</span>                   <span class="c1">// up</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">angle</span><span class="p">;</span>                  <span class="c1">// down</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">calculate_roll</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="p">{</span>
+    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
+    <span class="kt">float</span> <span class="n">roll_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
+    <span class="n">vnormalize</span><span class="p">(</span><span class="n">roll_dir</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">roll</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">roll</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">roll_dir</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">angle</span><span class="p">;</span>                  <span class="c1">// right</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="n">angle</span><span class="p">;</span>                   <span class="c1">// left</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="keep-track-of-the-maximum-pitch-and-roll-angle">Keep track of the maximum pitch and roll angle</h3>
+
+<p>The unit will keep track of the maximum pitch and roll angles and will show these angles on the display. The angles can be in &ldquo;hold mode&rdquo; when they are not updated (in which case they will blink) and they can also be reset. Pressing the reset button for a short interval will toggle &ldquo;hold mode&rdquo; on and off. Pressing and holding the reset button for about a second will reset the max roll and pitch angles.</p>
+
+<p>Updating the maximum angles is simple, they are stored in the <code>max_pitch</code> and <code>max_roll</code> global variables and are updated in the <code>on_running</code> function based on the current pitch and roll angle (they are only updated if the <code>HOLD_MAX_FLAG</code> is not set):</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kt">float</span> <span class="n">max_roll</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">float</span> <span class="n">max_pitch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">on_running</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="p">{</span>
+    <span class="c1">// ... other on_running() code ommited</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span> <span class="n">IS_FLAG_SET</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_pitch</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">max_pitch</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_roll</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">max_roll</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The more interesting part is dealing with the reset button. The reset button is wired to pin 11 on the Arduino, using a pull up resistor. As a side note, I only found out about the internal Arduino pull up resistors after I soldered my own external resistors to the board, if I knew about them earlier it would have saved me the trouble of soldering my own resistors. The reset button is active low, meaning that a <code>digitalRead</code> for the pin will read 0 if the button is pressed and 1 if the button is released.</p>
+
+<p>Handling the reset button is done in the <code>handle_reset_button</code> function, which is called repeatedly as part of the <code>loop</code> function of the Arduino program.</p>
+
+<p>To check if the button has been held down for about one second, the <code>reset_hold_time</code> global variable is incremented by <code>delta_time</code> each time the button is found to be pressed. Each time the button is released, <code>reset_hold_time</code> is set back to 0, so that the reset time is only counted for a single long press of the reset button. When <code>reset_hold_time</code> exceeds <code>HOLD_INTERVAL</code>, the maximum pitch and roll angles are set back to 0. <code>delta_time</code> represents the amount of time passed since the last <code>loop</code> invocation, it is set in the <code>update_timer</code> function.</p>
+
+<p>When the button is released, that is, <code>digitalRead</code> reads a 1, the <code>HOLD_MAX_FLAG</code> is toggled, to enable or disable the update of the maximum roll and pitch angles. Before the flag is toggled, the code checks to see if the button was held down for a short period, by checking the value in <code>reset_hold_time</code>, this prevents accidental presses and helps with debouncing the signal from the button.</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
+<span class="cp">#define RESET_PIN 11</span>
+<span class="kt">int32_t</span> <span class="n">reset_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">handle_reset_button</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">RESET_PIN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">reset_hold_time</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">HOLD_INTERVAL</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">reset_hold_time</span> <span class="o">&lt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">TOGGLE_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">reset_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">reset_hold_time</span> <span class="o">+=</span> <span class="n">delta_time</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">reset_hold_time</span> <span class="o">&gt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">max_pitch</span> <span class="o">=</span> <span class="n">max_roll</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="on-demand-calibration">On demand calibration</h3>
+
+<p>The inclinometer unit can be installed in any position inside a vehicle and can determine its own orientation. This simplifies the installation process, as the alternative would have been to install the accelerometer unit aligned with the forward direction of the car. In the first version of the software, the unit would determine its own orientation every time it is powered up, however this requires the vehicle to be on flat ground when the unit is powered up and this is not always possible.</p>
+
+<p>To avoid this situation, the new software will save the orientation matrix to EEPROM and restore it at power up. The unit will only enter calibration when the calibrate button is held down. The calibrate button is wired to pin 12 on the Arduino Nano board with a pull up resistor, just like the reset button. A similar technique is used to make sure the button is held down for one second before the unit enters calibration mode. The <code>handle_calibrate_button</code> works like the <code>handle_reset_button</code> function, but, since the calibrate button has no function when it is held down briefly, the resulting code is simpler.</p>
+
+<p>To enter calibration mode, the function will set the state of the program to <code>STATE_ACQUIRE_DOWN_DIRECTION</code>, which is the first calibration step, and will also reset the internal state of the program.</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
+<span class="cp">#define CALIBRATE_PIN 12</span>
+<span class="kt">int32_t</span> <span class="n">calibrate_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">handle_calibrate_button</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">CALIBRATE_PIN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">calibrate_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">calibrate_hold_time</span> <span class="o">+=</span> <span class="n">delta_time</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">calibrate_hold_time</span> <span class="o">&gt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span>
+        <span class="c1">// reset the Z-Axis so it is acquired again</span>
+        <span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span>
+        <span class="c1">// Clear all state flags</span>
+        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
+        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span>
+        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The calibration data are the <code>xaxis</code>, <code>yaxis</code> and <code>zaxis</code> vectors determined from the calibration. These are saved to EEPROM at the end of calibration and restored when the unit is powered up. To prevent against data corruption, for example, when the unit looses power while writing new calibration data to EEPROM, the data is protected by a 16bit CRC checksum, and will only be used if it is valid.</p>
+
+<div class="brush: C">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="cp">#define EEPROM_CALIBRATION_ADDRESS (0)</span>
+
+<span class="k">struct</span> <span class="n">orientation_t</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">xaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+    <span class="kt">float</span> <span class="n">yaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+    <span class="kt">float</span> <span class="n">zaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="p">}</span> <span class="n">orientation</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">save_calibration_to_eeprom</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">crc</span> <span class="o">=</span> <span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span>
+    <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span> <span class="n">orientation</span><span class="p">);</span>
+    <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span> <span class="n">crc</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">restore_calibration_from_eeprom</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">stored_crc</span><span class="p">;</span>
+    <span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span> <span class="n">orientation</span><span class="p">);</span>
+    <span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span> <span class="n">stored_crc</span><span class="p">);</span>
+    <span class="kt">uint16_t</span> <span class="n">crc</span> <span class="o">=</span> <span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">crc</span> <span class="o">==</span> <span class="n">stored_crc</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_RUNNING</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span> <span class="c1">// reset the Z-Axis so it is acquired again</span>
+        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<div class="figure"><img src="/img/a011/workbench.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<p>This has been an interesting project for me. As an experienced software engineer, the software itself was not a big challenge, but soldering everything together and preparing the enclosure was something that I did for the first time. You can see that from the quality of my soldering and the enclosure cutouts, but I did gain some experience from doing it. On the software side, I was pleasantly surprised by the amount and complexity of the code that the Arduino environment can handle. When I first contemplated the project I thought, I would have to leave out the nice Arduino libraries and program everything as low level AVR code to access the hardware registers and use fixed point math for the vector and matrix calculations. However, this was not the case: the entire program is written using high level libraries and functions, which is very nice.</p>
+
+<p>The source code for this project is available on <a href="https://github.com/alex-hhh/Arduino_Inclinometer">GitHub</a>, a <a href="/2017/12/arduino-inclinometer.html">previous blog post</a> describes the parts list and hardware connections, the required Arduino libraries and how to build the software.</p>
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2018/03/interactive-overlays-with-the-racket-plot-package-update.html">&larr; <em>Interactive Overlays With the Racket Plot Package &mdash; Update</em></a>
+    </li>
+    <li class="next">
+      <a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html"><em>Interactive Overlays With the Racket Plot Package</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

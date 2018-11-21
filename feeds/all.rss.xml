@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
+  <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
+  <link>http://alex-hhh.github.io/index.html</link>
+  <lastBuildDate>Mon, 29 Oct 2018 10:34:41 UT</lastBuildDate>
+  <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 3)</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-3-html</guid>
+   <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;code&gt;pasteboard%&lt;/code&gt;object is an editor of &lt;code&gt;snip%&lt;/code&gt; objects and it implements some features that make sense for an editor: for example, you can select multiple snips and drag them around with the mouse, and you can move selected snips using the keyboard, you can also add any kind of snip, not just chess pieces to the pasteboard. Since none of these features are useful or desirable for a chess board game we will look at how to disable them.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 2)</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-2-html</guid>
+   <pubDate>Fri, 19 Oct 2018 13:15:34 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a continuation of the &lt;a href="/2018/10/chess-game-using-racket-s-pasteboard.html"&gt;previous blog post&lt;/a&gt;, where the racket &lt;code&gt;pasteboard%&lt;/code&gt; features are explored by implementing a Chess Game Board. In this blog post we look at how to restrict piece movements to chess board squares, permit only valid moves and implement turn based game play.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-html</guid>
+   <pubDate>Fri, 12 Oct 2018 11:35:13 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket GUI library provides an &amp;ldquo;editor toolkit&amp;rdquo; which can be used to implement programs that use an interactive graphical canvas where objects can be moved around with the mouse. This toolkit has &lt;a href="http://docs.racket-lang.org/gui/editor-overview.html"&gt;good reference documentation&lt;/a&gt;, however this documentation can be somewhat overwhelming, and it is not always clear how to begin writing such interactive application, or how to achieve some basic functionality, so I wrote a tutorial on how to implement a chess board game in Racket using the &lt;code&gt;pasteboard%&lt;/code&gt; and &lt;code&gt;snip%&lt;/code&gt; classes which are part of the GUI library.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Racket Data Frame Package</title>
+   <link>http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-08-racket-data-frame-package-html</guid>
+   <pubDate>Sat, 04 Aug 2018 22:59:45 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;A Racket implementation of a data frame structure, which allows efficient manipulation of data that is organized in rows and columns. It was originally written as part of the &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; project, than moved into its own Racket package.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Racket GUI Widget to display maps based on OpenStreetMap tiles</title>
+   <link>http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-06-a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles-html</guid>
+   <pubDate>Tue, 12 Jun 2018 09:06:17 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a Racket GUI Widget which can display maps based on Open Street Map tiles &amp;mdash; it allows embedding maps in Racket GUI applications. I originally wrote this code as part of the ActivityLog2 project and, since I wanted to use it in other projects, I decided to move it onto a separate package and publish it to the Racket package server.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Running and Cycling Workout Editor</title>
+   <link>http://alex-hhh.github.io/2018/05/running-and-cycling-workout-editor.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-05-running-and-cycling-workout-editor-html</guid>
+   <pubDate>Sun, 27 May 2018 00:37:52 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;A Garmin fitness device can use workouts during a bike or run activity: they are a collection of steps with a duration and intensity (such as heart rate, pace or power). While running or biking, the device keeps track of the duration and will sound an alarm if the intensity is too high or too low. Workouts can be created on the Garmin Connect website, but I decided to write my own application for creating workouts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/running-and-cycling-workout-editor.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Arduino 433Mhz Receiver -- Reading Keyfobs</title>
+   <link>http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-reading-keyfobs-html</guid>
+   <pubDate>Fri, 18 May 2018 23:45:18 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package -- Update</title>
+   <link>http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-03-interactive-overlays-with-the-racket-plot-package-update-html</guid>
+   <pubDate>Tue, 20 Mar 2018 02:12:10 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I announced my &lt;a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html"&gt;original&lt;/a&gt; plot overlay implementation on the &lt;a href="https://groups.google.com/forum/#!forum/racket-users"&gt;Racket Users&lt;/a&gt; mailing list and the Racket developers were enthusiastic about these improvements and they suggested that I contribute them to the main plot package. They also suggested a different approach for implementing this feature, which results in more flexibility for implementing overlays.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Arduino Inclinometer Improvements</title>
+   <link>http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-03-arduino-inclinometer-improvements-html</guid>
+   <pubDate>Fri, 09 Mar 2018 10:07:27 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;After using the &lt;a href="/2017/12/arduino-inclinometer.html"&gt;inclinometer&lt;/a&gt; for a while, it became apparent that the functionality was too basic. I extended it, so the unit tracks maximum pitch and roll values seen, displays the pitch and roll direction and can perform calibration on demand, so the unit does not have to acquire its orientation each time it is started up. I also built a better enclosure for it.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package</title>
+   <link>http://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-02-interactive-overlays-with-the-racket-plot-package-html</guid>
+   <pubDate>Sat, 03 Feb 2018 00:08:05 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="http://docs.racket-lang.org/plot/index.html"&gt;Racket plot package&lt;/a&gt; produces interactive &lt;code&gt;snip%&lt;/code&gt; objects which allow zooming of the plot area. While this is a cool and sometimes useful feature, the functionality is hard coded in the &lt;code&gt;plot-snip%&lt;/code&gt; class inside the package. I extended the package to allow the user to customize the interactive features of the plot, to display additional information when the user hovers the mouse over the plot.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Changing Built-in Racket Packages</title>
+   <link>http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-01-changing-built-in-racket-packages-html</guid>
+   <pubDate>Mon, 29 Jan 2018 11:12:09 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;To modify one of the Racket built in packages, a local copy of the package has to be set up first. This is a surprisingly complicated task and I spent more time on it than I would like to admit. To save future me and others some time, I wrote up a set of instructions on how to do it.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Equipment Usage and Costs</title>
+   <link>http://alex-hhh.github.io/2018/01/equipment-usage-and-costs.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-01-equipment-usage-and-costs-html</guid>
+   <pubDate>Sun, 14 Jan 2018 12:23:19 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I paid $600 for my Garmin FR920 GPS watch, and since I got it, I bought six pairs of running shoes totaling $1124 and went to the swimming pool 153 times: at approximately $5 for a swim session, this is $765 spend on swimming. While the FR920 cost more than a single pair of running shoes or a single swimming session, it actually comes out as cheaper to own than the previous two.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/01/equipment-usage-and-costs.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Running and Outdoor Temperature</title>
+   <link>http://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-12-running-and-outdoor-temperature-html</guid>
+   <pubDate>Thu, 21 Dec 2017 09:09:45 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;It is no surprise to anyone who tried to run in the heat that it is harder than when the outdoor temperature is more pleasant. But how much harder is it, and how can this be quantified? With summer in full swing in the southern hemisphere, I decided to take a look at how running is affected by temperature.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Arduino Inclinometer</title>
+   <link>http://alex-hhh.github.io/2017/12/arduino-inclinometer.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-12-arduino-inclinometer-html</guid>
+   <pubDate>Sat, 09 Dec 2017 03:09:26 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;My brother-in-law got himself a 4WD and wanted an inclinometer module to display the roll and pitch of the vehicle while going on his adventures. I build one using an Arduino Nano and an accelerometer module.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/12/arduino-inclinometer.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Fatigue and Running Form</title>
+   <link>http://alex-hhh.github.io/2017/11/fatigue-and-running-form.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-11-fatigue-and-running-form-html</guid>
+   <pubDate>Tue, 28 Nov 2017 11:06:57 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;My Garmin FR920 watch keeps track of &lt;em&gt;running form&lt;/em&gt; related measurements: Cadence, Stride, Ground Contact Time and Vertical Oscillation. Given that I collected a lot of data during my last Marathon training, I decided to have a look at how running form changes as I get more tired during a run.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/fatigue-and-running-form.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Quantifying Fatigue</title>
+   <link>http://alex-hhh.github.io/2017/11/quantifying-fatigue.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-11-quantifying-fatigue-html</guid>
+   <pubDate>Sat, 25 Nov 2017 01:07:30 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I needed a way to measure fatigue as it accumulates during a running session. There is no actual &amp;ldquo;fatigue&amp;rdquo; measurement that I&amp;rsquo;m aware of, so I had to find a substitute.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/quantifying-fatigue.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Bike Trainer</title>
+   <link>http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-11-bike-trainer-html</guid>
+   <pubDate>Mon, 13 Nov 2017 21:58:09 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Marathon Training 2017 Statistics</title>
+   <link>http://alex-hhh.github.io/2017/09/marathon-training-2017-statistics.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-09-marathon-training-2017-statistics-html</guid>
+   <pubDate>Thu, 21 Sep 2017 12:37:29 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;In June 2017 I completed my second Marathon. While the time was not what I expected, I still managed to get a sub 4 hour time, earning a yellow ribbon finishers medal. Let&amp;rsquo;s look at some statistics from my training for this race.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/09/marathon-training-2017-statistics.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Introducing ActivityLog2</title>
+   <link>http://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-09-introducing-activitylog2-html</guid>
+   <pubDate>Fri, 15 Sep 2017 12:26:56 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; is a program that can analyze data recorded by fitness devices such as swim, bike and run sessions. It can be used as a training log and to gain insights about your training using reports and trend charts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>

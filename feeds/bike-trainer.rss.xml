@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>The Blog of Alex Harsányi: Posts tagged 'bike trainer'</title>
+  <description>The Blog of Alex Harsányi: Posts tagged 'bike trainer'</description>
+  <link>http://alex-hhh.github.io/tags/bike-trainer.html</link>
+  <lastBuildDate>Mon, 13 Nov 2017 21:58:09 UT</lastBuildDate>
+  <pubDate>Mon, 13 Nov 2017 21:58:09 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>Bike Trainer</title>
+   <link>http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=bike-trainer&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-11-bike-trainer-html</guid>
+   <pubDate>Mon, 13 Nov 2017 21:58:09 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=bike-trainer&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>

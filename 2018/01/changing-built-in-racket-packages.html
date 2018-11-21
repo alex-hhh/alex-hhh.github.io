@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Changing Built-in Racket Packages</title>
+    <meta name="description" content="To modify one of the Racket built in packages, a local copy of the package has to be set up first. This is a surprisingly complicated task and I spent more time on it than I would like to admit. To save future me and others some time, I wrote up a set of ...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html">
+    <link rel="next" href="/2018/01/equipment-usage-and-costs.html">
+    <link rel="prev" href="/2018/02/interactive-overlays-with-the-racket-plot-package.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(8)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Changing Built-in Racket Packages</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-01-29" pubdate="true">2018-01-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>To modify one of the Racket built in packages, a local copy of the package has to be set up first. This is a surprisingly complicated task and I spent more time on it than I would like to admit. To save future me and others some time, I wrote up a set of instructions on how to do it.</p>
+<!-- more-->
+
+<p>In my case, I wanted to add some features to the <a href="https://docs.racket-lang.org/plot/index.html">plot</a> package which ships by default with a Racket installation. I started by following the instructions in this <a href="https://groups.google.com/forum/#!starred/racket-users/eP6QLUD8DlA">post</a> on the Racket Users mailing list, but it was missing some information, which must have seemed obvious to experienced Racket developers. The steps below contain a hopefully complete list of steps. They work on a Windows 10 machine, with the user having no administrator privileges.</p>
+
+<h2 id="switch-to-the-development-version-of-the-plot-package">Switch to the development version of the plot package</h2>
+
+<p>The plot repository actually contains six packages: &ldquo;plot&rdquo;, &ldquo;plot-compat&rdquo;, &ldquo;plot-doc&rdquo;, &ldquo;plot-lib&rdquo;, &ldquo;plot-gui-lib&rdquo;, and &ldquo;plot-test&rdquo;. They are installed as part of the normal Racket installation, which racket calls &ldquo;installation scope&rdquo;. To modify that installation, administrator privileges are needed. Alternatively, the packages can be installed in the &ldquo;user scope&rdquo;, as shown in the commands below. Running these commands below will some time as packages and dependencies are rebuilt:</p>
+
+<pre><code>raco pkg install --force --scope user --catalog https://pkgs.racket-lang.org plot
+raco pkg install --force --scope user --catalog https://pkgs.racket-lang.org plot-lib
+raco pkg install --force --scope user --catalog https://pkgs.racket-lang.org plot-gui-lib
+raco pkg install --force --scope user --catalog https://pkgs.racket-lang.org plot-doc</code></pre>
+
+<h2 id="clone-the-plot-repository-from-github-and-link-the-packages">Clone the plot repository from GitHub and link the packages</h2>
+
+<p>Next step is to clone the plot package using the command below:</p>
+
+<pre><code>git clone https://github.com/racket/plot.git
+</code></pre>
+
+<p>This will give access to the source code and we can now tell racket to use the source code inside the repository for the packages. This is done using a &ldquo;raco pkg update&rdquo; command. Note that there is a trailing slash at the end of the package names: without it, the package name will be looked up in the catalog instead of the specified directory:</p>
+
+<pre><code>cd plot
+raco pkg update plot-lib/
+raco pkg update plot-gui-lib/</code></pre>
+
+<p>Finally, we can check that the plot packages are indeed installed in a git clone and can be modified:</p>
+
+<pre><code>$ raco pkg show --all --long --rx 'plot-.*'
+Installation-wide:
+ Package[*=auto]    Checksum                                    Source
+ plot-compat*       cfae0fb19a8c83d6f756cea9d9815f50bb170e05    (catalog "plot-compat")
+ plot-doc*          74c466400fb4ece74cef869f3d02d81fb176ff7c    (catalog "plot-doc")
+ plot-gui-lib*      7ef4b214d028877e9d0003e357d77bd7e94db967    (catalog "plot-gui-lib")
+ plot-lib*          8408c8d63a94ee2cd57713c40fd7e68525107014    (catalog "plot-lib")
+User-specific for installation "6.11":
+ Package         Checksum    Source
+ plot-gui-lib    #f          (link "C:\\Users\\Alex\\rkt-libs\\plot\\plot-gui-lib")
+ plot-lib        #f          (link "C:\\Users\\Alex\\rkt-libs\\plot\\plot-lib")</code></pre>
+
+<p>The &ldquo;plot-gui-lib&rdquo; and &ldquo;plot-lib&rdquo; packages are listed twice. This is because the second installation is in &ldquo;user scope&rdquo;. These packages are also listed as being linked to a directory where we cloned the plot package. Since the user scope is searched first, racket will load these packages from the git repository. The source for these packages can now be modified and racket will pick up the changes automatically.</p>
+
+<h2 id="switching-git-remotes">Switching git remotes</h2>
+
+<p>In the step above, the main plot package was cloned. Unless you have push access to that repository, it is better to switch to your own fork. Assuming the plot package is already forked on GitHub, the origin branch can be renamed to upstream:</p>
+
+<pre><code>git remote rename origin upstream
+</code></pre>
+
+<p>&hellip; and the fork added as the &ldquo;origin&rdquo; remote:</p>
+
+<pre><code>git add remote origin git@github.com:alex-hhh/plot.git
+</code></pre>
+  <footer>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html"
+       data-dnt="true">
+      "Tweet"</a>
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    <g:plusone size="medium" href="http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html"></g:plusone>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html">&larr; <em>Interactive Overlays With the Racket Plot Package</em></a>
+    </li>
+    <li class="next">
+      <a href="/2018/01/equipment-usage-and-costs.html"><em>Equipment Usage and Costs</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

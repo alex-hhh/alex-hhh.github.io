@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
+  <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
+  <link>http://alex-hhh.github.io/tags/racket.html</link>
+  <lastBuildDate>Mon, 29 Oct 2018 10:34:41 UT</lastBuildDate>
+  <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 3)</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-3-html</guid>
+   <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;code&gt;pasteboard%&lt;/code&gt;object is an editor of &lt;code&gt;snip%&lt;/code&gt; objects and it implements some features that make sense for an editor: for example, you can select multiple snips and drag them around with the mouse, and you can move selected snips using the keyboard, you can also add any kind of snip, not just chess pieces to the pasteboard. Since none of these features are useful or desirable for a chess board game we will look at how to disable them.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 2)</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-2-html</guid>
+   <pubDate>Fri, 19 Oct 2018 13:15:34 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a continuation of the &lt;a href="/2018/10/chess-game-using-racket-s-pasteboard.html"&gt;previous blog post&lt;/a&gt;, where the racket &lt;code&gt;pasteboard%&lt;/code&gt; features are explored by implementing a Chess Game Board. In this blog post we look at how to restrict piece movements to chess board squares, permit only valid moves and implement turn based game play.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard</title>
+   <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-html</guid>
+   <pubDate>Fri, 12 Oct 2018 11:35:13 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket GUI library provides an &amp;ldquo;editor toolkit&amp;rdquo; which can be used to implement programs that use an interactive graphical canvas where objects can be moved around with the mouse. This toolkit has &lt;a href="http://docs.racket-lang.org/gui/editor-overview.html"&gt;good reference documentation&lt;/a&gt;, however this documentation can be somewhat overwhelming, and it is not always clear how to begin writing such interactive application, or how to achieve some basic functionality, so I wrote a tutorial on how to implement a chess board game in Racket using the &lt;code&gt;pasteboard%&lt;/code&gt; and &lt;code&gt;snip%&lt;/code&gt; classes which are part of the GUI library.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Racket Data Frame Package</title>
+   <link>http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-08-racket-data-frame-package-html</guid>
+   <pubDate>Sat, 04 Aug 2018 22:59:45 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;A Racket implementation of a data frame structure, which allows efficient manipulation of data that is organized in rows and columns. It was originally written as part of the &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; project, than moved into its own Racket package.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Racket GUI Widget to display maps based on OpenStreetMap tiles</title>
+   <link>http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-06-a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles-html</guid>
+   <pubDate>Tue, 12 Jun 2018 09:06:17 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a Racket GUI Widget which can display maps based on Open Street Map tiles &amp;mdash; it allows embedding maps in Racket GUI applications. I originally wrote this code as part of the ActivityLog2 project and, since I wanted to use it in other projects, I decided to move it onto a separate package and publish it to the Racket package server.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package -- Update</title>
+   <link>http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-03-interactive-overlays-with-the-racket-plot-package-update-html</guid>
+   <pubDate>Tue, 20 Mar 2018 02:12:10 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I announced my &lt;a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html"&gt;original&lt;/a&gt; plot overlay implementation on the &lt;a href="https://groups.google.com/forum/#!forum/racket-users"&gt;Racket Users&lt;/a&gt; mailing list and the Racket developers were enthusiastic about these improvements and they suggested that I contribute them to the main plot package. They also suggested a different approach for implementing this feature, which results in more flexibility for implementing overlays.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package</title>
+   <link>http://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-02-interactive-overlays-with-the-racket-plot-package-html</guid>
+   <pubDate>Sat, 03 Feb 2018 00:08:05 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="http://docs.racket-lang.org/plot/index.html"&gt;Racket plot package&lt;/a&gt; produces interactive &lt;code&gt;snip%&lt;/code&gt; objects which allow zooming of the plot area. While this is a cool and sometimes useful feature, the functionality is hard coded in the &lt;code&gt;plot-snip%&lt;/code&gt; class inside the package. I extended the package to allow the user to customize the interactive features of the plot, to display additional information when the user hovers the mouse over the plot.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Changing Built-in Racket Packages</title>
+   <link>http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-01-changing-built-in-racket-packages-html</guid>
+   <pubDate>Mon, 29 Jan 2018 11:12:09 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;To modify one of the Racket built in packages, a local copy of the package has to be set up first. This is a surprisingly complicated task and I spent more time on it than I would like to admit. To save future me and others some time, I wrote up a set of instructions on how to do it.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/01/changing-built-in-racket-packages.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>
