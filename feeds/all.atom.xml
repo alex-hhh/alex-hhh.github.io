@@ -4,7 +4,17 @@
  <link rel="self" href="http://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="http://alex-hhh.github.io/index.html" />
  <id>urn:http-alex-hhh-github-io:-index-html</id>
- <updated>2018-10-29T10:34:41Z</updated>
+ <updated>2018-11-21T12:28:28Z</updated>
+ <entry>
+  <title type="text">An enhanced text-field% GUI control for Racket</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-11-an-enhanced-text-field-gui-control-for-racket-html</id>
+  <published>2018-11-21T12:28:28Z</published>
+  <updated>2018-11-21T12:28:28Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;The Racket GUI library provides a &lt;code&gt;text-field%&lt;/code&gt; control which allows input of arbitrary text, but only basic functionality by default. However, the class is designed to be extensible and in this article we&amp;rsquo;ll look at how to extend this control to provide a more modern input control with a cue text and input data validation.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Chess Game Using Racket's Pasteboard (part 3)</title>
   <link rel="alternate" href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=all&amp;utm_medium=Atom" />

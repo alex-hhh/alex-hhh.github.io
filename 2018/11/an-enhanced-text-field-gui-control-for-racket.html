@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>An enhanced text-field% GUI control for Racket</title>
+    <meta name="description" content="The Racket GUI library provides a `text-field%` control which allows input of arbitrary text, but only basic functionality by default. However, the class is designed to be extensible and in this article we'll look at how to extend this control to provide ...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html">
+    <link rel="next" href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(9)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>An enhanced text-field% GUI control for Racket</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-11-21" pubdate="true">2018-11-21</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>The Racket GUI library provides a <code>text-field%</code> control which allows input of arbitrary text, but only basic functionality by default. However, the class is designed to be extensible and in this article we&rsquo;ll look at how to extend this control to provide a more modern input control with a cue text and input data validation.</p>
+<!-- more-->
+
+<h2 id="an-initial-basic-example">An initial, basic example</h2>
+
+<p>For the purposes of this example, we&rsquo;ll use a simple application which asks the user to enter a valid date, in the format &ldquo;DD/MM/YYYY&rdquo;, and checks if this date is valid. This is the type of user interface that most people would come up with if they consulted the Racket GUI reference documentation.</p>
+
+<div class="figure"><img src="/img/a020/einput-a.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>The program is simple enough that it can be written with just a few lines of code:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">toplevel</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">frame%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Test Dialog"</span><span class="p">]))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">input</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">text-field%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Enter a <a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a> "</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">button-callback</span> <span class="n">b</span> <span class="n">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">text</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">input</span> <span class="n">get-value</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">string-&gt;date</span> <span class="n">text</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">message-box</span> <span class="s2">"OK"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"Date is valid: ~a"</span> <span class="n">text</span><span class="p">)</span> <span class="n">toplevel</span> <span class="o">'</span><span class="p">(</span><span class="ss">no-icon</span> <span class="ss">ok</span><span class="p">))</span>
+        <span class="p">(</span><span class="n">message-box</span> <span class="s2">"Error"</span> <span class="s2">"Invalid Date, expecting DD/MM/YYYY"</span> <span class="n">toplevel</span> <span class="o">'</span><span class="p">(</span><span class="ss">stop</span> <span class="ss">ok</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">button%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Check"</span><span class="p">]</span>
+     <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]</span>
+     <span class="p">[</span><span class="n">font</span> <span class="n">font</span><span class="p">]</span>
+     <span class="p">[</span><span class="n">callback</span> <span class="n">button-callback</span><span class="p">])</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">toplevel</span> <span class="n">show</span> <span class="no">#t</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The program creates a <code>frame%</code> object, named <code>toplevel</code> which is the toplevel window, than adds two controls: a <code>text-field%</code> named <code>input</code> and a button named <code>check</code>. The callback, which is invoked when the button is pressed, will retrieve the contents of the input field, check if it is a valid date and display a message informing the user if the date is valid or not.</p>
+
+<p>To make the application complete, we need to implement our own <code>string-&gt;date</code> function which converts the string from the text input into a date, or returns <code>#f</code> if the string is not a valid date. This function will be used to validate the user input:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">racket/date</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">string-&gt;date</span> <span class="n">str</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">t</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-trim))" style="color: inherit">string-trim</a></span> <span class="n">str</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">m</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/regexp.html#(def._((quote._~23~25kernel)._regexp-match))" style="color: inherit">regexp-match</a></span> <span class="s2">"^([0-9]+)/([0-9]+)/([0-9]+)$"</span> <span class="n">t</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">m</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">day</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._string-~3enumber))" style="color: inherit">string-&gt;number</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">m</span> <span class="mi">1</span><span class="p">)))</span>
+               <span class="p">(</span><span class="n">month</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._string-~3enumber))" style="color: inherit">string-&gt;number</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">m</span> <span class="mi">2</span><span class="p">)))</span>
+               <span class="p">(</span><span class="n">year</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._string-~3enumber))" style="color: inherit">string-&gt;number</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">m</span> <span class="mi">3</span><span class="p">))))</span>
+           <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/exns.html#(form._((lib._racket/private/more-scheme..rkt)._with-handlers))" style="color: inherit">with-handlers</a></span> <span class="p">(((</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="no">#t</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="no">#f</span><span class="p">)))</span>
+             <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/date..rkt)._find-seconds))" style="color: inherit">find-seconds</a></span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="n">day</span> <span class="n">month</span> <span class="n">year</span><span class="p">))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This program is not user friendly: while the input field accepts any text, the program will reject some inputs and only inform the user about the bad contents after a button is pressed. Plus, there is no hint in the dialog what the valid data format is, and adding this information to the form will just take up more space &mdash; this is not a big problem in a form with one input field, but most GUI forms have several inputs on them and there might not be enough room for such info to be displayed. We will look on how to address some of these usability problems in the sections below.</p>
+
+<h2 id="displaying-a-cue-text-when-the-input-field-is-empty">Displaying a cue text when the input field is empty</h2>
+
+<p>As space on a GUI form is at a premium, it makes sense to provide some additional hints inside the input field itself when the field is empty. In the previous example program, the user is asked to enter a date, however it is not clear what date format to use, it could be &ldquo;DD/MM/YYYY&rdquo;, &ldquo;MM/DD/YYYY&rdquo; or any one of the many other formats; we can improve the user experience by displaying the cue text &ldquo;DD/MM/YYYY&rdquo; when the field is empty, to indicate the format the date is expected.</p>
+
+<div class="figure"><img src="/img/a020/einput-b.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>To distinguish the cue text from the normal input field contents, the cue text will be displayed using a different color. The underlying <code>text%</code> object used by the <code>text-field%</code> field already supports text coloring by using <a href="http://docs.racket-lang.org/gui/style-delta_.html?q=style-delta%25">style-delta%</a> objects &mdash; these objects encapsulate a &ldquo;change&rdquo; to the way a piece of text is rendered, and they are simpler to use than specifying every aspect of the rendering (font, size, alignment, etc). We will define two style delta objects that change the color of the text in the input field: a gray one for the cue text and a black one for the actual input contents:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cue-text-style</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">grey-text</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">style-delta%</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">grey-text</span> <span class="n">set-delta-foreground</span> <span class="s2">"gray"</span><span class="p">)</span>
+    <span class="n">grey-text</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">normal-text-style</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">black-text</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">style-delta%</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">black-text</span> <span class="n">set-delta-foreground</span> <span class="s2">"black"</span><span class="p">)</span>
+    <span class="n">black-text</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>For the cue text itself, we need to extend the <code>text-field%</code> to add a mechanism that inserts the cue text when the field is empty and removes it just before the user starts to type some text into the field. The entire class definition is shown below, and while it is somewhat long, it is relatively easy to understand. First, the underlying foundation parts:</p>
+
+<ul>
+ <li>the class adds a <code>cue</code> init field, which will allow the user to specify what  the cue text will be.</li>
+ <li>the <code>callback</code> init field is also intercepted, this is used by the  <code>text-field%</code> to inform the user that the contents of the field have changed  &mdash; we will override this callback to prevent the user from receiving  notifications about the cue text.</li>
+ <li>a <code>showing-cue?</code> member variable is added, which will keep track of whether  the cue or the user input is shown in the field.</li>
+ <li>for convenience, the <code>editor</code> variable holds a reference to the  <code>text-field</code> internal <code>text%</code> field.</li>
+ <li>the <code>maybe-insert-cue</code> and <code>clear-cue</code> functions are responsible for  inserting the cue text or clearing it, and also changing the color of the  text for the cue.</li></ul>
+
+<p>To actually insert and remove the cue text at the right moments, we need to intercept a few methods and initialization steps:</p>
+
+<p>The <code>on-subwindow-char</code> is overridden to remove the cue text and maybe insert it back after each char is processed. Rather than trying to process each character and determine if it needs to insert or remove the cue, it is simpler to just remove it, let the parent class process the character and maybe re-insert it if the editor is still empty at the end. We cannot actually insert the cue text while the method is running, so the call to <code>maybe-insert-cue</code> is run using a <code>queue-callback</code> which will ensure that the call will be made in the toplevel event processing loop of the application. Note that the result of <code>on-subwindow-char</code> is important so we return it from our overridden method via <code>begin0</code>.</p>
+
+<p>The <code>text-field%</code> class has a <code>callback</code> field which can be used by the user to receive notifications each time the contents of the field changes. Since we don&rsquo;t want the user to receive notifications for inserting and removing the cue text, any user supplied callback is wrapped by <code>on-callback</code> and only invoked if the cue text is not showing.</p>
+
+<p>We also need to override the <code>set-value</code> and <code>get-value</code> methods to make sure that any values is not inserted over the cue text and the user cannot obtain the cue text as part of a <code>get-value</code> call. As with the <code>on-subwindow-char</code>, in <code>set-value</code> it is simpler to just clear the cue, let the parent class process the <code>set-value</code> call than maybe re-insert the cue text.</p>
+
+<p>Finally, inside the class there is a call to <code>maybe-insert-cue</code>, right at the end. This will run as part of the object initialization when a new <code>cue-text-field%</code> is created and will ensure that a cue will be inserted if the user does not pass a value for contents of the field at initialization time.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cue-text-field%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">text-field%</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init-field))" style="color: inherit">init-field</a></span> <span class="p">[</span><span class="n">cue</span> <span class="s2">""</span><span class="p">]</span> <span class="p">[</span><span class="n">callback</span> <span class="no">#f</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span> <span class="p">[</span><span class="n">callback</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">c</span> <span class="n">e</span><span class="p">)</span> <span class="p">(</span><span class="n">on-callback</span> <span class="n">c</span> <span class="n">e</span><span class="p">))])</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">showing-cue?</span> <span class="no">#f</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">editor</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-editor</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">maybe-insert-cue</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">showing-cue?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="p">(</span><span class="n">text-empty?</span> <span class="n">editor</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send*))" style="color: inherit">send*</a></span> <span class="n">editor</span>
+          <span class="p">(</span><span class="n">change-style</span> <span class="n">cue-text-style</span> <span class="o">'</span><span class="ss">start</span> <span class="o">'</span><span class="ss">end</span> <span class="no">#f</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">insert</span> <span class="n">cue</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">move-position</span> <span class="o">'</span><span class="ss">home</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">showing-cue?</span> <span class="no">#t</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">clear-cue</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">showing-cue?</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send*))" style="color: inherit">send*</a></span> <span class="n">editor</span>
+          <span class="p">(</span><span class="n">erase</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">change-style</span> <span class="n">normal-text-style</span> <span class="o">'</span><span class="ss">start</span> <span class="o">'</span><span class="ss">end</span> <span class="no">#f</span><span class="p">))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">showing-cue?</span> <span class="no">#f</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">clear-cue</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin0))" style="color: inherit">begin0</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">queue-callback</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="n">maybe-insert-cue</span><span class="p">)))))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-callback</span> <span class="n">control</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">callback</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a></span> <span class="n">showing-cue?</span><span class="p">))</span>
+        <span class="p">(</span><span class="n">callback</span> <span class="n">control</span> <span class="n">event</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">set-value</span> <span class="n">v</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">clear-cue</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">set-value</span> <span class="n">v</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">maybe-insert-cue</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-value</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">showing-cue?</span> <span class="s2">""</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">get-value</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="n">maybe-insert-cue</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>All that remains is to replace the input field in the initial application with a <code>cue-text-field%</code> and provide a cue text, and the cue text will be displayed. This is an improvement over the first example, but it still allows the user to enter an invalid date, so the validation code has to stay as before. The next section will look at how to improve this.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">input</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">cue-text-field%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Enter a <a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a> "</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">cue</span> <span class="s2">"DD/MM/YYYY"</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="validating-the-contents-of-the-input-field">Validating the contents of the input field</h2>
+
+<p>Another way to improve the user experience by providing data validation in the input field. While any value can be entered in the field, we can run a validation routine and flag invalid inputs, for example by changing the background of the field to red when values are invalid. We can also add some callbacks for the field so that other GUI elements (such as a &ldquo;Save&rdquo; button) are disabled when the contents of the field is invalid.</p>
+
+<div class="figure"><img src="/img/a020/einput-c.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>We can write a new class to derive from <code>text-field%</code> which provides validation for the input. The class will make use of two functions: <code>string-&gt;data</code> converts the input field contents into some user data type (such as an integer representing the Unix time stamp, in our example program) and a <code>data-&gt;string</code> structure which converts a user defined data type into the text to be displayed in the field. The implementation also relies on the <code>string-&gt;data</code> function returning <code>#f</code> for invalid strings &mdash; this convention prevents us from using the validating field for boolean values, but <code>check-box%</code> controls are much better for that purpose anyway.</p>
+
+<p>The class definition is shown below, and as with the cue text class, it is relatively simple to understand:</p>
+
+<ul>
+ <li>the <code>allow-empty?</code> init field allows specifying whether the empty fields are  valid or not &mdash; this is somewhat simpler to manage than requiring  <code>string-&gt;data</code> to handle empty values.</li>
+ <li><code>good-bg</code> and <code>bad-bg</code> are colors to use for the &ldquo;good&rdquo; or valid background  and for the &ldquo;bad&rdquo; or invalid one, for the &ldquo;good&rdquo; background color we choose  the default background use by the <code>text-field%</code> via the  <code>get-field-background</code> method, for the &ldquo;bad&rdquo; background color we use a shade  of red.</li>
+ <li>the <code>valid-value?</code> function checks if the value is valid &mdash; it checks for  empty strings first than calls the user supplied <code>string-&gt;data</code> function</li>
+ <li>the <code>validate</code> function checks if the current contents of the field is valid  or not, and updates the background accordingly.</li></ul>
+
+<p>As with the cue text, we will need to intercept the <code>on-subwindow-char</code> method and perform the data validation. For convenience, the <code>set-value</code> method is also overridden to allow setting a user value instead of a string &mdash; this is converted by the <code>data-&gt;string</code> value. Finally, a <code>get-converted-value</code> value method is provided to return the validated contents of the field.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">validating-field%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">text-field%</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init-field))" style="color: inherit">init-field</a></span> <span class="n">string-&gt;data</span> <span class="n">data-&gt;string</span> <span class="p">[</span><span class="n">allow-empty?</span> <span class="no">#f</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">good-bg</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-field-background</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">bad-bg</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/objcreation.html#(def._((lib._racket/private/class-internal..rkt)._make-object))" style="color: inherit">make-object</a></span> <span class="n">color%</span> <span class="mi">255</span> <span class="mi">120</span> <span class="mi">124</span><span class="p">))</span> <span class="c1">; red</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">valid-value?</span> <span class="n">data</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">t</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-trim))" style="color: inherit">string-trim</a></span> <span class="n">data</span><span class="p">)])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">allow-empty?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-length))" style="color: inherit">string-length</a></span> <span class="n">t</span><span class="p">)</span> <span class="mi">0</span><span class="p">))</span> <span class="p">(</span><span class="n">string-&gt;data</span> <span class="n">t</span><span class="p">))))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">validate</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">valid?</span> <span class="p">(</span><span class="n">valid-value?</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-value</span><span class="p">))])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">set-field-background</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">valid?</span> <span class="n">good-bg</span> <span class="n">bad-bg</span><span class="p">))))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin0))" style="color: inherit">begin0</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">validate</span><span class="p">)))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">set-value</span> <span class="n">v</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">set-value</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string~3f))" style="color: inherit">string?</a></span> <span class="n">v</span><span class="p">)</span> <span class="n">v</span> <span class="p">(</span><span class="n">data-&gt;string</span> <span class="n">v</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">validate</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">get-converted-value</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">v</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-trim))" style="color: inherit">string-trim</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">get-value</span><span class="p">))])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="n">valid-value?</span> <span class="n">v</span><span class="p">)</span>
+             <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-length))" style="color: inherit">string-length</a></span> <span class="n">v</span><span class="p">)</span> <span class="mi">0</span><span class="p">)</span> <span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._empty))" style="color: inherit">empty</a></span> <span class="p">(</span><span class="n">string-&gt;data</span> <span class="n">v</span><span class="p">)))))</span>
+
+    <span class="p">(</span><span class="n">validate</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>All that remains is to replace the input field in the initial application with a <code>validating-field%</code> and provide the conversion functions. The background is now highlighted red when invalid values are entered, and the <code>get-converted-value</code> method can be used to check if the value is valid or not. The <code>validating-field%</code> class could be extended in several ways which would make it more useful:</p>
+
+<ul>
+ <li>a callback which is called when the contents become valid or invalid &mdash; this  could be used for example to enable/disable a &ldquo;Save&rdquo; button in the form</li>
+ <li>a callback which is invoked with the value whenever it changes &mdash; this could  be used to dynamically update a GUI form without having to click &ldquo;Save&rdquo;.</li></ul>
+
+<p>These tasks are left as an exercise for the interested reader :-)</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1">;; NOTE: string-&gt;date already defined</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">date-&gt;string</span> <span class="n">seconds</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span> <span class="n">seconds</span><span class="p">))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-append))" style="color: inherit">string-append</a></span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-day))" style="color: inherit">date-day</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a></span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">2</span> <span class="kd">#:left-pad-string</span> <span class="s2">"0"</span><span class="p">)</span>
+   <span class="s2">"/"</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-month))" style="color: inherit">date-month</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a></span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">2</span> <span class="kd">#:left-pad-string</span> <span class="s2">"0"</span><span class="p">)</span>
+   <span class="s2">"/"</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-year))" style="color: inherit">date-year</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a></span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">4</span> <span class="kd">#:left-pad-string</span> <span class="s2">"0"</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">input</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">validating-field%</span>
+                   <span class="p">[</span><span class="n">string-&gt;data</span> <span class="n">string-&gt;date</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">data-&gt;string</span> <span class="n">date-&gt;string</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">allow-empty?</span> <span class="no">#t</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">label</span> <span class="s2">"Enter a <a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a> "</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">font</span> <span class="n">font</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="combining-the-cue-text-and-validation-using-mixins">Combining the cue text and validation using mixins</h2>
+
+<p>We have constructed two classes, <code>cue-text-field%</code> and <code>validating-field%</code>, both of them providing useful extensions to <code>text-field%</code>, however they cannot be used together, since both derive from <code>text-field%</code> directly. The two obvious solutions to this problem would be:</p>
+
+<ul>
+ <li>combining the two classes into an <code>enhanced-input-field%</code> and implement both  pieces of functionality in one place</li>
+ <li>either deriving <code>validating-field%</code> from <code>cue-text-field%</code> or vice versa so  we have the combined functionality.</li></ul>
+
+<p>In Racket, there is a third option: to use &ldquo;mixins&rdquo;. You can read about them in the <a href="http://docs.racket-lang.org/guide/classes.html?q=mixins#%28part._.Mixins%29">Racket documentation</a>, but a simple explanation may be sufficient. The basic idea behind them is that, in Racket, a class, such as <code>text-field%</code> is also a value which can be passed as an argument to a function. This allows us to write a function which takes a class as a parameter and returns a new class which is derived from the first one. The mixin concept is not strictly necessary, but can express some ideas more elegantly, in particular, the &ldquo;cue text&rdquo; and &ldquo;data validation&rdquo; concepts are implemented as mixins on the <code>text-field%</code> field and this allows us to easily create an input field class that has only a cue text, only data validation, or both.</p>
+
+<div class="figure"><img src="/img/a020/einput-d.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>In our case, we can define the <code>cue-text-field%</code> and <code>validating-field%</code> as mixin functions, taking a base class as a parameter and returning a new class implementing the respective functionality:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">cue-mixin</span> <span class="n">default-cue</span> <span class="n">base-class</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/objectutils.html#(def._((lib._racket/private/class-internal..rkt)._subclass~3f))" style="color: inherit">subclass?</a></span> <span class="n">base-class</span> <span class="n">text-field%</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="s2">"cue-mixin: parent is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> derived from text-field%"</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">base-class</span>
+    <span class="c1">;; cue-text-field% class implementation here</span>
+    <span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">validating-mixin</span> <span class="n">string-&gt;data</span> <span class="n">data-&gt;string</span> <span class="n">base-class</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/objectutils.html#(def._((lib._racket/private/class-internal..rkt)._subclass~3f))" style="color: inherit">subclass?</a></span> <span class="n">base-class</span> <span class="n">text-field%</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="s2">"validating-mixin: parent is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> derived from text-field%"</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">base-class</span>
+    <span class="c1">;; validating-field% class implementation here</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The above functions allows us to define the cue and validation functionality and at the same time leaving the base class unspecified. A &ldquo;date input field&rdquo; can than be constructed and used in the application:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">date-input-field%</span>
+  <span class="p">(</span><span class="n">validating-mixin</span> <span class="n">string-&gt;date</span> <span class="n">date-&gt;string</span> <span class="p">(</span><span class="n">cue-mixin</span> <span class="s2">"DD/MM/YYYY"</span> <span class="n">text-field%</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">input</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">date-input-field%</span>
+                   <span class="p">[</span><span class="n">allow-empty?</span> <span class="no">#t</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">label</span> <span class="s2">"Enter a <a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a> "</span><span class="p">]</span>
+                   <span class="p">[</span><span class="n">font</span> <span class="n">font</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>These mixins allows for more flexible definition of various fields. For example, a field which only allows numbers can be defined easily, as <code>string-&gt;number</code> and <code>number-&gt;string</code> are already available in Racket:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">number-input-field%</span>
+  <span class="p">(</span><span class="n">validating-mixin</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._string-~3enumber))" style="color: inherit">string-&gt;number</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._number-~3estring))" style="color: inherit">number-&gt;string</a></span> <span class="p">(</span><span class="n">cue-mixin</span> <span class="s2">"number"</span> <span class="n">text-field%</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>The racket GUI controls are designed to be extended, and many interesting and useful features can be added to them this way, as shown in this article. These features are not available by default, but it is not a big effort to add them: the code to implement all these features is just above 100 lines of code. While it takes more effort (and some advanced knowledge of the Racket GUI libraries), it does provide considerable flexibility.</p>
+
+<p>You can find the complete example for the last program from this article in this <a href="https://gist.github.com/alex-hhh/090914500bc25ef2963024ebc366ff35">GitHub Gist</a></p>
+  <footer>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html"><em>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
+        <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
+        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
+        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>http://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Mon, 29 Oct 2018 10:34:41 UT</lastBuildDate>
-  <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+  <lastBuildDate>Wed, 21 Nov 2018 12:28:28 UT</lastBuildDate>
+  <pubDate>Wed, 21 Nov 2018 12:28:28 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>An enhanced text-field% GUI control for Racket</title>
+   <link>http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-11-an-enhanced-text-field-gui-control-for-racket-html</guid>
+   <pubDate>Wed, 21 Nov 2018 12:28:28 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket GUI library provides a &lt;code&gt;text-field%&lt;/code&gt; control which allows input of arbitrary text, but only basic functionality by default. However, the class is designed to be extensible and in this article we&amp;rsquo;ll look at how to extend this control to provide a more modern input control with a cue text and input data validation.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Chess Game Using Racket's Pasteboard (part 3)</title>
    <link>http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=racket&amp;utm_medium=RSS</link>

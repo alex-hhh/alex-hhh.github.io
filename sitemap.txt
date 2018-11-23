@@ -5,6 +5,7 @@ http://alex-hhh.github.io/2018/05/running-and-cycling-workout-editor.html
 http://alex-hhh.github.io/2018/01/equipment-usage-and-costs.html
 http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html
 http://alex-hhh.github.io/2017/11/quantifying-fatigue.html
+http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html
 http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html
 http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html
 http://alex-hhh.github.io/2017/11/bike-trainer.html
