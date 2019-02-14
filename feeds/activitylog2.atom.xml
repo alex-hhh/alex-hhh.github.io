@@ -7,14 +7,14 @@
  <updated>2018-05-27T00:37:52Z</updated>
  <entry>
   <title type="text">Running and Cycling Workout Editor</title>
-  <link rel="alternate" href="http://alex-hhh.github.io/2018/05/running-and-cycling-workout-editor.html?utm_source=activitylog2&amp;utm_medium=Atom" />
-  <id>urn:http-alex-hhh-github-io:-2018-05-running-and-cycling-workout-editor-html</id>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-05-workout-editor-html</id>
   <published>2018-05-27T00:37:52Z</published>
   <updated>2018-05-27T00:37:52Z</updated>
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;A Garmin fitness device can use workouts during a bike or run activity: they are a collection of steps with a duration and intensity (such as heart rate, pace or power). While running or biking, the device keeps track of the duration and will sound an alarm if the intensity is too high or too low. Workouts can be created on the Garmin Connect website, but I decided to write my own application for creating workouts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/running-and-cycling-workout-editor.html?utm_source=activitylog2&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;A Garmin fitness device can use workouts during a bike or run activity: they are a collection of steps with a duration and intensity (such as heart rate, pace or power). While running or biking, the device keeps track of the duration and will sound an alarm if the intensity is too high or too low. Workouts can be created on the Garmin Connect website, but I decided to write my own application for creating workouts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Bike Trainer</title>
   <link rel="alternate" href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=activitylog2&amp;utm_medium=Atom" />

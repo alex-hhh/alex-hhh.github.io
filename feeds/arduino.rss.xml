@@ -9,12 +9,12 @@
   <ttl>1800</ttl>
   <item>
    <title>Arduino 433Mhz Receiver -- Reading Keyfobs</title>
-   <link>http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;utm_medium=RSS</link>
-   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-reading-keyfobs-html</guid>
+   <link>http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver.html?utm_source=arduino&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-html</guid>
    <pubDate>Fri, 18 May 2018 23:45:18 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver.html?utm_source=arduino&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Arduino Inclinometer Improvements</title>
    <link>http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=arduino&amp;utm_medium=RSS</link>

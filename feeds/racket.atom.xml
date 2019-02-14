@@ -4,7 +4,17 @@
  <link rel="self" href="http://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="http://alex-hhh.github.io/tags/racket.html" />
  <id>urn:http-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2018-11-21T12:28:28Z</updated>
+ <updated>2019-02-14T08:42:38Z</updated>
+ <entry>
+  <title type="text">An Overview of Common Racket Data Structures</title>
+  <link rel="alternate" href="http://alex-hhh.github.io/2019/02/racket-data-structures.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2019-02-racket-data-structures-html</id>
+  <published>2019-02-14T08:42:38Z</published>
+  <updated>2019-02-14T08:42:38Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;The Racket language provides a variety of ready-to-use data structures and containers, however each such container has advantages and disadvantages when it comes to performance. The &amp;ldquo;everything is a list&amp;rdquo; approach makes things simple when you are learning Racket, but if you start using it for more complex programs, you need to be aware that lists are not always the best data structure to use. This guide looks at a few alternatives.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2019/02/racket-data-structures.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">An enhanced text-field% GUI control for Racket</title>
   <link rel="alternate" href="http://alex-hhh.github.io/2018/11/an-enhanced-text-field-gui-control-for-racket.html?utm_source=racket&amp;utm_medium=Atom" />
@@ -47,24 +57,24 @@
 &lt;p&gt;The Racket GUI library provides an &amp;ldquo;editor toolkit&amp;rdquo; which can be used to implement programs that use an interactive graphical canvas where objects can be moved around with the mouse. This toolkit has &lt;a href="http://docs.racket-lang.org/gui/editor-overview.html"&gt;good reference documentation&lt;/a&gt;, however this documentation can be somewhat overwhelming, and it is not always clear how to begin writing such interactive application, or how to achieve some basic functionality, so I wrote a tutorial on how to implement a chess board game in Racket using the &lt;code&gt;pasteboard%&lt;/code&gt; and &lt;code&gt;snip%&lt;/code&gt; classes which are part of the GUI library.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Racket Data Frame Package</title>
-  <link rel="alternate" href="http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=racket&amp;utm_medium=Atom" />
-  <id>urn:http-alex-hhh-github-io:-2018-08-racket-data-frame-package-html</id>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/08/racket-data-frame.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-08-racket-data-frame-html</id>
   <published>2018-08-04T22:59:45Z</published>
   <updated>2018-08-04T22:59:45Z</updated>
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;A Racket implementation of a data frame structure, which allows efficient manipulation of data that is organized in rows and columns. It was originally written as part of the &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; project, than moved into its own Racket package.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/08/racket-data-frame-package.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;A Racket implementation of a data frame structure, which allows efficient manipulation of data that is organized in rows and columns. It was originally written as part of the &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; project, than moved into its own Racket package.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/08/racket-data-frame.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">A Racket GUI Widget to display maps based on OpenStreetMap tiles</title>
-  <link rel="alternate" href="http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=racket&amp;utm_medium=Atom" />
-  <id>urn:http-alex-hhh-github-io:-2018-06-a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles-html</id>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/06/racket-map-widget.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-06-racket-map-widget-html</id>
   <published>2018-06-12T09:06:17Z</published>
   <updated>2018-06-12T09:06:17Z</updated>
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;This is a Racket GUI Widget which can display maps based on Open Street Map tiles &amp;mdash; it allows embedding maps in Racket GUI applications. I originally wrote this code as part of the ActivityLog2 project and, since I wanted to use it in other projects, I decided to move it onto a separate package and publish it to the Racket package server.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;This is a Racket GUI Widget which can display maps based on Open Street Map tiles &amp;mdash; it allows embedding maps in Racket GUI applications. I originally wrote this code as part of the ActivityLog2 project and, since I wanted to use it in other projects, I decided to move it onto a separate package and publish it to the Racket package server.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/06/racket-map-widget.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Interactive Overlays With the Racket Plot Package -- Update</title>
   <link rel="alternate" href="http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=racket&amp;utm_medium=Atom" />

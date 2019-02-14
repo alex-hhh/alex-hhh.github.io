@@ -11,7 +11,7 @@
     <link rel="icon"      href="/favicon.ico">
     <link rel="canonical" href="http://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html">
     <link rel="next" href="/2018/03/arduino-inclinometer-improvements.html">
-    <link rel="prev" href="/2018/05/arduino-433mhz-receiver-reading-keyfobs.html">
+    <link rel="prev" href="/2018/05/arduino-433mhz-receiver.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -70,7 +70,7 @@
   <small>(1)</small></a></li>
 
 <li><a href="/tags/racket.html">racket&nbsp;
-  <small>(9)</small></a></li>
+  <small>(10)</small></a></li>
 
 <li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
   <small>(5)</small></a></li>
@@ -168,19 +168,19 @@
 <div class="figure"><img src="/img/a012/current-value.gif" alt="" />
  <p class="caption"></p></div>
 
-<p>The <code>make-current-value-renderer</code> is a function that produces a callback to be attached to a plot snip. The callback is invoked with four parameters: the <code>snip</code> that calls the callback, the mouse <code>event</code>, and <code>x</code> and <code>y</code> coordinates for the mouse event. The <code>x</code> and <code>y</code> are in plot coordinates, meaning they map to the domain of the data displayed in the plot. The callback creates a <code class="brush: racket">vrule</code> and a <code class="brush: racket">point-label</code> renderer and adds these to the plot using the <code class="brush: racket">set-overlay-renderers</code>. Each time <code class="brush: racket">set-overlay-renderers</code> is called, any previous overlay renderers are discarded.</p>
+<p>The <code>make-current-value-renderer</code> is a function that produces a callback to be attached to a plot snip. The callback is invoked with four parameters: the <code>snip</code> that calls the callback, the mouse <code>event</code>, and <code>x</code> and <code>y</code> coordinates for the mouse event. The <code>x</code> and <code>y</code> are in plot coordinates, meaning they map to the domain of the data displayed in the plot. The callback creates a <code>vrule</code> and a <code>point-label</code> renderer and adds these to the plot using the <code>set-overlay-renderers</code>. Each time <code>set-overlay-renderers</code> is called, any previous overlay renderers are discarded.</p>
 
-<p>You can also pass <code>#f</code> to <code class="brush: racket">set-overlay-renderers</code> and this will remove the overlays. This feature is used in the example above: when the form <code>(and
+<p>You can also pass <code>#f</code> to <code>set-overlay-renderers</code> and this will remove the overlays. This feature is used in the example above: when the form <code>(and
 x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f</code>, clearing the overlays. Thus, overlays are added only when the mouse is over the actual plot area, <code>x</code> and <code>y</code> are not <code>#f</code> and when the mouse event is a motion event.</p>
 
 <h2 id="display-the-current-value-of-a-function-the-fancy-version">Display the current value of a function, the fancy version</h2>
 
-<p>The <code class="brush: racket">point-label</code> renderer used in the previous example has a limited amount of customization for the displayed text: first, the label can only be a text string, second, only the font, size and color of the text can be adjusted, but not the background. For more complex cases, there is the <code class="brush: racket">point-pict</code> renderer, which allows displaying and arbitrary <code>pict</code> instead of the label. The built in Racket <a href="http://docs.racket-lang.org/pict/index.html">pict library</a> allows creating sophisticated pictures, including the <code class="brush: racket">dc</code> pict constructor, which allows drawing arbitrary graphics on a device context.</p>
+<p>The <code>point-label</code> renderer used in the previous example has a limited amount of customization for the displayed text: first, the label can only be a text string, second, only the font, size and color of the text can be adjusted, but not the background. For more complex cases, there is the <code>point-pict</code> renderer, which allows displaying and arbitrary <code>pict</code> instead of the label. The built in Racket <a href="http://docs.racket-lang.org/pict/index.html">pict library</a> allows creating sophisticated pictures, including the <code>dc</code> pict constructor, which allows drawing arbitrary graphics on a device context.</p>
 
 <div class="figure"><img src="/img/a012/current-value-fancy.gif" alt="" />
  <p class="caption"></p></div>
 
-<p>In the example above, the &ldquo;label&rdquo; displayed is constructed using a pict so that the angle is displayed as a pie slice. The <code>make-tag</code> function prepares the picture using standard <code>pict</code> constructors. The only addition is the <code>pie-slice</code> function, which draws a pie slice using the <code class="brush: racket">dc</code> pict constructor.</p>
+<p>In the example above, the &ldquo;label&rdquo; displayed is constructed using a pict so that the angle is displayed as a pie slice. The <code>make-tag</code> function prepares the picture using standard <code>pict</code> constructors. The only addition is the <code>pie-slice</code> function, which draws a pie slice using the <code>dc</code> pict constructor.</p>
 
 <div class="brush: racket">
  <table class="sourcetable">
@@ -266,7 +266,7 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
 
 <h2 id="show-the-tangent-of-a-function">Show the tangent of a function</h2>
 
-<p>The plot renderers used as overlays can be any valid renderer for the plot. In the example below, the plot is set up to render the tangent of a function at the current mouse position. <code>make-tangent-renderer</code> is the function calculating the tangent and adding a new <code class="brush: racket">function</code> renderer to the plot.</p>
+<p>The plot renderers used as overlays can be any valid renderer for the plot. In the example below, the plot is set up to render the tangent of a function at the current mouse position. <code>make-tangent-renderer</code> is the function calculating the tangent and adding a new <code>function</code> renderer to the plot.</p>
 
 <div class="brush: racket">
  <table class="sourcetable">
@@ -319,7 +319,7 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
 
 <h2 id="select-a-range-in-a-plot-by-dragging-the-mouse">Select a range in a plot by dragging the mouse</h2>
 
-<p>The mouse event that is passed to the callback can be used to check for mouse button presses and releases, which in turn can be used to implement some GUI operations. In this example, a simple drag select is implemented: the <code>left-down</code> mouse event marks the start of a selection, and the <code>x</code> position is saved into <code>drag-start</code>. While the left button is held down, any motion events will display a <code class="brush: racket">rectangles</code> renderer with the selected area, making the selected area appear shaded. The drag operation ends when the mouse button is released, in the example, the selected area is simply removed, but other functionality can be easily implemented.</p>
+<p>The mouse event that is passed to the callback can be used to check for mouse button presses and releases, which in turn can be used to implement some GUI operations. In this example, a simple drag select is implemented: the <code>left-down</code> mouse event marks the start of a selection, and the <code>x</code> position is saved into <code>drag-start</code>. While the left button is held down, any motion events will display a <code>rectangles</code> renderer with the selected area, making the selected area appear shaded. The drag operation ends when the mouse button is released, in the example, the selected area is simply removed, but other functionality can be easily implemented.</p>
 
 <div class="brush: racket">
  <table class="sourcetable">
@@ -503,7 +503,7 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
 
 <h2 id="how-to-embed-plots-in-gui-applications">How to embed plots in GUI applications</h2>
 
-<p>The <code>snip</code> object produced by <code class="brush: racket">plot-snip</code> will be displayed correctly by DrRacket in the REPL window, however some more work is needed to embed plots in GUI applications. The <code>mrlib/snip-canvas</code> library provides a <code>snip-canvas%</code> object that can hold a <code>snip</code>. The <code>snip-canvas%</code> is a GUI object and can be added to a <code class="brush: racket">frame%</code> or <code class="brush: racket">panel%</code>. The example below extends the first example to show the plot in a separate window. The snip creation code is wrapped inside the <code>make-plot-snip</code> function and this function is passed to the <code class="brush: racket">snip-canvas%</code> constructor to add the snip to the canvas. When the code below is run, the plot should show up in a separate frame, similar to what <code class="brush: racket">plot-frame</code> does. The canvas itself can of course be created as part of a more sophisticated GUI.</p>
+<p>The <code>snip</code> object produced by <code>plot-snip</code> will be displayed correctly by DrRacket in the REPL window, however some more work is needed to embed plots in GUI applications. The <code>mrlib/snip-canvas</code> library provides a <code>snip-canvas%</code> object that can hold a <code>snip</code>. The <code>snip-canvas%</code> is a GUI object and can be added to a <code>frame%</code> or <code>panel%</code>. The example below extends the first example to show the plot in a separate window. The snip creation code is wrapped inside the <code>make-plot-snip</code> function and this function is passed to the <code>snip-canvas%</code> constructor to add the snip to the canvas. When the code below is run, the plot should show up in a separate frame, similar to what <code>plot-frame</code> does. The canvas itself can of course be created as part of a more sophisticated GUI.</p>
 
 <div class="brush: racket">
  <table class="sourcetable">
@@ -565,7 +565,7 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
   <footer>
     <ul class="pager">
     <li class="previous">
-      <a href="/2018/05/arduino-433mhz-receiver-reading-keyfobs.html">&larr; <em>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</em></a>
+      <a href="/2018/05/arduino-433mhz-receiver.html">&larr; <em>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</em></a>
     </li>
     <li class="next">
       <a href="/2018/03/arduino-inclinometer-improvements.html"><em>Arduino Inclinometer Improvements</em> &rarr;</a>
@@ -588,7 +588,9 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
         <!-- Side bar -->
         <div id="sidebar-content" class="col-md-3">
           <h3>Recent Posts</h3>
-          <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+          <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
         <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
         <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
         <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
@@ -596,13 +598,13 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
         <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
         <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
         <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
-        <p><a href='/2018/08/racket-data-frame-package.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
         <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
-        <p><a href='/2018/06/a-racket-gui-widget-to-display-maps-based-on-openstreetmap-tiles.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
         <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
-        <p><a href='/2018/05/running-and-cycling-workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
         <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
-        <p><a href='/2018/05/arduino-433mhz-receiver-reading-keyfobs.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
         <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
         <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
         <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
@@ -626,8 +628,6 @@ x y (eq?  (send event get-event-type) 'motion) ...)</code> evaluates to <code>#f
         <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
         <p><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a> <small class='date-and-tags'>
         <time datetime="2017-09-21" pubdate="true">2017-09-21</time></small></p>
-        <p><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a> <small class='date-and-tags'>
-        <time datetime="2017-09-15" pubdate="true">2017-09-15</time></small></p>
         </div>
       </div>
       <footer>

@@ -9,7 +9,9 @@
   ;; Don't expect that many blog posts, put just YEAR in the permalink ...
   ;; (current-permalink "/{year}/{title}.html")
   (current-title "The Blog of Alex Harsányi")
-  (current-author "Alex Harsányi"))
+  (current-author "Alex Harsányi")
+  (current-posts-per-page 9)
+  (current-permalink "/{year}/{month}/{filename}.html"))
 
 (define (atom? x)
   (and (not (eq? x '())) (not (cons? x))))
@@ -63,7 +65,7 @@
                         #:line-numbers? #t
                         #:css-class "source")
       (auto-embed-tweets #:parents? #t)
-      (add-racket-doc-links #:code? #t #:prose? #f)))
+      (add-racket-doc-links #:code? #t #:prose? #t)))
 
 ;; Called from `raco frog --clean`.
 (define/contract (clean)

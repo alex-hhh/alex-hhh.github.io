@@ -7,14 +7,14 @@
  <updated>2018-05-18T23:45:18Z</updated>
  <entry>
   <title type="text">Arduino 433Mhz Receiver -- Reading Keyfobs</title>
-  <link rel="alternate" href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;utm_medium=Atom" />
-  <id>urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-reading-keyfobs-html</id>
+  <link rel="alternate" href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver.html?utm_source=arduino&amp;utm_medium=Atom" />
+  <id>urn:http-alex-hhh-github-io:-2018-05-arduino-433mhz-receiver-html</id>
   <published>2018-05-18T23:45:18Z</published>
   <updated>2018-05-18T23:45:18Z</updated>
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver-reading-keyfobs.html?utm_source=arduino&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;I bought a 433Mhz receiver shield for Arduino as I wanted to experiment with wireless communication, and, as the first application, I built a receiver that can read serial numbers and button status from my garage door opener remote.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/arduino-433mhz-receiver.html?utm_source=arduino&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Arduino Inclinometer Improvements</title>
   <link rel="alternate" href="http://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html?utm_source=arduino&amp;utm_medium=Atom" />
