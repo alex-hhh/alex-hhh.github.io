@@ -5,7 +5,7 @@
 ;; in frog/params.
 (define/contract (init)
   (-> any)
-  (current-scheme/host "http://alex-hhh.github.io")
+  (current-scheme/host "https://alex-hhh.github.io")
   ;; Don't expect that many blog posts, put just YEAR in the permalink ...
   ;; (current-permalink "/{year}/{title}.html")
   (current-title "The Blog of Alex Harsányi")

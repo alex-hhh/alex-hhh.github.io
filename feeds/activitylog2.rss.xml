@@ -3,31 +3,39 @@
  <channel>
   <title>The Blog of Alex Harsányi: Posts tagged 'activitylog2'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'activitylog2'</description>
-  <link>http://alex-hhh.github.io/tags/activitylog2.html</link>
-  <lastBuildDate>Sun, 27 May 2018 00:37:52 UT</lastBuildDate>
-  <pubDate>Sun, 27 May 2018 00:37:52 UT</pubDate>
+  <link>https://alex-hhh.github.io/tags/activitylog2.html</link>
+  <lastBuildDate>Sat, 09 Feb 2019 00:36:49 UT</lastBuildDate>
+  <pubDate>Sat, 09 Feb 2019 00:36:49 UT</pubDate>
   <ttl>1800</ttl>
   <item>
+   <title>Building a Data Visualization Dashboard in Racket</title>
+   <link>https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-02-data-visualization-dashboard-html</guid>
+   <pubDate>Sat, 09 Feb 2019 00:36:49 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;When experimenting with a new data visualization or data analysis method, it is simpler to write a prototype as a separate application, to evaluate if it is worthwhile investing the effort of adding a full feature to &lt;a href="/2017/09/introducing-activitylog2.html"&gt;ActivityLog2&lt;/a&gt;, this post illustrates the process used to write a &amp;ldquo;training load&amp;rdquo; &lt;a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard"&gt;dashboard application&lt;/a&gt; in Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
    <title>Running and Cycling Workout Editor</title>
-   <link>http://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
-   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2018-05-workout-editor-html</guid>
+   <link>https://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-05-workout-editor-html</guid>
    <pubDate>Sun, 27 May 2018 00:37:52 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;A Garmin fitness device can use workouts during a bike or run activity: they are a collection of steps with a duration and intensity (such as heart rate, pace or power). While running or biking, the device keeps track of the duration and will sound an alarm if the intensity is too high or too low. Workouts can be created on the Garmin Connect website, but I decided to write my own application for creating workouts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+&lt;p&gt;A Garmin fitness device can use workouts during a bike or run activity: they are a collection of steps with a duration and intensity (such as heart rate, pace or power). While running or biking, the device keeps track of the duration and will sound an alarm if the intensity is too high or too low. Workouts can be created on the Garmin Connect website, but I decided to write my own application for creating workouts.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/05/workout-editor.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Bike Trainer</title>
-   <link>http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
-   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-11-bike-trainer-html</guid>
+   <link>https://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2017-11-bike-trainer-html</guid>
    <pubDate>Mon, 13 Nov 2017 21:58:09 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+&lt;p&gt;I bought a bike trainer last June for indoor riding during winter (which in the southern hemisphere is in July and August.) and I decided to write virtual ride simulator to use it. The simulator would follow a predefined course on the map: the current position would advance based on the speed received from the trainer, and the application would control the resistance based on the slope at the current location.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2017/11/bike-trainer.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Introducing ActivityLog2</title>
-   <link>http://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
-   <guid isPermaLink="false">urn:http-alex-hhh-github-io:-2017-09-introducing-activitylog2-html</guid>
+   <link>https://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=activitylog2&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2017-09-introducing-activitylog2-html</guid>
    <pubDate>Fri, 15 Sep 2017 12:26:56 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;&lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; is a program that can analyze data recorded by fitness devices such as swim, bike and run sessions. It can be used as a training log and to gain insights about your training using reports and trend charts.&lt;/p&gt;&lt;a href="http://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>
+&lt;p&gt;&lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; is a program that can analyze data recorded by fitness devices such as swim, bike and run sessions. It can be used as a training log and to gain insights about your training using reports and trend charts.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2017/09/introducing-activitylog2.html?utm_source=activitylog2&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>

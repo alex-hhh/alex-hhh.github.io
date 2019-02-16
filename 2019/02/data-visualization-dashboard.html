@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Building a Data Visualization Dashboard in Racket</title>
+    <meta name="description" content="When experimenting with a new data visualization or data analysis method, it is simpler to write a prototype as a separate application, to evaluate if it is worthwhile investing the effort of adding a full feature to ActivityLog2, this post illustrates th...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket, activitylog2">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html">
+    <link rel="next" href="/2018/11/an-enhanced-text-field-gui-control-for-racket.html">
+    <link rel="prev" href="/2019/02/racket-data-structures.html">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(4)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(11)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Building a Data Visualization Dashboard in Racket</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-02-09" pubdate="true">2019-02-09</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/activitylog2.html">activitylog2</a></span></p>
+  </header>
+
+<p>When experimenting with a new data visualization or data analysis method, it is simpler to write a prototype as a separate application, to evaluate if it is worthwhile investing the effort of adding a full feature to <a href="/2017/09/introducing-activitylog2.html">ActivityLog2</a>, this post illustrates the process used to write a &ldquo;training load&rdquo; <a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard">dashboard application</a> in Racket.</p>
+<!-- more-->
+
+<p>While it has a variety of ways to visualize training data, ActivityLog2 is not extensible, instead, the user must choose between a predefined number of plots on which they can adjust various input parameters. The predefined plots allows analyzing training data from a wide variety of angles, and it has been useful for me for a long time, but it does not cover everything, and, most importantly, it does not allow exploring new ideas. This is by design: ActivityLog2 an application needs to be reliable and can be used on a daily basis.</p>
+
+<p>This post is not about training methods or their worth, but simply about visualizing an idea to see if it provides any value. In this case, the idea is that to reduce the risk of injury while training one needs to make sure that each week he or she can train between 20% and 60% more than the previous 4 week average. To check how this method would work, it is worth plotting the data and get a visual image, as seen below.</p>
+
+<div class="figure"><img src="/img/a022/irisk.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>There are nine plots to visualize, because in Triathlon, there are three disciplines, Swimming, Cycling and Running, and we need a plot for each one. Also, the &ldquo;training load&rdquo; concept can be measured in terms of distance, duration or &ldquo;effort&rdquo; &mdash; the last one is a somewhat abstract term indicating how hard an activity was.</p>
+
+<h2 id="preparing-the-data">Preparing the data</h2>
+
+<p>ActivityLog2 stores all data in a SQLite database, so the information we need can be retrieved using an SQL query. As an example, and to keep things simple, the query below retrieves data from for cycling only, but it can be extended to retrieve run and swim columns too:</p>
+
+<div class="brush: sql">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="k">select</span> <span class="nb">date</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="s1">&#39;unixepoch&#39;</span><span class="p">,</span> <span class="s1">&#39;localtime&#39;</span><span class="p">,</span> <span class="s1">&#39;-6 days&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday 1&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">week</span><span class="p">,</span>
+       <span class="n">round</span><span class="p">(</span><span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_distance</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">bDist</span><span class="p">,</span>
+       <span class="n">round</span><span class="p">(</span><span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_time</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">bDuration</span><span class="p">,</span>
+       <span class="n">round</span><span class="p">(</span><span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_effort</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">bEffort</span>
+  <span class="k">from</span> <span class="n">V_TRIATHLON_SESSIONS</span> <span class="n">VTS</span>
+ <span class="k">where</span> <span class="n">VTS</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="nb">date</span><span class="p">(</span><span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="s1">&#39;-56 days&#39;</span><span class="p">))</span>
+ <span class="k">group</span> <span class="k">by</span> <span class="n">week</span><span class="p">;</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Running the query above, will produces the result below, but there is a problem with it: Even though we asked for 8 weeks worth of data (56 days in the query above), we only got six rows back, with the weeks between 24 December 2018 and 14 February 2019 missing. This is because I did not do any training between those dates, and since no activities are present, there will be no aggregate rows for those weeks in the result set.</p>
+
+<pre><code>sqlite&gt;
+week        bDist       bDuration   bEffort
+----------  ----------  ----------  ----------
+2018-12-17  56.0        1.9         141.0
+2018-12-24  20.0        0.7         46.0
+2019-01-14  95.0        2.5         178.0
+2019-01-21  43.0        1.2         78.0
+2019-01-28  80.0        3.0         190.0
+2019-02-04  63.0        2.3         132.0</code></pre>
+
+<p>One solution is to write Racket code which takes this result set and inserts empty rows for any missing weeks. I tried that first, but the Racket code to do that is surprisingly complex, at least when compared to the SQL solution. The SQL solution involves creates a recursive CTE (common table expression) which generates timestamps for each week between two date ranges and than joins this table with the data from the database. The updated query, as used by the application, is shown below. It has the advantage that it can also generate rows for dates in the future, where no activities have been recorded yet, and this simplifies calculating the training load for future dates.</p>
+
+<div class="brush: sql">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="k">with</span> <span class="k">recursive</span>
+  <span class="n">TS</span><span class="p">(</span><span class="n">week</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="nb">date</span><span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="s1">&#39;unixepoch&#39;</span><span class="p">,</span> <span class="s1">&#39;localtime&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday 1&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">week</span>
+     <span class="k">union</span> <span class="k">all</span>
+    <span class="k">select</span> <span class="nb">date</span><span class="p">(</span><span class="n">week</span><span class="p">,</span> <span class="s1">&#39;+7 days&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday 1&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">week</span>
+      <span class="k">from</span> <span class="n">TS</span>
+     <span class="k">where</span> <span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="n">week</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="nb">date</span><span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="s1">&#39;unixepoch&#39;</span><span class="p">,</span> <span class="s1">&#39;localtime&#39;</span><span class="p">,</span> <span class="s1">&#39;-6 days&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday 1&#39;</span><span class="p">))),</span>
+  <span class="n">SE</span><span class="p">(</span><span class="n">week</span><span class="p">,</span> <span class="n">rDist</span><span class="p">,</span> <span class="n">rDuration</span><span class="p">,</span> <span class="n">rTss</span><span class="p">,</span> <span class="n">bDist</span><span class="p">,</span> <span class="n">bDuration</span><span class="p">,</span> <span class="n">bTss</span><span class="p">,</span> <span class="n">sDist</span><span class="p">,</span> <span class="n">sDuration</span><span class="p">,</span> <span class="n">sTss</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="nb">date</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="s1">&#39;unixepoch&#39;</span><span class="p">,</span> <span class="s1">&#39;localtime&#39;</span><span class="p">,</span> <span class="s1">&#39;-6 days&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday 1&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">week</span><span class="p">,</span>
+           <span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_distance</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">.</span><span class="mi">0</span> <span class="k">as</span> <span class="n">bDist</span><span class="p">,</span>
+           <span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_time</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">.</span><span class="mi">0</span> <span class="k">as</span> <span class="n">bDuration</span><span class="p">,</span>
+           <span class="n">total</span><span class="p">(</span><span class="n">VTS</span><span class="p">.</span><span class="n">bike_effort</span><span class="p">)</span> <span class="k">as</span> <span class="n">bTss</span><span class="p">,</span>
+      <span class="k">from</span> <span class="n">V_TRIATHLON_SESSIONS</span> <span class="n">VTS</span>
+     <span class="k">where</span> <span class="n">VTS</span><span class="p">.</span><span class="n">start_time</span> <span class="k">between</span> <span class="p">(</span><span class="k">select</span> <span class="k">min</span><span class="p">(</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="n">TS</span><span class="p">.</span><span class="n">week</span><span class="p">))</span> <span class="k">from</span> <span class="n">TS</span><span class="p">)</span>
+           <span class="k">and</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="n">TS</span><span class="p">.</span><span class="n">week</span><span class="p">))</span> <span class="k">from</span> <span class="n">TS</span><span class="p">)</span>
+     <span class="k">group</span> <span class="k">by</span> <span class="n">week</span><span class="p">)</span>
+<span class="k">select</span> <span class="p">(</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%s&#39;</span><span class="p">,</span> <span class="n">TS</span><span class="p">.</span><span class="n">week</span><span class="p">)</span> <span class="o">+</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="k">timestamp</span><span class="p">,</span> <span class="c1">-- +0 forces the column to be an int</span>
+       <span class="n">TS</span><span class="p">.</span><span class="n">week</span> <span class="k">as</span> <span class="n">week</span><span class="p">,</span>
+       <span class="n">coalesce</span><span class="p">(</span><span class="n">SE</span><span class="p">.</span><span class="n">bDist</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">bDist</span><span class="p">,</span>
+       <span class="n">coalesce</span><span class="p">(</span><span class="n">SE</span><span class="p">.</span><span class="n">bDuration</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">bDuration</span><span class="p">,</span>
+       <span class="n">coalesce</span><span class="p">(</span><span class="n">SE</span><span class="p">.</span><span class="n">bTss</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">bTss</span><span class="p">,</span>
+  <span class="k">from</span> <span class="n">TS</span> <span class="k">left</span> <span class="k">join</span> <span class="n">SE</span> <span class="k">on</span> <span class="n">TS</span><span class="p">.</span><span class="n">week</span> <span class="o">=</span> <span class="n">SE</span><span class="p">.</span><span class="n">week</span><span class="p">;</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This query is somewhat large, but it illustrates that many complex things can be done in SQL, and these things simplify the processing of the data. Note that the query above accepts two parameters (the question marks, <code>?</code>), which can be used to supply a date range for which to return data.</p>
+
+<h2 id="loading-the-data-into-a-racket-data-frame">Loading the data into a Racket data-frame</h2>
+
+<p>With the SQL query ready, we can start working on the Racket code which reads the data. First, we&rsquo;ll need a connection to the database &mdash; in the SQLite case, this is a path to a file and the connection is opened using <code>sqlite3-connect</code>. The database is opened in read-only mode, as we only run queries on it, never update the database.</p>
+
+<p>Next, we&rsquo;ll need to access the actual SQL query written previously. I prefer to store the SQL query in a separate file and read it in at runtime; the <code>define-sql-statement</code> function is a helper function defined in <strong>dbutil.rkt</strong>, it reads a SQL query from a file and produces a <code>virtual-statement</code> which can be used as a parameter to all query functions in the <code>db</code> package. There are a few alternatives available: the query could have been stored as a string inside the source code, or defined using one of the Racket packages that define a SQL DSL in the code, but I prefer storing the SQL code separately because I can run it directly in the SQLite command line utility and validate the query results independently from the Racket code.</p>
+
+<p>Lastly, the function <code>fetch-irisk-data</code> will construct a <strong>data-frame</strong> from the results of running the query. Since the SQL query requires two UNIX timestamps for the start and end of the date range, and UNIX timestamps are difficult to use directly, the function takes two parameters: number of weeks in the past to fetch data from and number of weeks in the future to make predictions and calculates the parameters for the query.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">database-file</span> <span class="s2">"path-to-database.db"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">db</span> <span class="p">(</span><span class="n">sqlite3-connect</span> <span class="kd">#:database</span> <span class="n">database-file</span> <span class="kd">#:mode</span> <span class="o">'</span><span class="ss">read-only</span><span class="p">))</span>
+
+<span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(form._((lib._racket/runtime-path..rkt)._define-runtime-path))" style="color: inherit">define-runtime-path</a></span> <span class="n">query-file</span> <span class="s2">"./irisk-query.sql"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">irisk-sql</span> <span class="p">(</span><span class="n">define-sql-statement</span> <span class="n">query-file</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fetch-irisk-data</span> <span class="n">db</span> <span class="n">weeks-back</span> <span class="n">weeks-forward</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">now</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-seconds))" style="color: inherit">current-seconds</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/sql</span>
+              <span class="n">db</span>
+              <span class="p">(</span><span class="n">irisk-sql</span><span class="p">)</span>
+              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">now</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">weeks-back</span> <span class="mi">7</span> <span class="mi">24</span> <span class="mi">3600</span><span class="p">))</span>
+              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">now</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">weeks-forward</span> <span class="mi">7</span> <span class="mi">24</span> <span class="mi">3600</span><span class="p">))))</span>
+  <span class="c1">;; Mark the timestamp series as sorted, so we can do lookups on it.</span>
+  <span class="p">(</span><span class="n">df-set-sorted</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="p">)</span>
+  <span class="n">df</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>With only a small amount of code, we can load the data in Racket and start exploring it in the REPL:</p>
+
+<pre><code>&gt; (define df (fetch-irisk-data db 10 4))
+&gt; (df-describe df)
+data-frame: 11 columns, 14 rows
+properties:
+series:
+              NAs           min           max          mean        stddev
+  bDist         0             0         94.66         34.79         34.68
+  bDuration     0             0             3          1.15          1.15
+  bTss          0             0         191.8         77.99         77.04
+  rDist         0             0         20.04          8.83          8.29
+  rDuration     0             0          4.44          1.46          1.49
+  rTss          0             0        322.49         115.4        122.29
+  sDist         0             0           4.2          1.05          1.38
+  sDuration     0             0          1.87          0.46          0.61
+  sTss          0             0         91.32         23.79         30.83
+  timestamp     0    1543795200    1551657600    1547726400    2438026.74
+  week          0        +inf.0        -inf.0        +nan.0        +nan.0
+&gt;</code></pre>
+
+<p>The data frame contains a series for each column retrieved by the SQL query, we now need to add the &ldquo;load&rdquo; series &mdash; for each of the series in the data frame, we&rsquo;ll add a corresponding load series, containing a smoothed average. <code>add-smoothed-series</code> constructs a single such series, while <code>add-all-smoothed-series</code> creates all the load series:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="n">base-series</span> <span class="n">load-series</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">smoothed</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">df-add-derived</span>
+   <span class="n">df</span>
+   <span class="n">load-series</span>                          <span class="c1">; series name to create</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">base-series</span><span class="p">)</span>                   <span class="c1">; selected series</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">l</span><span class="p">)</span>
+     <span class="c1">;; &#39;l&#39; is a list containing a "row" of the selected series, since we only</span>
+     <span class="c1">;; select one series (base-series), the list contains one element, which</span>
+     <span class="c1">;; we extract here:</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">value</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">l</span> <span class="mi">0</span><span class="p">))</span>
+     <span class="c1">;; this weeks volume contributes to next weeks load, so we return the</span>
+     <span class="c1">;; previous smoothed value (`begin0`) and computing the next one.</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin0))" style="color: inherit">begin0</a></span> <span class="n">smoothed</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">smoothed</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">1</span> <span class="n">factor</span><span class="p">)</span> <span class="n">smoothed</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">factor</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">value</span> <span class="mi">0</span><span class="p">))))))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">add-all-smoothed-series</span> <span class="n">df</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"sDuration"</span> <span class="s2">"sDurationLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"sDist"</span> <span class="s2">"sDistLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"sTss"</span> <span class="s2">"sTssLoad"</span> <span class="n">factor</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"bDuration"</span> <span class="s2">"bDurationLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"bDist"</span> <span class="s2">"bDistLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"bTss"</span> <span class="s2">"bTssLoad"</span> <span class="n">factor</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"rDuration"</span> <span class="s2">"rDurationLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"rDist"</span> <span class="s2">"rDistLoad"</span> <span class="n">factor</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">add-smoothed-series</span> <span class="n">df</span> <span class="s2">"rTss"</span> <span class="s2">"rTssLoad"</span> <span class="n">factor</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="plotting-the-data">Plotting the data</h2>
+
+<p>With the data ready, we can start exploring it in the DrRacket REPL. For example, to plot the weekly bike durations and the duration load, we can type the following in DrRacket:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">points</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="s2">"bDuration"</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="s2">"bDurationLoad"</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a022/basic-plot.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>While the above plot was simple to generate, it is not very attractive and does not present the information in a useful way. There are several ways to improve this plot, below are some of the things that can be easily done to improve its appearance.</p>
+
+<p>The default colors used by the plot library are very basic, but the <code>racket/draw</code> package provides a <a href="https://docs.racket-lang.org/draw/color-database___.html?q=the-color-database">color database</a> which allows selecting nice colors by their names:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dot-color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="s2">"SeaGreen"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">warning-color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="s2">"DarkGoldenrod"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">danger-color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="s2">"Firebrick"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">bike-bg-color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="s2">"LavenderBlush"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">this-week-color</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">the-color-database</span> <span class="n">find-color</span> <span class="s2">"RoyalBlue"</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>By default, the plot package calculates the limits of the plot so that all the data fits snuggly on the plot area, this however makes places some of the dots at the edge of the plot area, making them difficult to see. We can calculate the upper limit limit of the plot using the <code>df-statistics</code> function and increase it slightly:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">stats</span> <span class="p">(</span><span class="n">df-statistics</span> <span class="n">df</span> <span class="s2">"bDuration"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">load-stats</span> <span class="p">(</span><span class="n">df-statistics</span> <span class="n">df</span> <span class="s2">"bDurationLoad"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">max-y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mf">1.2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="p">(</span><span class="n">statistics-max</span> <span class="n">stats</span><span class="p">)</span>
+                          <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mf">1.6</span> <span class="p">(</span><span class="n">statistics-max</span> <span class="n">load-stats</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The line for the &ldquo;load&rdquo; series has several edges, as there is one data point for each week, we can smooth it out using the <code>spline</code> function (part of the <code>data-frame</code> package). While doing it we can actually plot two lines: a &ldquo;warning&rdquo; line at 20% increase of the load and a &ldquo;danger&rdquo; line t 60% increase of the load:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">load-data</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="s2">"bDurationLoad"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">load-fn</span> <span class="p">(</span><span class="n">spline</span> <span class="n">load-data</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">warning-line</span> <span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="n">load-fn</span> <span class="n">x</span><span class="p">)</span> <span class="mi">0</span><span class="p">)</span> <span class="mf">1.2</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">danger-line</span> <span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="n">load-fn</span> <span class="n">x</span><span class="p">)</span> <span class="mi">0</span><span class="p">)</span> <span class="mf">1.6</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Given that some of the data is in the past, and some is in the future, we can plot a vertical rule where the current week is. To find the X value of the current week, we can use <code>df-index-of</code> and <code>df-ref</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">now-index</span> <span class="p">(</span><span class="n">df-index-of</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-seconds))" style="color: inherit">current-seconds</a></span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">now-value</span> <span class="p">(</span><span class="n">df-ref</span> <span class="n">df</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sub1))" style="color: inherit">sub1</a></span> <span class="n">now-index</span><span class="p">))</span> <span class="s2">"timestamp"</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, we can use plot parameters to make the X axis a date axis, instead of printing integer values for the UNIX timestamps, plus we can add a title and clear the labels for the X and Y axis (their meaning should be obvious and allows for a more compact plot)</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-title</span> <span class="s2">"Bike Duration"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-background</span> <span class="n">bike-bg-color</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-x-ticks</span> <span class="p">(</span><span class="n">date-ticks</span><span class="p">)]</span>
+               <span class="p">[</span><span class="n">plot-y-label</span> <span class="no">#f</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-x-label</span> <span class="no">#f</span><span class="p">])</span>
+      <span class="p">(</span><span class="n">plot-snip</span>
+       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+        <span class="p">(</span><span class="n">tick-grid</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">function</span> <span class="n">warning-line</span> <span class="kd">#:color</span> <span class="n">warning-color</span> <span class="kd">#:width</span> <span class="mi">3</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">dot</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">function</span> <span class="n">danger-line</span> <span class="kd">#:color</span> <span class="n">danger-color</span> <span class="kd">#:width</span> <span class="mi">3</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">dot</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">points</span> <span class="n">data</span>
+                <span class="kd">#:sym</span> <span class="o">'</span><span class="ss">fullcircle</span>
+                <span class="kd">#:size</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="n">point-size</span><span class="p">)</span> <span class="mf">1.5</span><span class="p">)</span>
+                <span class="kd">#:fill-color</span> <span class="n">dot-color</span>
+                <span class="kd">#:color</span> <span class="n">dot-color</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">vrule</span> <span class="n">now-value</span>
+               <span class="kd">#:color</span> <span class="n">this-week-color</span>
+               <span class="kd">#:width</span> <span class="mf">2.0</span>
+               <span class="kd">#:style</span> <span class="o">'</span><span class="ss">short-dash</span><span class="p">))</span>
+       <span class="kd">#:y-min</span> <span class="mi">0</span> <span class="kd">#:y-max</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="n">max-y</span> <span class="mi">1</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And here is the same data, this time plotted with all the enhancements discussed above:</p>
+
+<div class="figure"><img src="/img/a022/enhanced-plot.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h3 id="interactive-info-display-on-mouse-hover">Interactive info display on mouse hover</h3>
+
+<p>There is a lot of data available to display, but showing it on the plot would result in a lot of clutter. We can, however, add a hover callback which can display information about the week where the mouse pointer is. The <code>plot</code>, or <code>plot-snip</code> functions produce a <code>snip%</code> object, rather than an image, and snips are interactive objects which DrRacket knows how to manage. The plot snips support a &ldquo;hover callback&rdquo; which is a callback invoked whenever the mouse is over the plot area. This callback can than add further elements to the plot. You can read more about interactive plots <a href="/2018/03/interactive-overlays-with-the-racket-plot-package-update.html">here</a>.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">format-value</span> <span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">x</span> <span class="kd">#:precision</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">hover-callback</span> <span class="n">snip</span> <span class="n">event</span> <span class="n">x</span> <span class="n">y</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">renderers</span> <span class="o">'</span><span class="p">())</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">add-renderer</span> <span class="n">r</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">renderers</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">r</span> <span class="n">renderers</span><span class="p">)))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">snip</span> <span class="n">x</span> <span class="n">y</span> <span class="n">event</span><span class="p">)</span>
+    <span class="c1">;; Find the position of the mouse in the current data frame, extract the</span>
+    <span class="c1">;; information for the current location and display a vertical line plus</span>
+    <span class="c1">;; a pict containing information about the plot.</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index</span> <span class="p">(</span><span class="n">df-index-of</span> <span class="n">df</span> <span class="s2">"timestamp"</span> <span class="n">x</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">index</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">index</span> <span class="p">(</span><span class="n">df-row-count</span> <span class="n">df</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">ts</span> <span class="p">(</span><span class="n">df-ref</span> <span class="n">df</span> <span class="n">index</span> <span class="s2">"timestamp"</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">week</span> <span class="p">(</span><span class="n">df-ref</span> <span class="n">df</span> <span class="n">index</span> <span class="s2">"week"</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">vol</span> <span class="p">(</span><span class="n">df-ref</span> <span class="n">df</span> <span class="n">index</span> <span class="s2">"bDuration"</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">vol-warning</span> <span class="p">(</span><span class="n">warning-line</span> <span class="n">ts</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">vol-danger</span> <span class="p">(</span><span class="n">danger-line</span> <span class="n">ts</span><span class="p">))</span>
+      <span class="p">(</span><span class="n">add-renderer</span> <span class="p">(</span><span class="n">vrule</span> <span class="n">ts</span> <span class="kd">#:width</span> <span class="mf">1.0</span> <span class="kd">#:color</span> <span class="s2">"gray"</span><span class="p">))</span>
+      <span class="p">(</span><span class="n">add-renderer</span> <span class="p">(</span><span class="n">points</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">ts</span> <span class="n">vol</span><span class="p">))</span>
+                            <span class="kd">#:sym</span> <span class="o">'</span><span class="ss">fullcircle</span>
+                            <span class="kd">#:size</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="n">point-size</span><span class="p">)</span> <span class="mf">2.0</span><span class="p">)</span>
+                            <span class="kd">#:fill-color</span> <span class="n">hl-dot-color</span>
+                            <span class="kd">#:color</span> <span class="n">hl-dot-color</span><span class="p">))</span>
+
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">badge</span> <span class="p">(</span><span class="n">make-hover-badge</span>
+                     <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="s2">"Danger"</span> <span class="p">(</span><span class="n">format-value</span> <span class="n">vol-danger</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="s2">"Warning"</span> <span class="p">(</span><span class="n">format-value</span> <span class="n">vol-warning</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="s2">"Actual"</span> <span class="p">(</span><span class="n">format-value</span> <span class="n">vol</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="s2">"Week"</span> <span class="n">week</span><span class="p">))))</span>
+
+      <span class="p">(</span><span class="n">add-renderer</span> <span class="p">(</span><span class="n">pu-label</span> <span class="n">x</span> <span class="n">y</span> <span class="n">badge</span><span class="p">))))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">set-overlay-renderers</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">renderers</span><span class="p">)</span> <span class="no">#f</span> <span class="n">renderers</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The function above makes use of two utility functions defined in <a href="">plot-util.rkt</a>, <code>make-hover-badge</code> creates a <code>pict</code> with the label to display, and <code>pu-label</code> creates a render which will show up on the plot.</p>
+
+<p>The <code>hover-callback</code> can be installed in the plot snip after it was created but before returning it to DrRacket for display:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">mkplot</span> <span class="n">df</span><span class="p">)</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">snip</span> <span class="p">(</span><span class="n">plot-snip</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">set-mouse-event-callback</span> <span class="n">hover-callback</span><span class="p">)</span>
+   <span class="n">snip</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a022/hover-plot.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="creating-a-standalone-application">Creating a standalone application</h2>
+
+<p>Exploring plots in the interactive DrRacket REPL is what makes Racket powerful and attractive to use, it is however inconvenient to start DrRacket and produce these plots manually every time I want to look at the data. Fortunately, it is easy to build a standalone GUI application to show these plots in a window, so I can simply have a link on my desktop to start it up and look at the plots.</p>
+
+<p>The plot snips which are displayed in the DrRacket REPL can also be used directly inside an <code>editor-canvas%</code> (including the mouse-hover functionality). It is somewhat complex to use an <code>editor-canvas%</code> for this purpose, I plan to write blog post on this subject, but for now, you can have a look at the <a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard/blob/master/plot-container.rkt">plot-container.rkt</a> file for the implementation &mdash; this is a class which allows packaging multiple plots in a canvas, handling the layout and resize for them. The plots are created identically &mdash; there is a function which is passed in the series to plot, plus some additional data, and they are added to this canvas.</p>
+
+<p>This is a basic GUI application (at least as far as the GUI part goes), but there are a few tricks and techniques which makes the application easier to use.</p>
+
+<h3 id="finding-the-location-of-the-database">Finding the location of the database</h3>
+
+<p>The application needs access to the ActivityLog2 database, and its location is stored in the ActivityLog2 preferences file. Racket provides a mechanism for storing and retrieving key-value pairs into a file using the <code><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._put-preferences))" style="color: inherit">put-preferences</a></code>, <code><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._get-preference))" style="color: inherit">get-preference</a></code> functions. Simple wrappers around these functions (called <code>get-pref</code> and <code>put-pref</code>), which change the default setting file, allows storing per-application information. Finding the location of the database, is a simple matter of knowing which key it is stored under:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">database-file</span>
+  <span class="p">(</span><span class="n">get-pref</span> <span class="o">'</span><span class="ss">activity-log:database-file</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="no">#f</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The application is set up to always open the database file that was last opened in ActivityLog2. There is also some code to handle the case where no database file is present &mdash; this simply displays an error message.</p>
+
+<h3 id="restoring-the-window-size">Restoring the window size</h3>
+
+<p>Well behaved applications will remember their settings even after they are closed and reopened. For this application, there are not many settings, but the size of the window is one of them &mdash; rather than having a fixed window size, the application will save its window size in the preferences file on exit and restore it when it is reopened. This way, I can resize the application to the size I want and this size will be remembered when I reopen the application.</p>
+
+<p>Restoring frame dimensions is simple, they are retrieved from the preference file, with some suitable defaults if they don&rsquo;t exist, than the frame is created with these dimensions:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1">;; retrieve previous dimensions and maximized flag</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dims</span> <span class="p">(</span><span class="n">get-pref</span> <span class="o">'</span><span class="ss">irisk-dashboard:frame-dimensions</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="mi">1200</span> <span class="mi">750</span><span class="p">))))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">maximized?</span> <span class="p">(</span><span class="n">get-pref</span> <span class="o">'</span><span class="ss">irisk-dashboard:frame-maximized</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="no">#f</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">tl</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">frame%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+                <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/augment))" style="color: inherit">define/augment</a></span> <span class="p">(</span><span class="n">on-close</span><span class="p">)</span>
+                  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span> <span class="n">show</span> <span class="no">#f</span><span class="p">)</span>
+                  <span class="p">(</span><span class="n">on-toplevel-close</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span><span class="p">)))</span>
+              <span class="p">[</span><span class="n">label</span> <span class="s2">"AL2 IRisk Dashboard"</span><span class="p">]</span>
+              <span class="p">[</span><span class="n">width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">dims</span><span class="p">)]</span>
+              <span class="p">[</span><span class="n">height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">dims</span><span class="p">)]))</span>
+<span class="c1">;; maximize the frame if it was maximized last time</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">maximized?</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">tl</span> <span class="n">maximize</span> <span class="n">maximized?</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To save the dimensions on exit, the <code>on-close</code> method in the <code>frame%</code> class is overridden, to call <code>on-toplevel-close</code>, which is defined below &mdash; this functions saves the current dimensions into the preferences file:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-toplevel-close</span> <span class="n">frame</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">frame</span> <span class="n">is-maximized?</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">frame</span> <span class="n">is-fullscreened?</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">(([</span><span class="n">w</span> <span class="n">h</span><span class="p">]</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">frame</span> <span class="n">get-size</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">put-pref</span> <span class="o">'</span><span class="ss">irisk-dashboard:frame-dimensions</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">w</span> <span class="n">h</span><span class="p">))))</span>
+  <span class="p">(</span><span class="n">put-pref</span> <span class="o">'</span><span class="ss">irisk-dashboard:frame-maximized</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">frame</span> <span class="n">is-maximized?</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="avoiding-flickering-plots">Avoiding flickering plots</h3>
+
+<p>A windows dimensions are only computed when the window is shown and this means that plot snips will not know their size until the window is shown. If they are created and added to the container before the container is shown, they will be shown as the wrong size, showing an ugly redraw as they are resized. This situation can be avoided by delaying the creation of the plots until the canvas is shown, by overriding the <code>on-superwindow-show</code> method to call <code>on-canvas-show</code>, which will query the canvas size and create the plots at their correct dimensions:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">canvas</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">plot-container%</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-superwindow-show</span> <span class="n">shown?</span><span class="p">)</span>
+           <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">shown?</span>
+             <span class="p">(</span><span class="n">on-canvas-show</span> <span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._this))" style="color: inherit">this</a></span><span class="p">))))</span>
+       <span class="p">[</span><span class="n">parent</span> <span class="n">tl</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="building-an-executable-and-a-distribution">Building an executable and a distribution</h3>
+
+<p>Racket allows building stand-alone executables, which are applications that will run on systems that don&rsquo;t have Racket installed. There are several ways to create executables: from the DrRacket GUI, from another racket program using the <code>compiler/embed</code> module, or from the command line using <code>raco</code>. To create an executable from the command line, you can use the command:</p>
+
+<pre><code>raco exe --gui --embed-dlls -o AL2-IRisk.exe main.rkt</code></pre>
+
+<p>The resulting executable will however still reference some files in the source directory. In our case, this is the SQL query that was used to retrieve the data. It is possible to tell Racket to create a distribution, which is a directory containing the executable, plus any files it references using <code>define-runtime-path</code>, to the resulting application is truly standalone. The command below will package the executable and the SQL query in the &ldquo;AL2-IRisk&rdquo; folder, which can than be installed independently of Racket:</p>
+
+<pre><code>raco distribute ./AL2-IRisk AL2-IRisk.exe</code></pre>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This application is a prototype, and you can find the full source <a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard">here</a>. I will use it for a while, tweaking a few things as I continue to use it and have more experience with the data. If this proves to be a good idea, the code will be added to ActivityLog2 and this prototype discarded &mdash; this is what prototypes are for. If it turns out that it is not very useful information, it is no big loss, as it did not take too long to write and this is the advantage of prototypes. In fact, this blog post has more lines than the actual application, and it also took longer to write.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/2019/02/racket-data-structures.html">&larr; <em>An Overview of Common Racket Data Structures</em></a>
+    </li>
+    <li class="next">
+      <a href="/2018/11/an-enhanced-text-field-gui-control-for-racket.html"><em>An enhanced text-field% GUI control for Racket</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        <p><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a> <small class='date-and-tags'>
+        <time datetime="2017-11-28" pubdate="true">2017-11-28</time></small></p>
+        <p><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a> <small class='date-and-tags'>
+        <time datetime="2017-11-25" pubdate="true">2017-11-25</time></small></p>
+        <p><a href='/2017/11/bike-trainer.html'>Bike Trainer</a> <small class='date-and-tags'>
+        <time datetime="2017-11-14" pubdate="true">2017-11-14</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
