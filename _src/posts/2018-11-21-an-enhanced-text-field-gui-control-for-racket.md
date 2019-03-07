@@ -11,6 +11,15 @@ data validation.
 
 <!-- more -->
 
+----
+
+**Update 05/03/2019**: This code is now available as a [Racket Package][gwm]
+which can be installed using `raco pkg install gui-widget-mixins`.  You can
+read the documentation for this package [here][gwm-doc] or visit the [GitHub
+repository][gwm-gh].
+
+----
+
 ## An initial, basic example
 
 For the purposes of this example, we'll use a simple application which asks
@@ -411,3 +420,6 @@ You can find the complete example for the last program from this article in
 this [GitHub
 Gist](https://gist.github.com/alex-hhh/090914500bc25ef2963024ebc366ff35)
 
+[gwm]: https://pkgs.racket-lang.org/package/gui-widget-mixins
+[gwm-doc]: https://docs.racket-lang.org/gui-widget-mixins/index.html
+[gwm-gh]: https://github.com/alex-hhh/gui-widget-mixins

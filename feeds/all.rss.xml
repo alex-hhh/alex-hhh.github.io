@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Thu, 14 Feb 2019 08:42:38 UT</lastBuildDate>
-  <pubDate>Thu, 14 Feb 2019 08:42:38 UT</pubDate>
+  <lastBuildDate>Tue, 05 Mar 2019 08:59:10 UT</lastBuildDate>
+  <pubDate>Tue, 05 Mar 2019 08:59:10 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Writing a Simple Password Generator in Racket</title>
+   <link>https://alex-hhh.github.io/2019/03/password-generator.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-03-password-generator-html</guid>
+   <pubDate>Tue, 05 Mar 2019 08:59:10 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;There are many places in todays world where you need to provide a password and, since it is not recommended to reuse them, you will need to come up with many such passwords, all of them preferably secure. This blog post shows how to build a simple password generator. You may already use a password manager and may not have a need for a new one, still, this blog post might show you a few useful techniques for building Racket applications.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/03/password-generator.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>An Overview of Common Racket Data Structures</title>
    <link>https://alex-hhh.github.io/2019/02/racket-data-structures.html?utm_source=all&amp;utm_medium=RSS</link>

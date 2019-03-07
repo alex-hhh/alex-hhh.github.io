@@ -19,6 +19,7 @@ https://alex-hhh.github.io/2017/11/bike-trainer.html
 https://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html
 https://alex-hhh.github.io/2018/01/equipment-usage-and-costs.html
 https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html
+https://alex-hhh.github.io/2019/03/password-generator.html
 https://alex-hhh.github.io/2018/03/arduino-inclinometer-improvements.html
 https://alex-hhh.github.io/Cookies.html
 https://alex-hhh.github.io/About.html
