@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2019-03-05T08:59:10Z</updated>
+ <updated>2019-03-23T02:45:15Z</updated>
+ <entry>
+  <title type="text">Building a GUI Application for the Password Generator</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/03/password-generator-gui.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-03-password-generator-gui-html</id>
+  <published>2019-03-23T02:45:15Z</published>
+  <updated>2019-03-23T02:45:15Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;In the &lt;a href="/2019/03/password-generator.html"&gt;previous blog post&lt;/a&gt;, we built a password generator and packaged it as a command line utility, in this blog post we&amp;rsquo;ll look at how to build a GUI application with the same functionality and look at some of the techniques of building GUI applications in Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/03/password-generator-gui.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Writing a Simple Password Generator in Racket</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/03/password-generator.html?utm_source=racket&amp;utm_medium=Atom" />
