@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sat, 23 Mar 2019 02:45:15 UT</lastBuildDate>
-  <pubDate>Sat, 23 Mar 2019 02:45:15 UT</pubDate>
+  <lastBuildDate>Thu, 18 Apr 2019 08:09:34 UT</lastBuildDate>
+  <pubDate>Thu, 18 Apr 2019 08:09:34 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Build Racket Packages with Azure Pipelines</title>
+   <link>https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-04-build-racket-packages-with-azure-pipelines-html</guid>
+   <pubDate>Thu, 18 Apr 2019 08:09:34 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;With the future of Travis uncertain, I started looking for a &lt;a href="https://en.wikipedia.org/wiki/Continuous_integration"&gt;Continuous Integration&lt;/a&gt; alternative and since Microsoft advertised Azure DevOps everywhere I went on the web, I decided to give it a try. I now moved all my Racket packages to Azure Pipelines, plus have a Racket application built with it, so I decided to write up some notes about my experience.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Building a GUI Application for the Password Generator</title>
    <link>https://alex-hhh.github.io/2019/03/password-generator-gui.html?utm_source=racket&amp;utm_medium=RSS</link>

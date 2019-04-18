@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Build Racket Packages with Azure Pipelines</title>
+    <meta name="description" content="With the future of Travis uncertain, I started looking for a Continuous Integration alternative and since Microsoft advertised Azure DevOps everywhere I went on the web, I decided to give it a try. I now moved all my Racket packages to Azure Pipelines, pl...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html">
+    <link rel="next" href="/2019/03/password-generator-gui.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
+  <small>(4)</small></a></li>
+
+<li><a href="/tags/arduino.html">arduino&nbsp;
+  <small>(3)</small></a></li>
+
+<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
+  <small>(1)</small></a></li>
+
+<li><a href="/tags/racket.html">racket&nbsp;
+  <small>(14)</small></a></li>
+
+<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
+  <small>(5)</small></a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li>
+              <a href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Build Racket Packages with Azure Pipelines</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-04-18" pubdate="true">2019-04-18</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>With the future of Travis uncertain, I started looking for a <a href="https://en.wikipedia.org/wiki/Continuous_integration">Continuous Integration</a> alternative and since Microsoft advertised Azure DevOps everywhere I went on the web, I decided to give it a try. I now moved all my Racket packages to Azure Pipelines, plus have a Racket application built with it, so I decided to write up some notes about my experience.</p>
+<!-- more-->
+
+<p>This blog post covers setting up an Azure Pipelines <a href="https://en.wikipedia.org/wiki/Continuous_integration">CI</a> for a Racket package, but it does make any attempt to make the case that it is better or worse than the alternatives: I was looking for a Travis alternative, tried out Azure Pipelines, found it sufficient for my needs and stayed with it &mdash; at least for now.</p>
+
+<div class="figure"><img src="/img/a025/AzurePipelines.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Azure Pipelines does not support building Racket packages out of the box, but as was the case with <a href="https://github.com/greghendershott/travis-racket/">travis-racket</a> for Travis, it turns out it is not too complex to setup build and test of a Racket package.</p>
+
+<p>Before creating the actual pipelines, I find it simpler to setup the Racket package project with the required files, and there are two of them: the <code>azure-pipelines.yml</code> file controls the build, and <code>install-racket.sh</code> which downloads and installs Racket. These files don&rsquo;t need to be in the root folder of the package, they can be anywhere (and the build YAML file can have any name). I prefer to place then (and any additional build files) in the <strong>ci</strong> sub-folder of the package. For an example setup, see the <a href="https://github.com/alex-hhh/plot-container">plot-container</a>.</p>
+
+<h2 id="azure-pipelinesyml--the-build-file">azure-pipelines.yml &mdash; the Build File</h2>
+
+<p>The <code>azure-pipelines.yml</code> file controls the build and test of the application, and for a basic racket package can be really simple. The example below should work for any package as long as the <code>PACKAGE_NAME</code> variable is updated to contain the actual package name:</p>
+
+<div class="brush: yaml">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">pool</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">vmImage</span><span class="p p-Indicator">:</span> <span class="s">&#39;Ubuntu-16.04&#39;</span>
+<span class="l l-Scalar l-Scalar-Plain">variables</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">PACKAGE_NAME</span><span class="p p-Indicator">:</span> <span class="s">"plot-container"</span>
+  <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
+  <span class="l l-Scalar l-Scalar-Plain">RACKET_DIR</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">$(Agent.BuildDirectory)/racket</span>
+  <span class="l l-Scalar l-Scalar-Plain">PLTSTDERR</span><span class="p p-Indicator">:</span> <span class="s">&#39;error</span><span class="nv"> </span><span class="s">warning@optimizer&#39;</span>
+<span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bash ./ci/install-racket.sh</span>
+  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">&#39;Install</span><span class="nv"> </span><span class="s">Racket</span><span class="nv"> </span><span class="s">$(RACKET_VERSION)&#39;</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">|</span>
+    <span class="no">PATH="$(RACKET_DIR)/bin:$(PATH)"</span>
+    <span class="no">raco pkg install --deps search-auto  --type dir --name $(PACKAGE_NAME)</span>
+    <span class="no">raco setup --check-pkg-deps --pkgs $(PACKAGE_NAME)</span>
+    <span class="no">raco test --no-run-if-absent --package $(PACKAGE_NAME)</span>
+  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">&#39;Build</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Test</span><span class="nv"> </span><span class="s">$(PACKAGE_NAME)&#39;</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>If you are familiar with Travis, the structure of the file should be easy to understand:</p>
+
+<ul>
+ <li>the <code>vmImage</code> tag selects the Virtual Machine to use &mdash; I find Linux  machines to be easiest to use, but see later in this blog post on how to use  Windows machines too.</li>
+ <li>the <code>variables</code> section defines a set of variables to use in the pipeline.  In this case, the name of the package, racket version to install and where  to install it. I also prefer to set the <code>PLTSTDERR</code> variable so the Racket  compiler will output some extra warnings, which help discovering problems  early.</li>
+ <li>the <code>steps</code> section contains the steps needed to build the package. There  are only two of them: installing racket and running the normal racket  package build and setup commands.</li></ul>
+
+<p>Unlike Travis, Azure Pipelines will not check out the sources in a directory the same as the package name, so the actual name of the package needs to be explicitly specified to the <code>raco pkg</code> and <code>raco setup</code> so these commands work correctly.</p>
+
+<p>To build the package using different Racket versions, you can set up matrix configurations for variables by adding a <code>strategy</code> section to the azure pipelines files and specifying which variable combinations to use for building. In the example below, the package would be built with two jobs, one for Racket 7.2 and one for Racket 7.1:</p>
+
+<div class="brush: yaml">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">strategy</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">maxParallel</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+  <span class="l l-Scalar l-Scalar-Plain">matrix</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">Racket_7_2</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
+    <span class="l l-Scalar l-Scalar-Plain">Racket_7_1</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.1</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>If the Racket package uses the <code>racket/gui</code> library during running the tests (even if no GUI windows are opened), you will find that the above pipelines file will fail to build, because no X Server is running by default on the build machines. The solution is to start the X Virtual Frame Buffer server, <code>Xvfb</code>, as a separate build step early in the pipeline, than add a <code>DISPLAY</code> variable indicating which connection the server is using:</p>
+
+<div class="brush: yaml">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">variables</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">DISPLAY</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">:99.0</span>
+  <span class="c1"># other variables follow here</span>
+<span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">(/usr/bin/Xvfb :99 -screen 0 1280x1024x24 &amp;)</span>
+  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">"Start</span><span class="nv"> </span><span class="s">Xvfb</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">DISPLAY=$(DISPLAY)"</span>
+<span class="c1"># other steps folow here</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="installing-racket">Installing Racket</h3>
+
+<p>Racket is not installed on any of the virtual machines used for the builds, so it has to be installed as part of the pipeline. It is the simplest to do this in a shell script which is invoked from the pipeline itself. A basic shell script is just a few lines of code, which downloads the installer file using <code>curl</code> than runs it:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nb">set</span> -e                         <span class="c1"># fail script if any of the commands in it fail</span>
+<span class="nv">RACKET_DIR</span><span class="o">=</span><span class="si">${</span><span class="nv">RACKET_DIR</span><span class="p">:=~/racket</span><span class="si">}</span>
+<span class="nv">RACKET_VERSION</span><span class="o">=</span><span class="si">${</span><span class="nv">RACKET_VERSION</span><span class="p">:=7.2</span><span class="si">}</span>
+<span class="nv">BASE</span><span class="o">=</span><span class="s2">"https://www.cs.utah.edu/plt/installers"</span>
+
+<span class="nv">URL</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">RACKET_VERSION</span><span class="si">}</span><span class="s2">/racket-</span><span class="si">${</span><span class="nv">RACKET_VERSION</span><span class="si">}</span><span class="s2">-x86_64-linux.sh"</span>
+<span class="nv">DFILE</span><span class="o">=</span><span class="k">$(</span>mktemp <span class="si">${</span><span class="nv">TMP</span><span class="k">:-</span><span class="p">/tmp</span><span class="si">}</span>/<span class="si">${</span><span class="nv">0</span><span class="p">##**/</span><span class="si">}</span>.XXXXXXXXXX<span class="k">)</span>
+
+<span class="nb">echo</span> <span class="s2">"Downloading </span><span class="nv">$URL</span><span class="s2"> ..."</span>
+curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
+<span class="nb">echo</span> <span class="s2">"Installing Racket into </span><span class="nv">$RACKET_DIR</span><span class="s2"> ..."</span>
+/bin/bash <span class="nv">$DFILE</span> --in-place --dest <span class="s2">"</span><span class="nv">$RACKET_DIR</span><span class="s2">"</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The above script will install the latest Racket version (7.2 at the time of this writing), but it also allows controlling the actual version using the <code>RACKET_VERSION</code> environment variable and the place where Racket is installed using the <code>RACKET_DIR</code> environment variable. Values for these variables can be specified in the Azure Pipelines build files, allowing installation of different versions without modifying this script.</p>
+
+<p>The above script will work for recent Racket versions (7.0 onwards). For more complex installation shell scripts, which also handle older Racket versions, see the <a href="https://github.com/greghendershott/travis-racket/blob/master/install-racket.sh">install-racket.sh</a> script that is part of the <code>travis-racket</code> repository, and I also wrote my <a href="https://github.com/alex-hhh/plot-container/blob/master/ci/install-racket.sh">own version</a>, mostly as an exercise in writing terse shell scripts. Both these shell scripts can be used in Azure Pipelines but they are somewhat complex to fit in a blog post, since they handle installation of old versions plus some extra checking.</p>
+
+<p>Also, at the time of writing this post, the main Racket mirror site was down, so the download script uses the UTAH site directly. Normally, the <code>BASE</code> download URL should be set to https://mirror.racket-lang.org/installers.</p>
+
+<h2 id="setup-the-build-pipeline">Setup the build pipeline</h2>
+
+<p>You&rsquo;ll need an <a href="https://dev.azure.com">Azure DevOps</a> account and create a project to hold the build pipelines. A single project can hold pipelines for several GitHub projects &mdash; this is really convenient if you only want to use DevOps for the pipeline functionality, because you only need to create one project.</p>
+
+<p>There are several on-line tutorials on how to setup and create the actual build pipeline, so this is just a short bullet point list of what needs to be done:</p>
+
+<ul>
+ <li>Create an Azure DevOps account, if you don&rsquo;t already have one</li>
+ <li>Install Azure Pipelines from the GitHub MarketPlace and authorize it for  your GitHub accont</li>
+ <li>Create a new Azure Pipelines project to hold the build pipelines</li>
+ <li>Create a new build pipeline &mdash; you will be prompted to select where the  project is located and where the build YAML file is withing the project,  since the file does not have to be in the root of your project</li></ul>
+
+<h2 id="beyond-the-basics">Beyond the basics</h2>
+
+<p>There are several other Azure Pipelines features which are useful in building more complex applications &mdash; for such an example, see the build pipeline for the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/azure-pipelines.yml">ActivityLog2 project</a>. This is a pipeline which can build a Racket application on both Windows and Linux (and there is an <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/install-racket.ps1">install-racket.ps1</a> which downloads installs Racket on Windows), download test databases from an external server, build an application with embedded API keys, which are stored as secret variables and publish the resulting installer as a build artifact. For more details about this process, see that builds <a href="https://github.com/alex-hhh/ActivityLog2/tree/master/etc/scripts">README.md</a> file.</p>
+  <footer>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/2019/03/password-generator-gui.html"><em>Building a GUI Application for the Password Generator</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <div id="disqus_thread"></div>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3>Recent Posts</h3>
+          <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
+        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
+        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
+        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
+        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
+        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        <p><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a> <small class='date-and-tags'>
+        <time datetime="2017-12-21" pubdate="true">2017-12-21</time></small></p>
+        <p><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a> <small class='date-and-tags'>
+        <time datetime="2017-12-09" pubdate="true">2017-12-09</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

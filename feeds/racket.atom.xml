@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2019-03-23T02:45:15Z</updated>
+ <updated>2019-04-18T08:09:34Z</updated>
+ <entry>
+  <title type="text">Build Racket Packages with Azure Pipelines</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-04-build-racket-packages-with-azure-pipelines-html</id>
+  <published>2019-04-18T08:09:34Z</published>
+  <updated>2019-04-18T08:09:34Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;With the future of Travis uncertain, I started looking for a &lt;a href="https://en.wikipedia.org/wiki/Continuous_integration"&gt;Continuous Integration&lt;/a&gt; alternative and since Microsoft advertised Azure DevOps everywhere I went on the web, I decided to give it a try. I now moved all my Racket packages to Azure Pipelines, plus have a Racket application built with it, so I decided to write up some notes about my experience.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Building a GUI Application for the Password Generator</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/03/password-generator-gui.html?utm_source=racket&amp;utm_medium=Atom" />
