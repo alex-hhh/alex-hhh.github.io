@@ -17,7 +17,7 @@ worse than the alternatives: I was looking for a Travis alternative, tried out
 Azure Pipelines, found it sufficient for my needs and stayed with it -- at
 least for now.
 
-![](/img/a025/AzurePipelines.png)
+![](/img/a025/azp.png)
 
 Azure Pipelines does not support building Racket packages out of the box, but
 as was the case with [travis-racket][tr] for Travis, it turns out it is not
