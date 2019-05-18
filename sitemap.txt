@@ -23,5 +23,6 @@ https://alex-hhh.github.io/2019/02/racket-data-structures.html
 https://alex-hhh.github.io/2019/03/password-generator-gui.html
 https://alex-hhh.github.io/2019/03/password-generator.html
 https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html
+https://alex-hhh.github.io/2019/05/timezone-visualization.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html

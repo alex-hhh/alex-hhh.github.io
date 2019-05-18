@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2019-04-18T08:09:34Z</updated>
+ <updated>2019-05-18T01:23:30Z</updated>
+ <entry>
+  <title type="text">Timezone Visualization</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/05/timezone-visualization.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-05-timezone-visualization-html</id>
+  <published>2019-05-18T01:23:30Z</published>
+  <updated>2019-05-18T01:23:30Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;The &lt;a href="https://github.com/evansiroky/timezone-boundary-builder"&gt;timezone-boundary-builder&lt;/a&gt; project publishes &lt;a href="https://en.wikipedia.org/wiki/GeoJSON"&gt;GeoJSON&lt;/a&gt; files with timezone boundaries based on &lt;a href="https://www.openstreetmap.org"&gt;OpenStreetMap&lt;/a&gt; data, and I though it would be an interesting project to load this data in Racket, build some map visualizations with it and explore some of the Racket drawing facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/05/timezone-visualization.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Build Racket Packages with Azure Pipelines</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/04/build-racket-packages-with-azure-pipelines.html?utm_source=racket&amp;utm_medium=Atom" />
