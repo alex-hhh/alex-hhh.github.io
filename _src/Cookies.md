@@ -1,4 +1,6 @@
-This does not directly store [HTTP
+## How cookies are used by this site
+
+This site does not directly store [HTTP
 cookies](https://en.wikipedia.org/wiki/HTTP_cookie) on your computer and does
 not track you in any way, however it does make use of some third party
 services which may do so.

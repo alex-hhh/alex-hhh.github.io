@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
     <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
     <link rel="alternate" type="application/atom+xml"
           href="/feeds/racket.atom.xml" title="Atom Feed">
@@ -35,63 +35,43 @@
     </script>
   </head>
   <body>
-    <!-- A standard Twitter Bootstrap nav bar -->
-    <header class="navbar navbar-default navbar-inverse"
-            role="banner">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button"
-                  class="navbar-toggle"
-                  data-toggle="collapse"
-                  data-target=".our-nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
-        </div>
-        <div class="collapse navbar-collapse our-nav-collapse"
-             role="navigation">
-          <ul class="nav navbar-nav">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
 
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/index.html">All Posts</a></li>
-
-<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
-  <small>(4)</small></a></li>
-
-<li><a href="/tags/arduino.html">arduino&nbsp;
-  <small>(3)</small></a></li>
-
-<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
-  <small>(1)</small></a></li>
-
-<li><a href="/tags/racket.html">racket&nbsp;
-  <small>(15)</small></a></li>
-
-<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
-  <small>(5)</small></a></li>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(15)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
-              <a href="/About.html">About</a>
+              <a class="nav-link" href="/About.html">About</a>
             </li> 
             <li>
-              <a href="/tags/arduino.html">Arduino</a>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
             </li> 
             <li class="active">
-              <a href="/tags/racket.html">Racket</a>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
             </li> 
             <li>
-              <a href="/tags/activitylog2.html">ActivityLog2</a>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
             </li> 
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
+
     <div class="container">
       <div class="row">
 
@@ -109,14 +89,14 @@
 
           <article>
   <header>
-    <h2><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a></h2>
+    <h2 class="index-entry"><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-05-18" pubdate="true">2019-05-18</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/05/timezone-visualization.html'><img src='/img/a026/thumb.png'/></a>
+          <a href='/2019/05/timezone-visualization.html'><img class="rounded" src='/img/a026/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -130,14 +110,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a></h2>
+    <h2 class="index-entry"><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-04-18" pubdate="true">2019-04-18</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/04/build-racket-packages-with-azure-pipelines.html'><img src='/img/a025/thumb.png'/></a>
+          <a href='/2019/04/build-racket-packages-with-azure-pipelines.html'><img class="rounded" src='/img/a025/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -151,14 +131,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a></h2>
+    <h2 class="index-entry"><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-03-23" pubdate="true">2019-03-23</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/03/password-generator-gui.html'><img src='/img/a024/thumb.png'/></a>
+          <a href='/2019/03/password-generator-gui.html'><img class="rounded" src='/img/a024/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -172,14 +152,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a></h2>
+    <h2 class="index-entry"><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-03-05" pubdate="true">2019-03-05</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/03/password-generator.html'><img src='/img/a023/thumb.png'/></a>
+          <a href='/2019/03/password-generator.html'><img class="rounded" src='/img/a023/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -193,14 +173,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a></h2>
+    <h2 class="index-entry"><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-02-14" pubdate="true">2019-02-14</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/02/racket-data-structures.html'><img src='/img/a021/thumb.png'/></a>
+          <a href='/2019/02/racket-data-structures.html'><img class="rounded" src='/img/a021/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -214,14 +194,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a></h2>
+    <h2 class="index-entry"><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a></h2>
     <p class='date-and-tags'>
 <time datetime="2019-02-09" pubdate="true">2019-02-09</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/activitylog2.html">activitylog2</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2019/02/data-visualization-dashboard.html'><img src='/img/a022/thumb.png'/></a>
+          <a href='/2019/02/data-visualization-dashboard.html'><img class="rounded" src='/img/a022/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -235,14 +215,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a></h2>
+    <h2 class="index-entry"><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a></h2>
     <p class='date-and-tags'>
 <time datetime="2018-11-21" pubdate="true">2018-11-21</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'><img src='/img/a020/thumb.png'/></a>
+          <a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'><img class="rounded" src='/img/a020/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -256,14 +236,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a></h2>
+    <h2 class="index-entry"><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a></h2>
     <p class='date-and-tags'>
 <time datetime="2018-10-29" pubdate="true">2018-10-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'><img src='/img/a019/thumb.png'/></a>
+          <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'><img class="rounded" src='/img/a019/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -277,14 +257,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a></h2>
+    <h2 class="index-entry"><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a></h2>
     <p class='date-and-tags'>
 <time datetime="2018-10-19" pubdate="true">2018-10-19</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'><img src='/img/a018/thumb.png'/></a>
+          <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'><img class="rounded" src='/img/a018/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -298,11 +278,11 @@
 </article>
 <footer>
  <ul class="pagination">
-  <li class="disabled"><a href="#">
+  <li class="page-item disabled"><a class="page-link" href="#">
     <quote>&larr;</quote></a></li>
-  <li class="active"><a href="/tags/racket.html">1</a></li>
-  <li><a href="/tags/racket-2.html">2</a></li>
-  <li><a href="/tags/racket-2.html">
+  <li class="page-item active"><a class="page-link" href="/tags/racket.html">1</a></li>
+  <li class="page-item"><a class="page-link" href="/tags/racket-2.html">2</a></li>
+  <li class="page-item"><a class="page-link" href="/tags/racket-2.html">
     <quote>&rarr;</quote></a></li></ul></footer>
         </div>
 
@@ -337,7 +317,8 @@
       </footer>
     </div>
     <!-- </body> JS -->
-    <script type="text/javascript" src="/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

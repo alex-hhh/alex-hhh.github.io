@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
     <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
     <link rel="alternate" type="application/atom+xml"
           href="/feeds/all.atom.xml" title="Atom Feed">
@@ -35,63 +35,43 @@
     </script>
   </head>
   <body>
-    <!-- A standard Twitter Bootstrap nav bar -->
-    <header class="navbar navbar-default navbar-inverse"
-            role="banner">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button"
-                  class="navbar-toggle"
-                  data-toggle="collapse"
-                  data-target=".our-nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
-        </div>
-        <div class="collapse navbar-collapse our-nav-collapse"
-             role="navigation">
-          <ul class="nav navbar-nav">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
 
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/index.html">All Posts</a></li>
-
-<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
-  <small>(4)</small></a></li>
-
-<li><a href="/tags/arduino.html">arduino&nbsp;
-  <small>(3)</small></a></li>
-
-<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
-  <small>(1)</small></a></li>
-
-<li><a href="/tags/racket.html">racket&nbsp;
-  <small>(15)</small></a></li>
-
-<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
-  <small>(5)</small></a></li>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(15)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
-              <a href="/About.html">About</a>
+              <a class="nav-link" href="/About.html">About</a>
             </li> 
             <li>
-              <a href="/tags/arduino.html">Arduino</a>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
             </li> 
             <li>
-              <a href="/tags/racket.html">Racket</a>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
             </li> 
             <li>
-              <a href="/tags/activitylog2.html">ActivityLog2</a>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
             </li> 
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
+
     <div class="container">
       <div class="row">
 
@@ -1049,31 +1029,52 @@
 
 <p>If you try to use the program for a bit, you might notice that the <code>pasteboard%</code> implements behavior that is not useful in a chess game: one can select and move multiple pieces, move pieces with the keyboard or deleting pieces from the board by pressing delete. In the next post, we&rsquo;ll look at how to fix these problems.</p>
   <footer>
-    <ul class="pager">
-    <li class="previous">
-      <a href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html">&larr; <em>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</em></a>
-    </li>
-    <li class="next">
-      <a href="/2018/10/chess-game-using-racket-s-pasteboard.html"><em>Chess Game Using Racket&rsquo;s Pasteboard</em> &rarr;</a>
-    </li>
-    </ul>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2018/10/chess-game-using-racket-s-pasteboard.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Chess Game Using Racket&rsquo;s Pasteboard</span>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="/2018/10/chess-game-using-racket-s-pasteboard-part-3.html"
+               aria-label="Next">
+              <span aria-hidden="true">Chess Game Using Racket&rsquo;s Pasteboard (part 3) &rarr;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
     <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
       var disqus_shortname = 'alex-hhh-github-com';
       (function() {
           var dsq = document.createElement('script');
           dsq.type = 'text/javascript';
           dsq.async = true;
           dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
       })();
     </script>
-    <div id="disqus_thread"></div>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
   </footer>
 </article>
         </div>
         <!-- Side bar -->
         <div id="sidebar-content" class="col-md-3">
-          <h3>Recent Posts</h3>
+          <h3 class="index-entry">Recent Posts</h3>
           <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
         <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
         <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
@@ -1146,7 +1147,8 @@
       </footer>
     </div>
     <!-- </body> JS -->
-    <script type="text/javascript" src="/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

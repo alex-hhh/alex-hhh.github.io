@@ -94,27 +94,26 @@ interactive program development that one can use for non-GUI programs.
 
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
-    <div class="item active">
-      <img src="/img/a024/t1.png" alt="Creating the frame">
+    <div class="carousel-item active">
+      <img class="rounded" src="/img/a024/t1.png" alt="Creating the frame">
     </div>
-    <div class="item">
-      <img src="/img/a024/t2.png" alt="Panels Added">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a024/t2.png" alt="Panels Added">
     </div>
-    <div class="item">
-      <img src="/img/a024/t3.png" alt="Alphabet and Strength buttons">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a024/t3.png" alt="Alphabet and Strength buttons">
     </div>
-    <div class="item">
-      <img src="/img/a024/t4.png" alt="Horizontal Layout">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a024/t4.png" alt="Horizontal Layout">
     </div>
   </div>
-
   <!-- Left and right controls -->
-  <a class="left carousel-control" href="#myCarousel" data-slide="prev">
-    <span class="glyphicon glyphicon-chevron-left"></span>
+  <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="sr-only">Previous</span>
   </a>
-  <a class="right carousel-control" href="#myCarousel" data-slide="next">
-    <span class="glyphicon glyphicon-chevron-right"></span>
+  <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
 </div>

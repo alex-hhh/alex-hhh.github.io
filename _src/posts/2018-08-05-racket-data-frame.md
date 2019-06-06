@@ -404,33 +404,33 @@ Here are some examples of fitting different data sets:
 
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
-    <div class="item active">
-      <img src="/img/a016/linear-fit.svg" alt="Linear Fit">
+    <div class="carousel-item active">
+      <img class="rounded" src="/img/a016/linear-fit.svg" alt="Linear Fit">
     </div>
-    <div class="item">
-      <img src="/img/a016/second-fit.svg" alt="Second Degree Polynomial Fit">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a016/second-fit.svg" alt="Second Degree Polynomial Fit">
     </div>
-    <div class="item">
-      <img src="/img/a016/third-fit.svg" alt="Third Degree Polynomial Fit">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a016/third-fit.svg" alt="Third Degree Polynomial Fit">
     </div>
-    <div class="item">
-      <img src="/img/a016/exp-fit.svg" alt="Exponential Fit">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a016/exp-fit.svg" alt="Exponential Fit">
     </div>
-    <div class="item">
-      <img src="/img/a016/log-fit.svg" alt="Logarithmic Fit">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a016/log-fit.svg" alt="Logarithmic Fit">
     </div>
-    <div class="item">
-      <img src="/img/a016/pow-fit.svg" alt="Power Function Fit">
+    <div class="carousel-item">
+      <img class="rounded" src="/img/a016/pow-fit.svg" alt="Power Function Fit">
     </div>
   </div>
 
   <!-- Left and right controls -->
-  <a class="left carousel-control" href="#myCarousel" data-slide="prev">
-    <span class="glyphicon glyphicon-chevron-left"></span>
+  <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="sr-only">Previous</span>
   </a>
-  <a class="right carousel-control" href="#myCarousel" data-slide="next">
-    <span class="glyphicon glyphicon-chevron-right"></span>
+  <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
 </div>

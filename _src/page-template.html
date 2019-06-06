@@ -19,7 +19,7 @@
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/pygments.css">
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet"> 
     <!-- Feeds -->
     <link rel="alternate" type="application/atom+xml"
           href="@|atom-feed-uri|" title="Atom Feed">
@@ -29,38 +29,35 @@
     @google-universal-analytics["UA-110325732-1"]
   </head>
   <body>
-    <!-- A standard Twitter Bootstrap nav bar -->
-    <header class="navbar navbar-default navbar-inverse"
-            role="banner">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button"
-                  class="navbar-toggle"
-                  data-toggle="collapse"
-                  data-target=".our-nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="@|uri-prefix|/index.html" class="navbar-brand">Alex Harsanyi</a>
-        </div>
-        <div class="collapse navbar-collapse our-nav-collapse"
-             role="navigation">
-          <ul class="nav navbar-nav">
+        <a href="@|uri-prefix|/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
             @;{ We can define Racket functions to "DRY". Here's one to
                 emit HMTL for a nav item, adding class="active" iff
                 this page's @|uri-path| is the same as the nav link. }
             @(define (ni uri label [a-attribs ""])
               @list{
                 <li@(when (string-ci=? uri uri-path) " class=\"active\"")>
-                  <a href="@|uri|"@|a-attribs|>@|label|</a>
+                  <a class="nav-link" href="@|uri|"@|a-attribs|>@|label|</a>
                 </li> })
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            @(define (craft-tag-links all-tag-info)
+              @(map (lambda (tinfo)
+                @list{<a class="dropdown-item" href="@(second tinfo)">@(first tinfo)&nbsp<small>(@(~a (third tinfo)))</small></a>})
+                all-tag-info))
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="@|uri-prefix|/index.html">All Posts</a></li>
-                @|tags-list-items|
+              <ul class="dropdown-menu" role="menu">
+                @craft-tag-links[(all-tag-info)]
               </ul>
             </li>
             @ni[(string-append uri-prefix "/About.html") "About"]
@@ -70,7 +67,8 @@
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
+
     <div class="container">
       <div class="row">
         @;{ Remember that Twitter Bootstrap has a 12 cell model. The
@@ -104,7 +102,7 @@
           @list{
           <!-- Side bar -->
           <div id="sidebar-content" class="col-md-3">
-            <h3>Recent Posts</h3>
+            <h3 class="index-entry">Recent Posts</h3>
             @|sidebar-contents|
           </div>})
       </div>
@@ -122,7 +120,8 @@
       </footer>
     </div>
     <!-- </body> JS -->
-    <script type="text/javascript" src="@|uri-prefix|/js/jquery.min.js"></script>
-    <script type="text/javascript" src="@|uri-prefix|/js/bootstrap.min.js"></script>
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="@|uri-prefix|/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="@|uri-prefix|/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

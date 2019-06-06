@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
     <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
     <link rel="alternate" type="application/atom+xml"
           href="/feeds/all.atom.xml" title="Atom Feed">
@@ -35,63 +35,43 @@
     </script>
   </head>
   <body>
-    <!-- A standard Twitter Bootstrap nav bar -->
-    <header class="navbar navbar-default navbar-inverse"
-            role="banner">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button"
-                  class="navbar-toggle"
-                  data-toggle="collapse"
-                  data-target=".our-nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
-        </div>
-        <div class="collapse navbar-collapse our-nav-collapse"
-             role="navigation">
-          <ul class="nav navbar-nav">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
 
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/index.html">All Posts</a></li>
-
-<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
-  <small>(4)</small></a></li>
-
-<li><a href="/tags/arduino.html">arduino&nbsp;
-  <small>(3)</small></a></li>
-
-<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
-  <small>(1)</small></a></li>
-
-<li><a href="/tags/racket.html">racket&nbsp;
-  <small>(15)</small></a></li>
-
-<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
-  <small>(5)</small></a></li>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(15)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
-              <a href="/About.html">About</a>
+              <a class="nav-link" href="/About.html">About</a>
             </li> 
             <li>
-              <a href="/tags/arduino.html">Arduino</a>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
             </li> 
             <li>
-              <a href="/tags/racket.html">Racket</a>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
             </li> 
             <li>
-              <a href="/tags/activitylog2.html">ActivityLog2</a>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
             </li> 
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
+
     <div class="container">
       <div class="row">
 
@@ -109,14 +89,14 @@
 
           <article>
   <header>
-    <h2><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a></h2>
+    <h2 class="index-entry"><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a></h2>
     <p class='date-and-tags'>
 <time datetime="2018-01-14" pubdate="true">2018-01-14</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2018/01/equipment-usage-and-costs.html'><img src='/img/a008/thumb.png'/></a>
+          <a href='/2018/01/equipment-usage-and-costs.html'><img class="rounded" src='/img/a008/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -130,14 +110,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a></h2>
+    <h2 class="index-entry"><a href='/2017/12/running-and-outdoor-temperature.html'>Running and Outdoor Temperature</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-12-21" pubdate="true">2017-12-21</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/12/running-and-outdoor-temperature.html'><img src='/img/a007/thumb.png'/></a>
+          <a href='/2017/12/running-and-outdoor-temperature.html'><img class="rounded" src='/img/a007/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -151,14 +131,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a></h2>
+    <h2 class="index-entry"><a href='/2017/12/arduino-inclinometer.html'>Arduino Inclinometer</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-12-09" pubdate="true">2017-12-09</time> :: <span class="tags"><a href="/tags/arduino.html">arduino</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/12/arduino-inclinometer.html'><img src='/img/a006/thumb.png'/></a>
+          <a href='/2017/12/arduino-inclinometer.html'><img class="rounded" src='/img/a006/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -172,14 +152,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a></h2>
+    <h2 class="index-entry"><a href='/2017/11/fatigue-and-running-form.html'>Fatigue and Running Form</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-11-28" pubdate="true">2017-11-28</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/11/fatigue-and-running-form.html'><img src='/img/a005/thumb.png'/></a>
+          <a href='/2017/11/fatigue-and-running-form.html'><img class="rounded" src='/img/a005/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -193,14 +173,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a></h2>
+    <h2 class="index-entry"><a href='/2017/11/quantifying-fatigue.html'>Quantifying Fatigue</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-11-25" pubdate="true">2017-11-25</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/11/quantifying-fatigue.html'><img src='/img/a004/thumb.png'/></a>
+          <a href='/2017/11/quantifying-fatigue.html'><img class="rounded" src='/img/a004/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -214,14 +194,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/11/bike-trainer.html'>Bike Trainer</a></h2>
+    <h2 class="index-entry"><a href='/2017/11/bike-trainer.html'>Bike Trainer</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-11-14" pubdate="true">2017-11-14</time> :: <span class="tags"><a href="/tags/bike-trainer.html">bike trainer</a>, <a href="/tags/activitylog2.html">activitylog2</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/11/bike-trainer.html'><img src='/img/a003/thumb.png'/></a>
+          <a href='/2017/11/bike-trainer.html'><img class="rounded" src='/img/a003/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -235,14 +215,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a></h2>
+    <h2 class="index-entry"><a href='/2017/09/marathon-training-2017-statistics.html'>Marathon Training 2017 Statistics</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-09-21" pubdate="true">2017-09-21</time> :: <span class="tags"><a href="/tags/training-data-analysis.html">training data analysis</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/09/marathon-training-2017-statistics.html'><img src='/img/a002/thumb.png'/></a>
+          <a href='/2017/09/marathon-training-2017-statistics.html'><img class="rounded" src='/img/a002/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -256,14 +236,14 @@
 </article>
 <article>
   <header>
-    <h2><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a></h2>
+    <h2 class="index-entry"><a href='/2017/09/introducing-activitylog2.html'>Introducing ActivityLog2</a></h2>
     <p class='date-and-tags'>
 <time datetime="2017-09-15" pubdate="true">2017-09-15</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a></span></p>
   </header>
   <div class="container">
     <div class="row">
         <div id="content" class="col-md-2">
-          <a href='/2017/09/introducing-activitylog2.html'><img src='/img/a001/thumb.png'/></a>
+          <a href='/2017/09/introducing-activitylog2.html'><img class="rounded" src='/img/a001/thumb.png'/></a>
         </div>
         <div id="content" class="col-md-10">
 
@@ -277,12 +257,12 @@
 </article>
 <footer>
  <ul class="pagination">
-  <li><a href="/index-2.html">
+  <li class="page-item"><a class="page-link" href="/index-2.html">
     <quote>&larr;</quote></a></li>
-  <li><a href="/index.html">1</a></li>
-  <li><a href="/index-2.html">2</a></li>
-  <li class="active"><a href="/index-3.html">3</a></li>
-  <li class="disabled"><a href="#">
+  <li class="page-item"><a class="page-link" href="/index.html">1</a></li>
+  <li class="page-item"><a class="page-link" href="/index-2.html">2</a></li>
+  <li class="page-item active"><a class="page-link" href="/index-3.html">3</a></li>
+  <li class="page-item disabled"><a class="page-link" href="#">
     <quote>&rarr;</quote></a></li></ul></footer>
         </div>
 
@@ -317,7 +297,8 @@
       </footer>
     </div>
     <!-- </body> JS -->
-    <script type="text/javascript" src="/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

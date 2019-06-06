@@ -4,7 +4,7 @@
 
     <meta charset="utf-8">
     <title>Cookies</title>
-    <meta name="description" content="This does not directly store HTTP cookies on your computer and does not track you in any way, however it does make use of some third party services which may do so. If you do not wish to be tracked, or don't want such cookies to be stored on your computer...">
+    <meta name="description" content="How cookies are used by this site: This site does not directly store HTTP cookies on your computer and does not track you in any way, however it does make use of some third party services which may do so. If you do not wish to be tracked, or don't want su...">
     <meta name="author"      content="Alex Harsányi">
     <meta name="keywords"    content="">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
     <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
     <link rel="alternate" type="application/atom+xml"
           href="/feeds/all.atom.xml" title="Atom Feed">
@@ -35,63 +35,43 @@
     </script>
   </head>
   <body>
-    <!-- A standard Twitter Bootstrap nav bar -->
-    <header class="navbar navbar-default navbar-inverse"
-            role="banner">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button"
-                  class="navbar-toggle"
-                  data-toggle="collapse"
-                  data-target=".our-nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/index.html" class="navbar-brand">Alex Harsanyi</a>
-        </div>
-        <div class="collapse navbar-collapse our-nav-collapse"
-             role="navigation">
-          <ul class="nav navbar-nav">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
 
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/index.html">All Posts</a></li>
-
-<li><a href="/tags/activitylog2.html">activitylog2&nbsp;
-  <small>(4)</small></a></li>
-
-<li><a href="/tags/arduino.html">arduino&nbsp;
-  <small>(3)</small></a></li>
-
-<li><a href="/tags/bike-trainer.html">bike trainer&nbsp;
-  <small>(1)</small></a></li>
-
-<li><a href="/tags/racket.html">racket&nbsp;
-  <small>(15)</small></a></li>
-
-<li><a href="/tags/training-data-analysis.html">training data analysis&nbsp;
-  <small>(5)</small></a></li>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(15)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
-              <a href="/About.html">About</a>
+              <a class="nav-link" href="/About.html">About</a>
             </li> 
             <li>
-              <a href="/tags/arduino.html">Arduino</a>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
             </li> 
             <li>
-              <a href="/tags/racket.html">Racket</a>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
             </li> 
             <li>
-              <a href="/tags/activitylog2.html">ActivityLog2</a>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
             </li> 
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
+
     <div class="container">
       <div class="row">
 
@@ -108,7 +88,9 @@
 
 
 
-<p>This does not directly store <a href="https://en.wikipedia.org/wiki/HTTP_cookie">HTTP cookies</a> on your computer and does not track you in any way, however it does make use of some third party services which may do so.</p>
+<h2 id="how-cookies-are-used-by-this-site">How cookies are used by this site</h2>
+
+<p>This site does not directly store <a href="https://en.wikipedia.org/wiki/HTTP_cookie">HTTP cookies</a> on your computer and does not track you in any way, however it does make use of some third party services which may do so.</p>
 
 <p>If you do not wish to be tracked, or don&rsquo;t want such cookies to be stored on your computer, you can set your browser preferences accordingly, or you can install a third party browser add-on that does the same thing. You will need to consult your browsers documentation on how to do that.</p>
 
@@ -160,7 +142,8 @@
       </footer>
     </div>
     <!-- </body> JS -->
-    <script type="text/javascript" src="/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

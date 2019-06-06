@@ -1,13 +1,13 @@
 <article>
   <header>
-    <h2><a href='@|uri-path|'>@|title|</a></h2>
+    <h2 class="index-entry"><a href='@|uri-path|'>@|title|</a></h2>
     <p class='date-and-tags'>@|date| :: @|tags|</p>
   </header>
   @(if thumbnail
     @list{<div class="container">
             <div class="row">
                 <div id="content" class="col-md-2">
-                  <a href='@|uri-path|'><img src='@|thumbnail|'/></a>
+                  <a href='@|uri-path|'><img class="rounded" src='@|thumbnail|'/></a>
                 </div>
                 <div id="content" class="col-md-10">
                   @|content-only|

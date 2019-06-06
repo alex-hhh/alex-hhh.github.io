@@ -1,6 +1,6 @@
 # About Me
 
-<img src="img/AlexH.jpg" class="img-rounded pull-left gap-right" width="200"/>
+<img src="img/AlexH.jpg" class="rounded float-left gap-right" width="200"/>
 
 My name is Alex Harsányi.  I live in Perth, Western Australia and I work as a
 Software Engineer at [Immersive Technologies][immtec] where I help build

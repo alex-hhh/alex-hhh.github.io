@@ -1,7 +1,43 @@
-/* custom.css */
+/* this class is added to header entries to prevent the background and line
+   under the header to be shown.
+*/
+.index-entry {
+    border-bottom: 0px solid #000000;
+    background: transparent;
+    margin-top: 0.2em;
+    margin-bottom: 0.1em;
+}
 
-code {
-    color: black;
+h1,h2,h3,h4,h5,h6 {
+    font-family: 'Roboto Condensed',Georgia,"Times New Roman",Times,sans-serif;
+}
+
+h2,h3,h4,h5,h6 {
+    border-bottom: 1px solid #6c7b8b;
+    /* background: #fffff0 */
+}
+
+h1 {
+    margin-top: 1.0em;
+    margin-bottom: 1.0em;
+}
+
+h2 {
+    margin-top: 1.0em;
+    margin-bottom: 0.8em;
+}
+
+h3 {
+    margin-top: 1.0em;
+    margin-bottom: 0.6em;
+}
+
+a {
+    color: #4682b4;
+}
+
+a:hover {
+    color: #4682b4;
 }
 
 body {
@@ -15,48 +51,55 @@ body {
 pre {
     white-space: pre;
     width: inherit;
+    font-size: 14px;
+    font-family: 'Roboto Mono',Menlo,Monaco,Consolas,Courier,monospace;
 }
 
+code {
+    white-space: pre;
+    width: inherit;
+    font-family: 'Roboto Mono',Menlo,Monaco,Consolas,Courier,monospace;
+}
+
+.figure {
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Make sure that images within blog articles never take more width than the
+   article width; `height: auto` ensures the height is also resized
+   proportionally.
+
+   This is useful given that Markdown itself gives you little control over
+   image resizing, and in particular no way to achieve this "best fit"
+   behavior.
+*/
 article img {
-  /* Make sure that images within blog articles never take more width
-     than the article width; `height: auto` ensures the height is also
-     resized proportionally.
-
-     This is useful given that Markdown itself gives you little
-     control over image resizing, and in particular no way to achieve
-     this "best fit" behavior.
- */
   max-width: 80%;
   height: auto;
   display: block;
   margin: 0 auto;
 }
 
-.carousel {
-  max-width: 80%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+/* for some strange reason, the next,prev icons are white on a white
+   background, so we invert them to black. */
+.carousel-control-next-icon,.carousel-control-prev-icon {
+    filter: invert(100%);
 }
 
+/* Make the tables take 80% of the width of the article and center them. */
 .table-responsive {
-    /* Make the tables take 70% of the width of the article and center them. */
     max-width: 80%;
     margin: auto;
 }
 
-.sourcetable {
-    /* Make the code blocks take 70% of the width of the article and center
-       them. */
-    max-width: 80%;
-    min-width: 80%;
-    margin: auto;
-}
-
-article h2 {
-    margin-top: 0.5em;
+.sourcetable {                          /* these are the code blocks */
+    max-width: 100%;
+    min-width: 100%;
+    margin-left: 1em;
 }
 
 .gap-right {
-    margin-right: 15px; 
+    margin-right: 40px;
 }
