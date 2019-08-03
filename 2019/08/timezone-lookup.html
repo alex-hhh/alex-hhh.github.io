@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Timezone Lookup (an adventure in program optimization)</title>
+    <meta name="description" content="in which we use GeoJSON data for timezone boundaries to determine the time zone for a given location, and learn a few things about the performance of Racket programs....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/08/timezone-lookup.html">
+    <link rel="next" href="/2019/05/timezone-visualization.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(16)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Timezone Lookup (an adventure in program optimization)</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-08-02" pubdate="true">2019-08-02</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>&hellip; in which we use GeoJSON data for timezone boundaries to determine the time zone for a given location, and learn a few things about the performance of Racket programs.</p>
+<!-- more-->
+
+<p>In my <a href="/2019/05/timezone-visualization.html">previous blog post</a> I used geographic time zone boundaries from a GeoJSON file to create visual maps of these boundaries, but this data can also be used to determine the time zone for a certain location. In this blog post, we&rsquo;ll implement a function which takes a GPS coordinate and returns the name of the time zone where this location. For the lookup itself, we&rsquo;ll perform a point-in-polygon test on the polygons which define the time zones, determining which one contains the given coordinates. Since the time zone boundary definitions contain many thousands of points, with the top 20 timezones containing in excess of 50&prime;000 points, we&rsquo;ll need to be mindful of the performance of our lookup function.</p>
+
+<div class="figure"><img src="/img/a027/timezone-map-2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The first implementation uses the GeoJSON object directly and, while the implementation is straightforward and passes a comprehensive test suite, it is also very slow, taking about 8 seconds for one lookup. Since this implementation is too slow for anything except a proof-of-concept implementation, it is time to look into speeding things up. We&rsquo;ll work on the improvements by running a profiler to measure running times for various functions and try to improve them.</p>
+
+<p>The first improvement is to use <em>bounding boxes</em> to avoid an expensive point-in-polygon test when the point is well outside the polygon. This improvement brings down the running time of <code>tz-lookup</code> to about 80 milliseconds, making it 100 times faster than the initial version, and, for many practical purposes, making this function usable. Still, but we&rsquo;ll continue exploring further improvements.</p>
+
+<p>The next improvement is to convert the GeoJSON data into more specific structures and in particular to change the list of points representing the polygons into vectors. This improvement brings the <code>tz-lookup</code> time down to 36.9 milliseconds, which is a 54% improvement over the previous version. It looks like vectors are faster than lists even for sequential traversal, which is the strong point for lists.</p>
+
+<p>The previous improvement forced us to do some memory allocations to convert points back to lists for passing around to other functions. Removing these unnecessary allocations gave us another 10% improvement, bringing the <code>tz-lookup</code> time down to 33.27 milliseconds.</p>
+
+<p>We&rsquo;ll try to use <code>flvectors</code> to store floating point values more efficiently and hope to make the program faster, but this is not the case, the program becomes 10% slower as a result. This shows the importance of measuring the execution time while attempting to optimize the code.</p>
+
+<p>Finally, we&rsquo;ll convert one of the functions, which uses a lot of floating point computations to use flonum operations, which the Racket compiler can optimize better (according to the documentation, anyway). This turns out to be true, and the execution time is improved by another 10%, recuperating the performance losses from the previous step.</p>
+
+<h2 id="write-the-tests-first">Write the tests first</h2>
+
+<p>Before we start implementing the actual timezone lookup code, it is best to prepare a test suite, to ensure that the code works correctly. The workings of the test suite are pretty simple: just check that some GPS coordinates produce the correct timezone result, but which GPS coordinates should we use? Well, the <a href="https://github.com/darkskyapp/tz-lookup">tz-lookup</a> project has a pretty comprehensive test suite, built, presumably, around a lot of tricky cases of GPS to timezone mappings. While our timezone lookup implementation will be quite different from that project, we can &ldquo;borrow&rdquo; their test cases.</p>
+
+<p>We will structure the test data in a way that is convenient for Racket: as a list containing a latitude, longitude and corresponding timezone entry, and place them in a separate file with the following contents:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1">;; this is the tz-test-cases.rktd file</span>
+<span class="p">(</span>
+ <span class="p">(</span> <span class="mf">40.7092</span>  <span class="mf">-74.0151</span> <span class="s2">"America/New_York"</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">42.3668</span>  <span class="mf">-71.0546</span> <span class="s2">"America/New_York"</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">41.8976</span>  <span class="mf">-87.6205</span> <span class="s2">"America/Chicago"</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">47.6897</span> <span class="mf">-122.4023</span> <span class="s2">"America/Los_Angeles"</span><span class="p">)</span>
+ <span class="c1">;; ... more test cases here</span>
+<span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>With the test data ready, we can write our test suite, which reads in the data from the file, and calls the <code>tz-lookup</code> function no the latitude,longitude pairs and checks the returned result against the correct one. Unsurprisingly, running the program below will fail all the test cases, as the <code>tz-lookup</code> simply returns <code>#f</code> for now:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tz-lookup</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="c1">;; does not do anything useful, will implement it later </span>
+  <span class="no">#f</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/module.html#(form._((lib._racket/private/base..rkt)._module+))" style="color: inherit">module+</a></span> <span class="n">test</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">rackunit</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="s2">"./tz-test-cases.rktd"</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">test-case</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">test-data</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">lat</span> <span class="n">lon</span> <span class="n">tzname</span><span class="p">)</span> <span class="n">test-case</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">check-equal?</span> <span class="p">(</span><span class="n">tz-lookup</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span> <span class="n">tzname</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="the-timezone-lookup-function-implementation">The timezone lookup function implementation</h2>
+
+<p>The lookup function works by taking the latitude/longitude coordinates and checking if they are inside any of the time-zone definition polygons in the time zone <a href="https://en.wikipedia.org/wiki/GeoJSON">GeoJSON</a> data file published by the <a href="https://github.com/evansiroky/timezone-boundary-builder">timezone-boundary-builder</a> project. The <a href="/2019/05/timezone-visualization.html">Timezone Visualisation</a> blog post contains some more detail about the structure of the data file, but here is a short overview:</p>
+
+<ul>
+ <li>The <strong>GeoJSON</strong> is a <strong>FeatureCollection</strong>, containing a list of  <strong>Features</strong></li>
+ <li>Each <strong>Feature</strong> represents a time zone, named by the <code>tzid</code> property</li>
+ <li>Each Feature has a <strong>Geometry</strong>, which is either a <strong>Polygon</strong> or a  <strong>MultiPolygon</strong>, which is just a collection of Polygons</li>
+ <li>Each <strong>Polygon</strong> is defined as a list of points representing its outline and  zero or more lists of points representing the &ldquo;holes&rdquo;.</li></ul>
+
+<p>First we define some functions to load the data and prepare the list of timezone features to check. These functions are trivial at this stage, but having defined allows us to measure the time it takes to load and prepare the data. We than define the global <code>features</code> variable to hold the list of features to check:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">json</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-geojson</span> <span class="n">path</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span> <span class="n"><a href="http://docs.racket-lang.org/json/index.html#(def._((lib._json/main..rkt)._read-json))" style="color: inherit">read-json</a></span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">prepare-features</span> <span class="n">geojson</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geojson</span> <span class="o">'</span><span class="ss">features</span> <span class="o">'</span><span class="p">()))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>tz-lookup</code> function will traverse the list of <code>features</code> calculating how probable is that the point at <code>lat/lon</code> is inside each feature (this is the <code>feature-winding-number</code> function which we will discuss later), than filters out all features which have a low probability. Finally, if one candidate is found, it is returned, otherwise, a candidate is selected by the <code>select-candidate</code> function.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tz-lookup</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">candidates</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">features</span><span class="p">)])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">wn</span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">feature</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">))</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">)</span> <span class="n">wn</span><span class="p">)))</span>
+  <span class="c1">;; Keep only candidates that have a large winding number</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">filtered</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">c</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">candidates</span><span class="p">)]</span> <span class="kd">#:unless</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">c</span><span class="p">)</span> <span class="mf">0.1</span><span class="p">))</span> <span class="n">c</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">filtered</span><span class="p">)</span> <span class="no">#f</span><span class="p">)</span>
+        <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span> <span class="n">filtered</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">filtered</span><span class="p">)))</span>
+        <span class="p">(</span><span class="no">#t</span> <span class="p">(</span><span class="n">select-candidate</span> <span class="n">filtered</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>feature-name</code> is a simple convenience function which retrieves the <code>tzid</code> property from the GeoJSON node, this property holds the time zone name:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">properties</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">feature</span> <span class="o">'</span><span class="ss">properties</span><span class="p">)])</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">properties</span> <span class="o">'</span><span class="ss">tzid</span> <span class="no">#f</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>select-candidate</code> function is responsible for selecting a time zone when multiple options are available: time zones are defined by political boundaries and sometimes two countries make claim to the same territory. Our <code>select-candidate</code> function handles only one such case, the &ldquo;Asia/Shanghai&rdquo; vs &ldquo;Asia/Urumqi&rdquo;:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">select-candidate</span> <span class="n">candidates</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">sorted</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._sort))" style="color: inherit">sort</a></span> <span class="n">candidates</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="kd">#:key</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match))" style="color: inherit">match</a></span> <span class="n">sorted</span>
+    <span class="c1">;; NOTE candidates are sorted by their winding number, W1 &gt;= W2!</span>
+    <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">n1</span> <span class="n">w1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">n2</span> <span class="n">w2</span><span class="p">)</span> <span class="n">other</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">w1</span> <span class="n">w2</span><span class="p">)</span> <span class="mf">1e-2</span><span class="p">)</span>
+         <span class="n">n1</span>                           <span class="c1">; w1 is definitely greater than w2</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">n1</span> <span class="s2">"Asia/Shanghai"</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">n2</span> <span class="s2">"Asia/Urumqi"</span><span class="p">))</span>
+                    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">n1</span> <span class="s2">"Asia/Urumqi"</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">n2</span> <span class="s2">"Asia/Shanghai"</span><span class="p">)))</span>
+                <span class="s2">"Asia/Urumqi"</span><span class="p">)</span>          <span class="c1">; conflict zone</span>
+               <span class="p">(</span><span class="no">#t</span>
+                <span class="n">n1</span><span class="p">))))</span>
+    <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">n1</span> <span class="n">w1</span><span class="p">)</span> <span class="n">other</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+     <span class="n">n1</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The check if a point is inside the polygon we&rsquo;ll use the <a href="https://en.wikipedia.org/wiki/Winding_number">winding number</a> algorithm as our <a href="https://en.wikipedia.org/wiki/Point_in_polygon">point in polygon</a> test. Before we do that, we have to descend though the GeoJSON nodes to get to the actual polygons. All the functions below, starting with <code>feature-winding-number</code> simply traverse the GeoJSON data:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">feature</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">wn</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="p">([</span><span class="n">shape</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="p">(</span><span class="n">feature-shapes</span> <span class="n">feature</span><span class="p">))])</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="n">wn</span> <span class="p">(</span><span class="n">shape-winding-number</span> <span class="n">shape</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">feature-shapes</span> <span class="n">feature</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">geometry</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">feature</span> <span class="o">'</span><span class="ss">geometry</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></span><span class="p">)))])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">shapes</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">coordinates</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span><span class="p">)]</span>
+          <span class="p">[</span><span class="n">type</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">type</span> <span class="no">#f</span><span class="p">)])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">type</span> <span class="s2">"Polygon"</span><span class="p">)</span>
+             <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">shapes</span><span class="p">))</span>
+            <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">type</span> <span class="s2">"MultiPolygon"</span><span class="p">)</span>
+             <span class="c1">;; Must be in any of the shapes</span>
+             <span class="n">shapes</span><span class="p">)</span>
+            <span class="p">(</span><span class="no">#t</span>
+             <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"inside-feature? unsupported geometry type: ~a"</span> <span class="n">type</span><span class="p">)))))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">shape-outline</span> <span class="n">p</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">p</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">shape-holes</span> <span class="n">p</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">p</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">shape-winding-number</span> <span class="n">p</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">outline</span> <span class="p">(</span><span class="n">shape-outline</span> <span class="n">p</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">holes</span> <span class="p">(</span><span class="n">shape-holes</span> <span class="n">p</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/first))" style="color: inherit">for/first</a></span> <span class="p">([</span><span class="n">h</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">holes</span><span class="p">)]</span> <span class="kd">#:when</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">polygon-winding-number</span> <span class="n">h</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span> <span class="mf">0.9999</span><span class="p">))</span> <span class="no">#t</span><span class="p">)</span>
+        <span class="mi">0</span>
+        <span class="p">(</span><span class="n">polygon-winding-number</span> <span class="n">outline</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>polygon-winding-number</code> function is the one that does the actual work: it calculates the <a href="https://en.wikipedia.org/wiki/Winding_number">winding number</a> of a polygon with respect the point at <code>lat/lon</code>. If this winding number is greater than 1, the point is inside the polygon, otherwise it is not. The function works, by iterating over each polygon segment, which are pairs of adjacent points, accumulating the <a href="https://en.wikipedia.org/wiki/Subtended_angle">subtended angle</a> of the segment with respect to the <code>lat/lon</code> point. Special care is taken to close the polygon and calculate the angle of the last point to the first:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-winding-number</span> <span class="n">poly</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">p0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">lon</span> <span class="n">lat</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">([</span><span class="n">winding-angle</span> <span class="mi">0</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">remaining-points</span> <span class="n">poly</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">remaining-points</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">winding-angle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">remaining-points</span><span class="p">)]</span>
+              <span class="p">[</span><span class="n">p2</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">remaining-points</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">poly</span><span class="p">)</span>   <span class="c1">; cycle back to beginning, closing the polygon</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">remaining-points</span><span class="p">))])</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">p0</span> <span class="n">p1</span> <span class="n">p2</span><span class="p">))</span>
+          <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">winding-angle</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">remaining-points</span><span class="p">))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>subtended-angle</code> requires some understanding of the <a href="https://en.wikipedia.org/wiki/Dot_product">dot product</a> and <a href="https://en.wikipedia.org/wiki/Cross_product">cross product</a> operations on vectors and it works as follows: the angle between the vectors <code>p0-&gt;p1</code> and <code>p0-&gt;p2</code> is calculated from the dot product of the two vectors and the sign is determined from the cross product of the same two vectors, the sign is needed to determine if the <code>p1-&gt;p2</code> vector is traversed in clockwise or counter-clockwise direction. Too keep the code short, rather than defining vector operations for subtraction, length, dot-product and cross-product, all these are done in the function itself:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">p0</span> <span class="n">p1</span> <span class="n">p2</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">x0</span> <span class="n">y0</span><span class="p">)</span> <span class="n">p0</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">x1</span> <span class="n">y1</span><span class="p">)</span> <span class="n">p1</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">x2</span> <span class="n">y2</span><span class="p">)</span> <span class="n">p2</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x1</span> <span class="n">x0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">y1</span> <span class="n">y0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1len</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sqrt))" style="color: inherit">sqrt</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s1x</span> <span class="n">s1x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s1y</span> <span class="n">s1y</span><span class="p">))))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x2</span> <span class="n">x0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">y2</span> <span class="n">y0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2len</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sqrt))" style="color: inherit">sqrt</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s2x</span> <span class="n">s2x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s2y</span> <span class="n">s2y</span><span class="p">))))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dot-product</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s1x</span> <span class="n">s2x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s1y</span> <span class="n">s2y</span><span class="p">)))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">dot-product</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">s1len</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">s1len</span><span class="p">))</span>
+      <span class="mi">0</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._acos))" style="color: inherit">acos</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="mf">1.0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">dot-product</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">s1len</span> <span class="n">s2len</span><span class="p">))))])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cross-magnitude</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x1</span> <span class="n">x0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">y2</span> <span class="n">y0</span><span class="p">))</span>
+                                   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">y1</span> <span class="n">y0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x2</span> <span class="n">x0</span><span class="p">))))</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._sgn))" style="color: inherit">sgn</a></span> <span class="n">cross-magnitude</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<hr />
+
+<p>If you are not familiar with vector algebra, the above explanations are not sufficient to understand how the winding number and the angle between vectors are calculated, and why the winding number is a good &ldquo;point-in-polygon&rdquo; test. I suggest you visit the linked Wikipedia pages for more information about these.</p>
+
+<hr />
+
+<p>Does the code work? Yes it does! I was pleasantly surprised that it passes all the tests in the test suite, except for the maritime time zones which are not handled by our example. Unfortunately, the code runs very slowly: it took more than two hours on my machine to run the 996 time zone lookups from the test suite. Running the code through a profiler shows that the <code>tz-lookup</code> function takes between 6 and 15 seconds to run, with an average of about 8 seconds. While the implementation is good as a proof-of-concept, it needs some serious speed improvements before it can be used for practical purposes.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">13168.78</td>
+    <td style="text-align: right">13168.78</td>
+    <td style="text-align: right">13168.78</td>
+    <td style="text-align: right">13168.78</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">0</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">8288679.23</td>
+    <td style="text-align: right">6984.56</td>
+    <td style="text-align: right">15712.09</td>
+    <td style="text-align: right">8321.97</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">8287721.95</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">2754.98</td>
+    <td style="text-align: right">19.53</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">8286076.95</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">2754.97</td>
+    <td style="text-align: right">7.06</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">8284665.13</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">2754.97</td>
+    <td style="text-align: right">5.76</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">5804339400</td>
+    <td style="text-align: right">1747306.32</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">52.98</td>
+    <td style="text-align: right">0.0003</td></tr></tbody></table></div>
+
+<p>Looking at the profiling results, we can see that the <code>tz-lookup</code> function takes on average about 8 seconds to run, however none of the functions it calls takes that long. The problem is not with the speed of <code>polygon-winding-number</code> itself, but with the number of times it is called: for each invocation of <code>tz-lookup</code>, there are about 1443 calls to <code>polygon-winding-number</code>, so our first focus needs to be to reduce the number of these calls.</p>
+
+<h2 id="bounding-boxes">Bounding Boxes</h2>
+
+<p>For most of the points that <code>polygon-winding-number</code> will have to check, the point will be well outside the polygon being tested, so, rather than going over all those points, we could calculate the Bounding Box of the polygon and only calculate the winding number if the point is within the bounding box.</p>
+
+<p>Here are the definitions for he <code>bbox</code> structure, the <code>inside-bbox?</code> check and the <code>make-bbox</code> function which calculates the bounding box from a set of points:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">bbox</span> <span class="p">(</span><span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">inside-bbox?</span> <span class="n">bb</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">bbox</span> <span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">)</span> <span class="n">bb</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="n">lon</span> <span class="n">min-x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">lon</span> <span class="n">max-x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="n">lat</span> <span class="n">min-y</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">lat</span> <span class="n">max-y</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-bbox</span> <span class="n">points</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">points</span><span class="p">)</span>
+      <span class="no">#f</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">points</span><span class="p">)])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">([</span><span class="n">min-x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">p0</span><span class="p">)]</span> <span class="p">[</span><span class="n">min-y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">p0</span><span class="p">)]</span>
+                   <span class="p">[</span><span class="n">max-x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">p0</span><span class="p">)]</span> <span class="p">[</span><span class="n">max-y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">p0</span><span class="p">)]</span>
+                   <span class="p">[</span><span class="n">remaining</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">points</span><span class="p">)])</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">remaining</span><span class="p">)</span>
+              <span class="p">(</span><span class="n">bbox</span> <span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">)</span>
+              <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">remaining</span><span class="p">)])</span>
+                <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="n">min-x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">p1</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="n">min-y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">p1</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="n">max-x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">p1</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="n">max-y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._second))" style="color: inherit">second</a></span> <span class="n">p1</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">remaining</span><span class="p">))))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>We can than implement <code>polygon-winding-number</code> to check for the bounding box first, and only call the <code>polygon-winding-number-internal</code> function when the point is inside. The internal function contains the previous body of <code>polygon-winding-number</code> (unchanged) and will not be shown here:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-winding-number</span> <span class="n">poly</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">inside-bbox?</span> <span class="p">(</span><span class="n">polygon-bbox</span> <span class="n">poly</span><span class="p">)</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">polygon-winding-number-internal</span> <span class="p">(</span><span class="n">polygon-points</span> <span class="n">poly</span><span class="p">)</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+      <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This leaves us with the implementation for the <code>polygon-bbox</code> and <code>polygon-points</code>. If we wish to keep the rest of the code unchanged, we can define these functions as:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-bbox</span> <span class="n">poly</span><span class="p">)</span> <span class="p">(</span><span class="n">make-bbox</span> <span class="n">poly</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-points</span> <span class="n">poly</span><span class="p">)</span> <span class="n">poly</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>We can do much better than that: since the bounding box of a polygon will never change, we can compute all the bounding boxes and store them along with the polygon&rsquo;s points in a separate structure:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">polygon</span> <span class="p">(</span><span class="n">bbox</span> <span class="n">points</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-polygon</span> <span class="n">points</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">polygon</span> <span class="p">(</span><span class="n">make-bbox</span> <span class="n">points</span><span class="p">)</span> <span class="n">points</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>With this definition, <code>polygon-bbox</code> and <code>polygon-points</code> become struct accessors and we don&rsquo;t need to write them, however, the polygons points used to come from a GeoJSON shape&rsquo;s coordinates, which in turn came from a GeoJSON feature. Since we have our own structure for the polygon, we need structures for shapes and features too. Here are their definitions, along with functions to convert a GeoJSON node to the appropriate structure:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">shape</span> <span class="p">(</span><span class="n">outline</span> <span class="n">holes</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-shape</span> <span class="n">geojson-shape</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">outline</span> <span class="p">(</span><span class="n">make-polygon</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">geojson-shape</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">holes</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="n">make-polygon</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._rest))" style="color: inherit">rest</a></span> <span class="n">geojson-shape</span><span class="p">)))</span>
+  <span class="p">(</span><span class="n">shape</span> <span class="n">outline</span> <span class="n">holes</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">feature</span> <span class="p">(</span><span class="n">name</span> <span class="n">shapes</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-feature</span> <span class="n">geojson-feature</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">name</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">properties</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geojson-feature</span> <span class="o">'</span><span class="ss">properties</span><span class="p">)])</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">properties</span> <span class="o">'</span><span class="ss">tzid</span> <span class="no">#f</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">shapes</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">geometry</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geojson-feature</span> <span class="o">'</span><span class="ss">geometry</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></span><span class="p">)))])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">shapes</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">coordinates</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span><span class="p">)]</span>
+            <span class="p">[</span><span class="n">type</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">type</span> <span class="no">#f</span><span class="p">)])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">type</span> <span class="s2">"Polygon"</span><span class="p">)</span>
+               <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">make-shape</span> <span class="n">shapes</span><span class="p">)))</span>
+              <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">type</span> <span class="s2">"MultiPolygon"</span><span class="p">)</span>
+               <span class="c1">;; Must be in any of the shapes</span>
+               <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="n">make-shape</span> <span class="n">shapes</span><span class="p">))</span>
+              <span class="p">(</span><span class="no">#t</span>
+               <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"inside-feature? unsupported geometry type: ~a"</span> <span class="n">type</span><span class="p">)))))))</span>
+  <span class="p">(</span><span class="n">feature</span> <span class="n">name</span> <span class="n">shapes</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, the <code>prepare-features</code> function will have to be updated to construct a list of <code>feature</code> struct instances, by calling <code>make-feature</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">prepare-features</span> <span class="n">geojson</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geojson</span> <span class="o">'</span><span class="ss">features</span> <span class="o">'</span><span class="p">())])</span>
+    <span class="p">(</span><span class="n">make-feature</span> <span class="n">feature</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>shape-winding-number</code> and <code>feature-winding-number</code> functions will not have to change at all, as the helper functions they used, <code>feature-shapes</code>, <code>shape-outline</code> and <code>shape-holes</code>, have now become structure accessor functions &mdash; it is helpful to choose names carefully.</p>
+
+<p>So, is the new code any faster? Yes it is! In fact it is substantially faster: the <code>tz-lookup</code> function now takes between 1 and 532 milliseconds, down from 6 to 15 seconds. The average call time is 80 milliseconds, instead of 8 seconds: introducing the bounding box check made the code is 100 times faster!</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">9534.69</td>
+    <td style="text-align: right">9534.69</td>
+    <td style="text-align: right">9534.69</td>
+    <td style="text-align: right">9534.69</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">7126.53</td>
+    <td style="text-align: right">7126.53</td>
+    <td style="text-align: right">7126.53</td>
+    <td style="text-align: right">7126.53</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">80017.45</td>
+    <td style="text-align: right">1.18</td>
+    <td style="text-align: right">532.03</td>
+    <td style="text-align: right">80.34</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">79758.27</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">329.19</td>
+    <td style="text-align: right">0.19</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">79228.17</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">329.18</td>
+    <td style="text-align: right">0.07</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">78540.06</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">329.18</td>
+    <td style="text-align: right">0.05</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1624</td>
+    <td style="text-align: right">78196.84</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">329.18</td>
+    <td style="text-align: right">48.15</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">52424084</td>
+    <td style="text-align: right">15800.87</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">18.99</td>
+    <td style="text-align: right">0.0003</td></tr></tbody></table></div>
+
+<p>There are some oddities in the results above, for example, the maximum run time for <code>polygon-winding-number</code> is now 329 milliseconds vs 2754.97 in the first version &mdash; I suspect there are some timezones with a very large number of points which are not exercised by our test data and the bounding box check culls them out altogether. The average running time for <code>polygon-winding-number-internal</code>, has gone up in this version to 48.15 milliseconds, vs the same function, named <code>polygon-winding-number</code> in the first version, which was 5.76 milliseconds. I suspect that a lot of smaller polygons are also culled out too, because they are not selected by our test data.</p>
+
+<p>The current speed of <code>tz-lookup</code> might be sufficient for many practical purposes, but there are still plenty of improvements to make, so let&rsquo;s explore them.</p>
+
+<h2 id="replace-lists-with-vectors">Replace lists with vectors</h2>
+
+<p>So far, the polygons for the point-in-polygon test are still the original GeoJSON data, which is a list of points, with every point being a two-element list itself. While the algorithm traverses these lists sequentially, and sequential list operations are fast in Racket, let&rsquo;s see what happens if we store the polygon data in vectors.</p>
+
+<p>The <code>make-polygon</code> function will have to change to convert the GeoJSON point list into a vector to be stored in the <code>polygon</code> instance:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-polygon</span> <span class="n">points</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">num-points</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span> <span class="n">points</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._make-vector))" style="color: inherit">make-vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">num-points</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([(</span><span class="n">point</span> <span class="n">index</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-indexed))" style="color: inherit">in-indexed</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">points</span><span class="p">))])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="n">point</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-set!))" style="color: inherit">vector-set!</a></span> <span class="n">data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">)</span> <span class="n">x</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-set!))" style="color: inherit">vector-set!</a></span> <span class="n">data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="n">y</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">polygon</span> <span class="p">(</span><span class="n">make-bbox</span> <span class="n">points</span><span class="p">)</span> <span class="n">data</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And <code>polygon-winding-number-internal</code> now receives a vector as its argument, so the internal loop has to change to use <code>vector-ref</code> operations, but its basic workings remain the same:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-winding-number-internal</span> <span class="n">poly</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">limit</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-length))" style="color: inherit">vector-length</a></span> <span class="n">poly</span><span class="p">)</span> <span class="mi">2</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">lon</span> <span class="n">lat</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">winding-angle</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">winding-angle</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="p">([</span><span class="n">index</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="n">limit</span><span class="p">)])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">p1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">))</span>
+                         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">)</span> <span class="mi">1</span><span class="p">))))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">p2</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">next-index</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">index</span><span class="p">)</span> <span class="n">limit</span><span class="p">)</span>
+                                <span class="mi">0</span>
+                                <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">index</span><span class="p">))))</span>
+            <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">next-index</span><span class="p">))</span>
+                  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">next-index</span><span class="p">)</span> <span class="mi">1</span><span class="p">)))))</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">p0</span> <span class="n">p1</span> <span class="n">p2</span><span class="p">))</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">winding-angle</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">winding-angle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>So how fast is it? Well, <code>polygon-winding-number-internal</code>&rsquo;s time went down from 48.15 milliseconds to 21.52, so it is about 55% faster, while the overall <code>tz-lookup</code> went down from 80.34 milliseconds to 36.9, a 54% improvement &mdash; other parts of the code were not improved by this change so only part of the improvement of <code>polygon-winding-number-internal</code> transfers to <code>tz-lookup</code>. Still, a vector based version is more than twice as fast as a list based implementation, even though the algorithm used only linear traversal in both cases.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">9715.12</td>
+    <td style="text-align: right">9715.12</td>
+    <td style="text-align: right">9715.12</td>
+    <td style="text-align: right">9715.12</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">8087.13</td>
+    <td style="text-align: right">8087.13</td>
+    <td style="text-align: right">8087.13</td>
+    <td style="text-align: right">8087.13</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">36756.48</td>
+    <td style="text-align: right">1.13</td>
+    <td style="text-align: right">256.61</td>
+    <td style="text-align: right">36.9</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">36527.03</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">158.62</td>
+    <td style="text-align: right">0.09</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">36027.52</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">158.6</td>
+    <td style="text-align: right">0.03</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">35437.71</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">158.59</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1624</td>
+    <td style="text-align: right">34953.85</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">158.58</td>
+    <td style="text-align: right">21.52</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">52424084</td>
+    <td style="text-align: right">15576.55</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">29.21</td>
+    <td style="text-align: right">0.0003</td></tr></tbody></table></div>
+
+<h2 id="avoid-unnecessary-memory-allocations">Avoid unnecessary memory allocations</h2>
+
+<p>There&rsquo;s a performance problem that we introduced when we moved to vectors in the previous step: the points used to be represented as two element lists in the GeoJSON data, and the <code>subtended-angle</code> function takes these points as arguments. Since we store the data in continuous vectors now, these lists have to be re-created by <code>polygon-winding-number-internal</code> after referencing the elements from the vector. Since <code>subtended-angle</code> decomposes these lists immediately, we can avoid creating them altogether, saving some memory allocations for things which will be immediately discarded:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">polygon-winding-number-internal</span> <span class="n">poly</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">limit</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-length))" style="color: inherit">vector-length</a></span> <span class="n">poly</span><span class="p">)</span> <span class="mi">2</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">winding-angle</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">winding-angle</span> <span class="mi">0</span><span class="p">])</span>
+              <span class="p">([</span><span class="n">index</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="n">limit</span><span class="p">)])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">x1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">y1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">index</span><span class="p">)</span> <span class="mi">1</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">next-index</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">index</span><span class="p">)</span> <span class="n">limit</span><span class="p">)</span>
+                              <span class="mi">0</span>
+                              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">index</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">x2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">next-index</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">y2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">poly</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="n">next-index</span><span class="p">)</span> <span class="mi">1</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">lon</span> <span class="n">lat</span> <span class="n">x1</span> <span class="n">y1</span> <span class="n">x2</span> <span class="n">y2</span><span class="p">))</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">winding-angle</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span><span class="p">)))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">winding-angle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p><code>subtended-angle</code> will now accept the individual numbers as arguments, avoiding calls to <code>match-define</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">x0</span> <span class="n">y0</span> <span class="n">x1</span> <span class="n">y1</span> <span class="n">x2</span> <span class="n">y2</span><span class="p">)</span>
+   <span class="c1">;; remove match-define calls, rest of the body remains unchanged</span>
+   <span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>So how fast is this version? Well, <code>polygon-winding-number-internal</code>, which benefited most by this optimization is now about 11% faster, is average time going down from 21.52 milliseconds to 19.35 milliseconds. The <code>tz-lookup</code> function itself improved by about 10% itself too. While in terms of running times, this is just a few milliseconds, in relative times, it is still a further 10% improvement. In general it is worth avoiding such memory allocations inside tight loops, as a 10% improvement can be significant in other cases.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">9644.84</td>
+    <td style="text-align: right">9644.84</td>
+    <td style="text-align: right">9644.84</td>
+    <td style="text-align: right">9644.84</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">7573.04</td>
+    <td style="text-align: right">7573.04</td>
+    <td style="text-align: right">7573.04</td>
+    <td style="text-align: right">7573.04</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">33139.39</td>
+    <td style="text-align: right">1.12</td>
+    <td style="text-align: right">208.12</td>
+    <td style="text-align: right">33.27</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">32947.96</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.67</td>
+    <td style="text-align: right">0.08</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">32438.31</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.66</td>
+    <td style="text-align: right">0.03</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">31880.46</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.66</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1624</td>
+    <td style="text-align: right">31425.42</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.66</td>
+    <td style="text-align: right">19.35</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">52424084</td>
+    <td style="text-align: right">13873.32</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">21.96</td>
+    <td style="text-align: right">0.00026</td></tr></tbody></table></div>
+
+<h2 id="replace-vectors-with-flvectors">Replace vectors with flvectors</h2>
+
+<p>Another potential improvement would be to use <code>flvectors</code> which are part of the <code>math/flonum</code> package. They are supposed to be faster to use than normal vectors when we need to store only floating point values, and all our values are floating point. To change to flvectors, all we need to to is require the <code>math/flonum</code> package, than rename vector operations to use the <code>fl</code> prefix:</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>Operation</strong></td>
+    <td><strong>vector</strong></td>
+    <td><strong>flvector</strong></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>construction</td>
+    <td>make-vector</td>
+    <td>make-flvector</td></tr>
+   <tr>
+    <td>reference element</td>
+    <td>vector-ref</td>
+    <td>flvector-ref</td></tr>
+   <tr>
+    <td>set element</td>
+    <td>vector-set!</td>
+    <td>flvector-set!</td></tr>
+   <tr>
+    <td>determine length</td>
+    <td>vector-length</td>
+    <td>flvector-length</td></tr></tbody></table></div>
+
+<p>Unfortunately, this did not produce any improvement in the speed of our program, as the results below show. It is unclear why, at first I thought this is because I used the new Racket-on-Chez version 7.3.900 (a pre-release version), but I noticed the same lack of improvement in the existing 7.3 version. Perhaps the current program does not benefit by the optimizations provided by floating point vectors. Still, I decided to put these results in to show that we need to measure to determine if the changes we make result in an improvement or not.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">10250.38</td>
+    <td style="text-align: right">10250.38</td>
+    <td style="text-align: right">10250.38</td>
+    <td style="text-align: right">10250.38</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">8089.21</td>
+    <td style="text-align: right">8089.21</td>
+    <td style="text-align: right">8089.21</td>
+    <td style="text-align: right">8089.21</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">35948.39</td>
+    <td style="text-align: right">1.12</td>
+    <td style="text-align: right">226.97</td>
+    <td style="text-align: right">36.09</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">35740.99</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">105.37</td>
+    <td style="text-align: right">0.08</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">35291.21</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">105.35</td>
+    <td style="text-align: right">0.03</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">34731.87</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">105.35</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1624</td>
+    <td style="text-align: right">34349.36</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">105.35</td>
+    <td style="text-align: right">21.15</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">52424084</td>
+    <td style="text-align: right">12674.11</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">29.17</td>
+    <td style="text-align: right">0.00024</td></tr></tbody></table></div>
+
+<h2 id="use-flonum-operations">Use flonum operations</h2>
+
+<p>Another thing to try out is to use <code>fl</code> operations which replace normal arithmetic operations, for example, <code>+</code> is replaced by <code>fl+</code>. According to the <a href="https://docs.racket-lang.org/reference/flonums.html">flonums</a> documentation, using these operations will result in faster code if used consistently on floating point numbers. The <code>subtended-angle</code> function is a good test case, as it contains a lot of computations all of them on floating point numbers. Let&rsquo;s see what happens if all arithmetic operations are replaced with their <code>fl</code> counterpart:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">subtended-angle</span> <span class="n">x0</span> <span class="n">y0</span> <span class="n">x1</span> <span class="n">y1</span> <span class="n">x2</span> <span class="n">y2</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1x</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">x1</span> <span class="n">x0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1y</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">y1</span> <span class="n">y0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s1len</span> <span class="p">(</span><span class="n">flsqrt</span> <span class="p">(</span><span class="n">fl+</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s1x</span> <span class="n">s1x</span><span class="p">)</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s1y</span> <span class="n">s1y</span><span class="p">))))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2x</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">x2</span> <span class="n">x0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2y</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">y2</span> <span class="n">y0</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">s2len</span> <span class="p">(</span><span class="n">flsqrt</span> <span class="p">(</span><span class="n">fl+</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s2x</span> <span class="n">s2x</span><span class="p">)</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s2y</span> <span class="n">s2y</span><span class="p">))))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dot-product</span> <span class="p">(</span><span class="n">fl+</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s1x</span> <span class="n">s2x</span><span class="p">)</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s1y</span> <span class="n">s2y</span><span class="p">)))</span>
+
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">dot-product</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">s1len</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._zero~3f))" style="color: inherit">zero?</a></span> <span class="n">s1len</span><span class="p">))</span>
+      <span class="mi">0</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="n">flacos</span> <span class="p">(</span><span class="n">flmin</span> <span class="mf">1.0</span> <span class="p">(</span><span class="n">fl/</span> <span class="n">dot-product</span> <span class="p">(</span><span class="n">fl*</span> <span class="n">s1len</span> <span class="n">s2len</span><span class="p">))))])</span>
+        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cross-magnitude</span> <span class="p">(</span><span class="n">fl-</span> <span class="p">(</span><span class="n">fl*</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">x1</span> <span class="n">x0</span><span class="p">)</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">y2</span> <span class="n">y0</span><span class="p">))</span>
+                                     <span class="p">(</span><span class="n">fl*</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">y1</span> <span class="n">y0</span><span class="p">)</span> <span class="p">(</span><span class="n">fl-</span> <span class="n">x2</span> <span class="n">x0</span><span class="p">))))</span>
+        <span class="p">(</span><span class="n">fl*</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._angle))" style="color: inherit">angle</a></span> <span class="p">(</span><span class="n">flsgn</span> <span class="n">cross-magnitude</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>subtended-angle</code> function is already fast, running on average in 0.00024 milliseconds, but it is called 52 million times during our tests, so its total running time is about 12.6 seconds. After converting to flonum operations, the average time went down to 0.00019 milliseconds and the total running time to 9.8 seconds, this is a 20% improvement in running speed. The <code>tz-lookup</code> time also went down, recuperating the losses from moving to <code>flvectors</code> in the previous section. In production code, I would have discarded the <code>flvector</code> case, but I decided to keep it in for this blog post series of examples.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">9791.16</td>
+    <td style="text-align: right">9791.16</td>
+    <td style="text-align: right">9791.16</td>
+    <td style="text-align: right">9791.16</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">8290.5</td>
+    <td style="text-align: right">8290.5</td>
+    <td style="text-align: right">8290.5</td>
+    <td style="text-align: right">8290.5</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">996</td>
+    <td style="text-align: right">33777.97</td>
+    <td style="text-align: right">1.18</td>
+    <td style="text-align: right">227.7</td>
+    <td style="text-align: right">33.91</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">424296</td>
+    <td style="text-align: right">33516.37</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.71</td>
+    <td style="text-align: right">0.08</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1174284</td>
+    <td style="text-align: right">32950.7</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.7</td>
+    <td style="text-align: right">0.03</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1437228</td>
+    <td style="text-align: right">32359.68</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.68</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1624</td>
+    <td style="text-align: right">32000.16</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">104.68</td>
+    <td style="text-align: right">19.7</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">52424084</td>
+    <td style="text-align: right">9898.48</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">24.3</td>
+    <td style="text-align: right">0.00019</td></tr></tbody></table></div>
+
+<h2 id="are-there-more-improvements-available">Are there more improvements available?</h2>
+
+<p>We have moved from big speed improvements, by using bounding boxes and vectors, to smaller ones resulting from micro-optimizations, such as avoiding memory allocations and using flonum operations. We could go further along this path by trying to restructure the functions to make them run faster, but there are two problems with this approach: (1) all these optimizations depend on the Racket compiler, which might change in the future affecting the performance an (2) code will look uglier: compare the flonum and non-flonum versions of <code>subtended-angle</code>. If we want to make this program significantly faster, we will need to address the fundamental problem that the algorithm has to traverse many thousands of points that form part of the timezone definitions. This is certainly doable, but requires a more effort and will result in a more complex program. Put it simply, timezone lookup is fast enough for my purposes, and I will not explore this avenue further.</p>
+
+<p>There is also another performance issue which we have ignored so far, and this is the startup cost: loading the GeoJSON data takes about 10 seconds and preparing the structures required by the lookup code takes another 8 seconds. This seems a high cost to pay for doing time zone lookups and we&rsquo;ll need to look into that aspect next. But this topic is for another blog post.</p>
+
+<h2 id="final-thoughts">Final thoughts</h2>
+
+<p>The most significant speed improvements came from algorithm changes, to avoid running code when it was not needed and the second most significant improvement came from using appropriate data structure. Doing local optimizations, still provided improvements, but not as significant, compared to the amount of code we had to change. It is also worth noting importance of measuring the performance, which allowed us to determine if an &ldquo;optimization&rdquo; is actually making the code run faster or not.</p>
+
+<p>The above tests were done using a Core i7 laptop and using a pre-release Racket-on-Chez, version 7.3.900, this was the most recent Racket version available at the time of this writing. The times will be different when running the code on other machines or Racket versions, but, hopefully, the performance gains will remain the same.</p>
+
+<p>When noticing that the <code>flvector</code> changes did not produce any improvements I ran the tests against Racket 7.3 and there were no improvements in 7.3 either for this <code>flvector</code> case, however, I discovered that all the tests ran much faster in Racket 7.3 than Racket-on-Chez, with the final <code>tz-lookup</code> version being 40% faster in Racket 7.3 &mdash; this needs further investigation. I put the results for running these tests using Racket 7.3 in <a href="https://gist.github.com/alex-hhh/9ae9b30dfe869f1dcc59cfe4fd0a34d2">this GitHub Gist</a> if anyone is interested in looking at them.</p>
+
+<p>The timings were measured using an instrumenting profiler I wrote for another project. This profiles allows instrumenting individual functions and collecting statistics about the number of calls and the time of each call. The instrumentation adds a small overhead to each function call. This overhead is not measured in the function call itself, but it is measured by any instrumented functions which call other instrumented functions. I believe the overhead is small enough to not affect the results significantly.</p>
+
+<p>Finally, the sources for the programs presented in this Blog Post are available <a href="https://github.com/alex-hhh/time-zone-lookup-tests">here</a>.</p>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/05/timezone-visualization.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Timezone Visualization</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3 class="index-entry">Recent Posts</h3>
+          <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
+        <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
+        <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
+        <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
+        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
+        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
+        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
+        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
+        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        <p><a href='/2018/01/equipment-usage-and-costs.html'>Equipment Usage and Costs</a> <small class='date-and-tags'>
+        <time datetime="2018-01-14" pubdate="true">2018-01-14</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

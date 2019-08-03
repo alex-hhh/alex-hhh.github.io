@@ -88,9 +88,9 @@ article img {
     filter: invert(100%);
 }
 
-/* Make the tables take 80% of the width of the article and center them. */
+/* Make the tables take 90% of the width of the article and center them. */
 .table-responsive {
-    max-width: 80%;
+    max-width: 90%;
     margin: auto;
 }
 
