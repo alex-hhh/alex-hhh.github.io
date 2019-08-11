@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 02 Aug 2019 12:02:26 UT</lastBuildDate>
-  <pubDate>Fri, 02 Aug 2019 12:02:26 UT</pubDate>
+  <lastBuildDate>Sat, 10 Aug 2019 00:17:06 UT</lastBuildDate>
+  <pubDate>Sat, 10 Aug 2019 00:17:06 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>More Timezone Lookup (loading and saving data)</title>
+   <link>https://alex-hhh.github.io/2019/08/timezone-lookup-2.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-08-timezone-lookup-2-html</guid>
+   <pubDate>Sat, 10 Aug 2019 00:17:06 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we explore how to write internal Racket data structures to disk and read them back, and use these features to improve load times for the GeoJSON data, so the program does not have to spend 20 seconds in the initialization step.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/08/timezone-lookup-2.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Timezone Lookup (an adventure in program optimization)</title>
    <link>https://alex-hhh.github.io/2019/08/timezone-lookup.html?utm_source=racket&amp;utm_medium=RSS</link>

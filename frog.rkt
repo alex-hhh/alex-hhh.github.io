@@ -10,7 +10,7 @@
   ;; (current-permalink "/{year}/{title}.html")
   (current-title "The Blog of Alex Harsányi")
   (current-author "Alex Harsányi")
-  (current-posts-per-page 9)
+  (current-posts-per-page 7)
   (current-permalink "/{year}/{month}/{filename}.html"))
 
 (define (atom? x)

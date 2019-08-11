@@ -674,15 +674,15 @@ case, but I decided to keep it in for this blog post series of examples.
 
 
 | **function**                    | **total calls** | **total time** *(ms)* | **min** *(ms)* | **max** *(ms)* | **average** *(ms)* |
-|---------------------------------|----------------:|----------------------:|---------------:|---------------:|---------------:|
-| load-geojson                    |               1 |               9791.16 |        9791.16 |        9791.16 |        9791.16 |
-| prepare-features                |               1 |                8290.5 |         8290.5 |         8290.5 |         8290.5 |
-| tz-lookup                       |             996 |              33777.97 |           1.18 |          227.7 |          33.91 |
-| feature-winding-number          |          424296 |              33516.37 |              0 |         104.71 |           0.08 |
-| shape-winding-number            |         1174284 |               32950.7 |              0 |          104.7 |           0.03 |
-| polygon-winding-number          |         1437228 |              32359.68 |              0 |         104.68 |           0.02 |
-| polygon-winding-number-internal |            1624 |              32000.16 |              0 |         104.68 |           19.7 |
-| subtended-angle                 |        52424084 |               9898.48 |              0 |           24.3 |        0.00019 |
+|---------------------------------|----------------:|----------------------:|---------------:|---------------:|-------------------:|
+| load-geojson                    |               1 |               9791.16 |        9791.16 |        9791.16 |            9791.16 |
+| prepare-features                |               1 |                8290.5 |         8290.5 |         8290.5 |             8290.5 |
+| tz-lookup                       |             996 |              33777.97 |           1.18 |          227.7 |              33.91 |
+| feature-winding-number          |          424296 |              33516.37 |              0 |         104.71 |               0.08 |
+| shape-winding-number            |         1174284 |               32950.7 |              0 |          104.7 |               0.03 |
+| polygon-winding-number          |         1437228 |              32359.68 |              0 |         104.68 |               0.02 |
+| polygon-winding-number-internal |            1624 |              32000.16 |              0 |         104.68 |               19.7 |
+| subtended-angle                 |        52424084 |               9898.48 |              0 |           24.3 |            0.00019 |
 
 ## Are there more improvements available?
 

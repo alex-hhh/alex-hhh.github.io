@@ -52,7 +52,7 @@
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
               <ul class="dropdown-menu" role="menu">
-                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(16)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(17)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
@@ -88,6 +88,27 @@
           <h1>Posts tagged <em>racket</em></h1>
 
           <article>
+  <header>
+    <h2 class="index-entry"><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2019-08-10" pubdate="true">2019-08-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+  <div class="container">
+    <div class="row">
+        <div id="content" class="col-md-2">
+          <a href='/2019/08/timezone-lookup-2.html'><img class="rounded" src='/img/a028/thumb.png'/></a>
+        </div>
+        <div id="content" class="col-md-10">
+
+  <p>&hellip; in which we explore how to write internal Racket data structures to disk and read them back, and use these features to improve load times for the GeoJSON data, so the program does not have to spend 20 seconds in the initialization step.</p>
+          <footer>
+            <a href='/2019/08/timezone-lookup-2.html'>&hellip; more &hellip;</a>
+          </footer>
+        </div>
+    </div>
+  </div>
+</article>
+<article>
   <header>
     <h2 class="index-entry"><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a></h2>
     <p class='date-and-tags'>
@@ -213,75 +234,13 @@
     </div>
   </div>
 </article>
-<article>
-  <header>
-    <h2 class="index-entry"><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2019-02-09" pubdate="true">2019-02-09</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/activitylog2.html">activitylog2</a></span></p>
-  </header>
-  <div class="container">
-    <div class="row">
-        <div id="content" class="col-md-2">
-          <a href='/2019/02/data-visualization-dashboard.html'><img class="rounded" src='/img/a022/thumb.png'/></a>
-        </div>
-        <div id="content" class="col-md-10">
-
-  <p>When experimenting with a new data visualization or data analysis method, it is simpler to write a prototype as a separate application, to evaluate if it is worthwhile investing the effort of adding a full feature to <a href="/2017/09/introducing-activitylog2.html">ActivityLog2</a>, this post illustrates the process used to write a &ldquo;training load&rdquo; <a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard">dashboard application</a> in Racket.</p>
-          <footer>
-            <a href='/2019/02/data-visualization-dashboard.html'>&hellip; more &hellip;</a>
-          </footer>
-        </div>
-    </div>
-  </div>
-</article>
-<article>
-  <header>
-    <h2 class="index-entry"><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2018-11-21" pubdate="true">2018-11-21</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
-  </header>
-  <div class="container">
-    <div class="row">
-        <div id="content" class="col-md-2">
-          <a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'><img class="rounded" src='/img/a020/thumb.png'/></a>
-        </div>
-        <div id="content" class="col-md-10">
-
-  <p>The Racket GUI library provides a <code>text-field%</code> control which allows input of arbitrary text, but only basic functionality by default. However, the class is designed to be extensible and in this article we&rsquo;ll look at how to extend this control to provide a more modern input control with a cue text and input data validation.</p>
-          <footer>
-            <a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>&hellip; more &hellip;</a>
-          </footer>
-        </div>
-    </div>
-  </div>
-</article>
-<article>
-  <header>
-    <h2 class="index-entry"><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2018-10-29" pubdate="true">2018-10-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
-  </header>
-  <div class="container">
-    <div class="row">
-        <div id="content" class="col-md-2">
-          <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'><img class="rounded" src='/img/a019/thumb.png'/></a>
-        </div>
-        <div id="content" class="col-md-10">
-
-  <p>The <code>pasteboard%</code>object is an editor of <code>snip%</code> objects and it implements some features that make sense for an editor: for example, you can select multiple snips and drag them around with the mouse, and you can move selected snips using the keyboard, you can also add any kind of snip, not just chess pieces to the pasteboard. Since none of these features are useful or desirable for a chess board game we will look at how to disable them.</p>
-          <footer>
-            <a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>&hellip; more &hellip;</a>
-          </footer>
-        </div>
-    </div>
-  </div>
-</article>
 <footer>
  <ul class="pagination">
   <li class="page-item disabled"><a class="page-link" href="#">
     <quote>&larr;</quote></a></li>
   <li class="page-item active"><a class="page-link" href="/tags/racket.html">1</a></li>
   <li class="page-item"><a class="page-link" href="/tags/racket-2.html">2</a></li>
+  <li class="page-item"><a class="page-link" href="/tags/racket-3.html">3</a></li>
   <li class="page-item"><a class="page-link" href="/tags/racket-2.html">
     <quote>&rarr;</quote></a></li></ul></footer>
         </div>

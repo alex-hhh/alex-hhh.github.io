@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>More Timezone Lookup (loading and saving data)</title>
+    <meta name="description" content="in which we explore how to write internal Racket data structures to disk and read them back, and use these features to improve load times for the GeoJSON data, so the program does not have to spend 20 seconds in the initialization step....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/08/timezone-lookup-2.html">
+    <link rel="next" href="/2019/08/timezone-lookup.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(17)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>More Timezone Lookup (loading and saving data)</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-08-10" pubdate="true">2019-08-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>&hellip; in which we explore how to write internal Racket data structures to disk and read them back, and use these features to improve load times for the GeoJSON data, so the program does not have to spend 20 seconds in the initialization step.</p>
+<!-- more-->
+
+<p>In the <a href="/2019/08/timezone-lookup.html">previous blog</a> post we looked at how to perform a geo-lookup and determine the time zone corresponding to some GPS coordinates. Various improvements were done over the initial search algorithm, and, in the end, the average time to perform the timezone lookup was reduced substantially.</p>
+
+<p>So far, two aspects of the lookup function have been ignored: it takes a long time to load and prepare the lookup data, about 20 seconds, and the size of the GeoJSON file containing the timezone boundaries is about 129Mb which is very large. This large initialization time means that there is still a large cost for using the lookup function in an application which needs to do just a few lookups and the large GeoJSON file has two further implications: (1) the size of the package on disk is too big and (2) memory usage of the application is also large, since all that data has to be loaded in the program memory.</p>
+
+<p>In this blog post we&rsquo;ll look at how to improve the load times: we&rsquo;ll try to use the <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> and <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> built-in Racket functions to save the prepared features to disk once and read them when using the lookup program, but it turns out that these functions are slower than just reading the GeoJSON data directly. Next, we&rsquo;ll try the Fast-Load Serialization functions and these will provide significantly faster load times. After that, we&rsquo;ll explore how to avoid loading the entire data set into memory, and we&rsquo;ll do that by saving the data for each timezone in a separate file and only load them when needed. Finally we&rsquo;ll try to reduce the space used on disk by compressing the data files and decompressing them in memory.</p>
+
+<div class="figure"><img src="/img/a028/timezone-map-2.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="short-refresher">Short refresher</h2>
+
+<p>The setup process for the timezone lookup was split in two functions: <code>load-geojson</code> loads the GeoJSON timezone data, and just calls <code>load-json</code>, while the <code>prepare-features</code> function constructs bounding boxes and converts polygons from the GeoJSON lists to vectors, for faster lookups. See the <a href="/2019/08/timezone-lookup.html">previous blog post</a> for details of these functions. Their running times are shown below:</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-geojson</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">9791.16</td></tr>
+   <tr>
+    <td>prepare-features</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">8290.5</td></tr></tbody></table></div>
+
+<p>Since the time zone data does not change very often, we could just save the result of <code>prepare-features</code> and load that at startup, saving the time to prepare the feature data structures each run. We can split the timezone lookup process in two: a <code>tzpack</code> function will load the GeoJSON timezone data, prepare the data such that it is convenient to use by the <code>tzlookup</code>, than save it to disk. The <code>tzlookup</code> package would load this data from disk and use it for lookups. We would only need to run <code>tzpack</code> when a new GeoJSON dataset is released, so this would save time.</p>
+
+<h2 id="read-and-write"><code>read</code> and <code>write</code></h2>
+
+<p>How to save the data? Well, Racket already provides the <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> function to write an internal data structure to an output stream and the corresponding <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> function to read it back. There are some limitations on what data can be serialized this way, but this includes structures, vectors and lists, which is what we use, so these functions are adequate for our purpose. The only change is that we have to tag our structures with the <code>#:prefab</code> keyword, but this does not affect the rest of the code:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">bbox</span> <span class="p">(</span><span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">polygon</span> <span class="p">(</span><span class="n">bbox</span> <span class="n">points</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">shape</span> <span class="p">(</span><span class="n">outline</span> <span class="n">holes</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">feature</span> <span class="p">(</span><span class="n">name</span> <span class="n">shapes</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>We can than load the GeoJSON, prepare the features and save it all to disk, in the &ldquo;tzdata.dat&rdquo; file, in only a few lines of code:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"./tzdata.dat"</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span> <span class="n">features</span> <span class="n">out</span><span class="p">))</span>
+  <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Running the above program will require the <code>load-geojson</code>, <code>prepare-features</code> and related functions presented in the <a href="/2019/08/timezone-lookup.html">previous blog post</a>, and will produce a data file which is 117Mb in size, which is smaller than the original 129Mb GeoJSON file, but not by much, in both cases we could compress the resulting files, reducing their size on disk, but they would have to be stored uncompressed in memory anyway, so these numbers are also indicative of the approximate memory usage of the program.</p>
+
+<p>The lookup program will have to load this data, which in this case it involves calling <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> to load the data into the <code>features</code> global variable. The rest of the program will remain unchanged:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./tzdata.dat"</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>How does this compare? Well, the running times are below and a few things are expected: <code>load-geojson</code> and <code>prepare-features</code> are no longer called, since they were replaced by <code>load-data</code> and the rest of the running times are about the same, since the <code>tz-lookup</code> operates on the same data structures. Unfortunately, loading the data takes 38 seconds, which is much longer than loading the GeoJSON and preparing the features each time, so using <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> and <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> to write a complex data structure to disk and read it back is easy, but the result is not very fast:</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-data</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">37947.24</td>
+    <td style="text-align: right">37947.24</td>
+    <td style="text-align: right">37947.24</td>
+    <td style="text-align: right">37947.24</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">1038</td>
+    <td style="text-align: right">30403.9</td>
+    <td style="text-align: right">1.06</td>
+    <td style="text-align: right">247.86</td>
+    <td style="text-align: right">29.29</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">442188</td>
+    <td style="text-align: right">30208.83</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">141.35</td>
+    <td style="text-align: right">0.07</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1223802</td>
+    <td style="text-align: right">29746.79</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">141.34</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1497797</td>
+    <td style="text-align: right">29169.28</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">141.34</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">28649.1</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">141.33</td>
+    <td style="text-align: right">16.79</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">55104870</td>
+    <td style="text-align: right">10463.29</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">2.88</td>
+    <td style="text-align: right">0.00019</td></tr></tbody></table></div>
+
+<h2 id="fast-load-serialization">Fast-Load Serialization</h2>
+
+<p>The output produced by <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> is indented to be somewhat human readable and this might contribute to it being slow. Racket also provides some serialization/deserialization routines which produce binary data and promise to be faster. They are part of the <code>racket/fasl</code> library and using them is as simple as replacing <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> with <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> and <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> with <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></code>. The <code>tzpack</code> program becomes:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">racket/fasl</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"./tzdata.dat"</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">features</span> <span class="n">out</span><span class="p">))</span>
+  <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And loading the data in the lookup program becomes:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span> <span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./tzdata.dat"</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<hr />
+
+<p>Unfortunately, fast-load serialization does not support floating point vectors, but since using flvectors turned out to be a performance loss, I reverted the code to use plain vectors.</p>
+
+<hr />
+
+<p>Using <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> results in a 104Mb data file, which is smaller than the one created by <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code>, which was 117Mb. Loading the data is also faster, at 1.2 seconds, which is about 30 times faster than <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> and about 15 times faster than the loading the GeoJSON itself and preparing the data set:</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-data</td>
+    <td style="text-align: right">1</td>
+    <td style="text-align: right">1217.51</td>
+    <td style="text-align: right">1217.51</td>
+    <td style="text-align: right">1217.51</td>
+    <td style="text-align: right">1217.51</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">1038</td>
+    <td style="text-align: right">26628.92</td>
+    <td style="text-align: right">1.01</td>
+    <td style="text-align: right">164.12</td>
+    <td style="text-align: right">25.65</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">442188</td>
+    <td style="text-align: right">26459.86</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">89.83</td>
+    <td style="text-align: right">0.06</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">1223802</td>
+    <td style="text-align: right">26048.1</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">89.82</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">1497797</td>
+    <td style="text-align: right">25529.97</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">89.81</td>
+    <td style="text-align: right">0.02</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">25326.43</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">89.81</td>
+    <td style="text-align: right">14.85</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">55104870</td>
+    <td style="text-align: right">9462.48</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">3.82</td>
+    <td style="text-align: right">0.00017</td></tr></tbody></table></div>
+
+<h2 id="runtime-memory-use">Runtime memory use</h2>
+
+<p>Each time we use the timezone lookup function, we must load the entire data set, which is about 100Mb on disk. How much memory does it use? Well, the entire data set has 5&prime;728&prime;474 GPS points, and since each latitude/longitude coordinate is represented as a pair of double-precision floating point number, which are 8 bytes each, just storing the points will take up 87 Mb of memory, with the actual memory use being higher since there is some overhead for the additional data structures such as bounding boxes. It looks like the size of the serialized data is a pretty good indication of the memory used for time zone lookup.</p>
+
+<p>While the 1.2 seconds it takes to read the data might be sufficient, the high memory use will probably not be acceptable for an application which needs to do a lookup occasionally.</p>
+
+<p>How can we reduce memory use? The basic idea is to only load the data we actually need: when we introduced bounding boxes, it meant that entire polygons were skipped by <code>polygon-winding-number</code> and perhaps we can avoid loading these polygons altogether.</p>
+
+<p>Unfortunately, Racket does not provide direct facilities for only reading data that we need, both <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></code> and <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> will read the entire data set. We can address this limitation by clever use of these functions: The <code>features</code> variable stores a list of <code>feature</code> structures which are inspected one-by-one by <code>tz-lookup</code>, but we can change that so that (1) each <code>feature</code> structure is saved in a separate file and (2) having an index with the bounding boxes and the features to check.</p>
+
+<p>Saving individual features, means that we&rsquo;ll need to call <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> on each individual feature and save it into a separate file. File names are constructed from the actual time zone names by replacing the "/" (which is invalid in a file name) with a "+" sign:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">save-data</span> <span class="n">data</span> <span class="n">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="n">file-name</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">feature</span> <span class="n">out</span><span class="p">))</span>
+    <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._make-directory*))" style="color: inherit">make-directory*</a></span> <span class="s2">"./pack"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">features</span><span class="p">)])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"pack/~a.dat"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">)</span> <span class="s2">"/"</span> <span class="s2">"+"</span><span class="p">)))</span>
+  <span class="p">(</span><span class="n">save-data</span> <span class="n">feature</span> <span class="n">file-name</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To build the index, we&rsquo;ll need to scan all the features and find the polygon bounding box for each shape outline, and produce a list with the feature name and the bounding box itself. The index itself is saved into a separate file, &ldquo;index.dat&rdquo;, also using <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index</span> <span class="o">'</span><span class="p">())</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">features</span><span class="p">)])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">name</span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">shape</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="p">(</span><span class="n">feature-shapes</span> <span class="n">feature</span><span class="p">))])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">outline</span> <span class="p">(</span><span class="n">shape-outline</span> <span class="n">shape</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">index</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">name</span> <span class="p">(</span><span class="n">polygon-bbox</span> <span class="n">outline</span><span class="p">))</span> <span class="n">index</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="n">save-data</span> <span class="s2">"pack/index.dat"</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>While the total data size is still the same, each timezone definition is in its own separate file, which means that it can be loaded individuality, while the index file is only 56Kb in size.</p>
+
+<p>The lookup functionality will have to change, since we changed the the way we store the data: we will load the index first, and just prepare a hash table for the features that will be loaded. Initially, the hash will be empty:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./pack/index.dat"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>tz-lookup</code> function will have to scan the index first, and only check features for which the location to be tested is inside the bounding box:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tz-lookup</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">candidates</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">result</span> <span class="o">'</span><span class="p">()])</span>
+              <span class="p">([</span><span class="n">entry</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">index</span><span class="p">)])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">name</span> <span class="n">bbox</span><span class="p">)</span> <span class="n">entry</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">inside-bbox?</span> <span class="n">bbox</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">wn</span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">name</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)))</span>
+            <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">name</span> <span class="n">wn</span><span class="p">)</span> <span class="n">result</span><span class="p">))</span>
+          <span class="n">result</span><span class="p">)))</span>
+
+  <span class="c1">;; filtering and selecting candidates remains the same</span>
+  <span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And, finally, the <code>feature-winding-number</code> needs to be updated to accept a time zone name (instead of the feature structure itself), lookup the feature and load it if needed. <code>feature-winding-number-internal</code> contains the old body, which evaluates the actual feature struct:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">feature-name</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">features</span> <span class="n">feature-name</span> <span class="no">#f</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="n">feature</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"pack/~a.dat"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span> <span class="n">feature-name</span> <span class="s2">"/"</span> <span class="s2">"+"</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">feature</span> <span class="p">(</span><span class="n">load-data</span> <span class="n">file-name</span><span class="p">))</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-set!))" style="color: inherit">hash-set!</a></span> <span class="n">features</span> <span class="n">feature-name</span> <span class="n">feature</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">feature-winding-number-internal</span> <span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span> <span class="n">lat</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span> <span class="n">lon</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And below are the performance results for the updated code. <code>load-data</code> is now called multiple times, to load both the index and the features, as they are needed, however, on average this call only takes 2.35 milliseconds now, since it has to load much less data each time. The time for the <code>tz-lookup</code> call went up by 5 milliseconds, since the function may have to load some timezone data if it is not already in the cache, but the average time is still under 30 milliseconds, which is pretty good, with even the maximum time of 234 milliseconds probably being acceptable for many applications &mdash; this time corresponds to a call that had to load one or more data files.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-data</td>
+    <td style="text-align: right">234</td>
+    <td style="text-align: right">549.56</td>
+    <td style="text-align: right">0.07</td>
+    <td style="text-align: right">25.34</td>
+    <td style="text-align: right">2.35</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">1038</td>
+    <td style="text-align: right">31114.38</td>
+    <td style="text-align: right">0.04</td>
+    <td style="text-align: right">234.84</td>
+    <td style="text-align: right">29.98</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">31033.07</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">230.89</td>
+    <td style="text-align: right">18.19</td></tr>
+   <tr>
+    <td>feature-winding-number-internal</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">30466.94</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">230.89</td>
+    <td style="text-align: right">17.86</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">6627</td>
+    <td style="text-align: right">30460.42</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">230.89</td>
+    <td style="text-align: right">4.6</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">9534</td>
+    <td style="text-align: right">30452.65</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">230.88</td>
+    <td style="text-align: right">3.19</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1724</td>
+    <td style="text-align: right">30446.66</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">230.88</td>
+    <td style="text-align: right">17.66</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">55328096</td>
+    <td style="text-align: right">11153.11</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">224.75</td>
+    <td style="text-align: right">0.00020</td></tr></tbody></table></div>
+
+<h2 id="compressing-the-data-files">Compressing the data files</h2>
+
+<p>The data files produced by <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> are about 102Mb in size, and while this is smaller than the original 129Mb for the GeoJSON file, they are still a sizable chunk. A quick test, indicated that compressing these files using <code>gzip</code> would reduce their size to about 62Mb &mdash; this is still big, but it will save about 40Mb, which is worth doing since Racket has built-in file compression routines, and we can use them to compress the data as it is written out and decompress it as it is read in.</p>
+
+<p>The compression is done using <code><a href="http://docs.racket-lang.org/file/gzip.html#(def._((lib._file/gzip..rkt)._gzip-through-ports))" style="color: inherit">gzip-through-ports</a></code>, which requires an input port and output port; the output port will be the file itself, and is provided by <code>call-with-output-file</code>, while the input port will be provided from a byte buffer using <code>call-with-input-bytes</code>. The byte buffer itself will be created by calling <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> with an byte output buffer, via <code>call-with-output-bytes</code>.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">file/gzip</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">save-data</span> <span class="n">data</span> <span class="n">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">buffer</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">data</span> <span class="n">out</span><span class="p">))))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="n">file-name</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span>
+       <span class="n">buffer</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">in</span><span class="p">)</span>
+         <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gzip.html#(def._((lib._file/gzip..rkt)._gzip-through-ports))" style="color: inherit">gzip-through-ports</a></span> <span class="n">in</span> <span class="n">out</span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-milliseconds))" style="color: inherit">current-milliseconds</a></span><span class="p">)))))</span>
+    <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To read the data, we&rsquo;ll need to use <code><a href="http://docs.racket-lang.org/file/gunzip.html#(def._((lib._file/gunzip..rkt)._gunzip-through-ports))" style="color: inherit">gunzip-through-ports</a></code> and perform all the steps in reverse:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">file/gunzip</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">data</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
+       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">in</span><span class="p">)</span>
+           <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gunzip.html#(def._((lib._file/gunzip..rkt)._gunzip-through-ports))" style="color: inherit">gunzip-through-ports</a></span> <span class="n">in</span> <span class="n">out</span><span class="p">))))))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span> <span class="n">data</span> <span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>These changes are isolated to the <code>save-data</code> and <code>load-data</code> functions only, nothing else needs to change, so it is a good disk space saving with a minimum of effort. How does the performance change? The full performance results re below, and we can see that the average time for <code>load-data</code> has gone up to 18 milliseconds from 2 milliseconds, since it now has to decompress the data. The time for <code>tz-lookup</code> has also gone up by 5 milliseconds on average, since it has to call a slower <code>load-data</code> for some of the lookups, but not for all of them. The price we paid for smaller disk usage was a higher lookup time.</p>
+
+<div class="table-responsive">
+ <table class="table table-striped table-hover">
+  <thead>
+   <tr>
+    <td><strong>function</strong></td>
+    <td style="text-align: right"><strong>total calls</strong></td>
+    <td style="text-align: right"><strong>total time</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>min</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>max</strong> <em>(ms)</em></td>
+    <td style="text-align: right"><strong>average</strong> <em>(ms)</em></td></tr></thead>
+  <tbody>
+   <tr>
+    <td>load-data</td>
+    <td style="text-align: right">234</td>
+    <td style="text-align: right">4304.51</td>
+    <td style="text-align: right">0.13</td>
+    <td style="text-align: right">270.68</td>
+    <td style="text-align: right">18.4</td></tr>
+   <tr>
+    <td>tz-lookup</td>
+    <td style="text-align: right">1038</td>
+    <td style="text-align: right">35882.5</td>
+    <td style="text-align: right">0.05</td>
+    <td style="text-align: right">375.55</td>
+    <td style="text-align: right">34.57</td></tr>
+   <tr>
+    <td>feature-winding-number</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">35794.07</td>
+    <td style="text-align: right">0.01</td>
+    <td style="text-align: right">288.66</td>
+    <td style="text-align: right">20.98</td></tr>
+   <tr>
+    <td>feature-winding-number-internal</td>
+    <td style="text-align: right">1706</td>
+    <td style="text-align: right">31472.95</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">127.34</td>
+    <td style="text-align: right">18.45</td></tr>
+   <tr>
+    <td>shape-winding-number</td>
+    <td style="text-align: right">6627</td>
+    <td style="text-align: right">31465.5</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">127.32</td>
+    <td style="text-align: right">4.75</td></tr>
+   <tr>
+    <td>polygon-winding-number</td>
+    <td style="text-align: right">9534</td>
+    <td style="text-align: right">31457.16</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">127.32</td>
+    <td style="text-align: right">3.3</td></tr>
+   <tr>
+    <td>polygon-winding-number-internal</td>
+    <td style="text-align: right">1724</td>
+    <td style="text-align: right">31450.41</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">127.32</td>
+    <td style="text-align: right">18.24</td></tr>
+   <tr>
+    <td>subtended-angle</td>
+    <td style="text-align: right">55328096</td>
+    <td style="text-align: right">11338.9</td>
+    <td style="text-align: right">0</td>
+    <td style="text-align: right">50.44</td>
+    <td style="text-align: right">0.00020</td></tr></tbody></table></div>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>Loading the GeoJSON files and preparing the data for use by the <code>tz-lookup</code> function took about 20 seconds, which meant that there was a large upfront &ldquo;cost&rdquo; of using the lookup function. First, we split the task into two programs: one which loads the GeoJSON file, packs it and saves the data to disk, and another program which loads the data and does the lookups. Since the GeoJSON data changes only a few times a year, the packed data will only rarely need to be updated and can be shipped with the package. Next, we reduced the startup time to a negligible amount by using Fast-Load Serialization and by splitting the data into separate files, but as a result of this, the lookup function is slightly slower since it now has to load the data as it is needed. Optimization is often about making trade-offs, but I believe that the slower lookup times are worth the benefit of a very fast initialization time, since the lookup is still only 34 milliseconds on average.</p>
+
+<p>In the end the required disk space to store the data was about 62Mb which is still somewhat large, but since disks now have hundreds of gigabytes of disk space, perhaps not such a big issue. Still, this is an area of improvement. It is worth mentioning here that there are <a href="https://github.com/darkskyapp/tz-lookup">timezone lookup packages</a> which use a much smaller amount of disk space, however, these packages trade off accuracy in non-populated areas and discard information when they store the data on disk &mdash; this trade-off might be a valid one when disk space is at a premium, but this blog post focused on maintaining full accuracy everywhere.</p>
+
+<p>This and the <a href="/2019/08/timezone-lookup.html">previous blog post</a> went through about 10 revisions of the timezone lookup programs, and the unit test suite that was written at the start proved itself very useful, as I could confidently make changes to the program, knowing that the program still performed its intended function, to resolve GPS coordinates to timezones.</p>
+
+<p>Finally, the sources for the programs presented in this Blog Post are available <a href="https://github.com/alex-hhh/time-zone-lookup-tests">here</a>.</p>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/08/timezone-lookup.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Timezone Lookup (an adventure in program optimization)</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3 class="index-entry">Recent Posts</h3>
+          <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-10" pubdate="true">2019-08-10</time></small></p>
+        <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
+        <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
+        <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
+        <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
+        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
+        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
+        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
+        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
+        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
+        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
