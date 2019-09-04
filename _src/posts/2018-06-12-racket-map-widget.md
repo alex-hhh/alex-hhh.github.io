@@ -66,10 +66,10 @@ In the example below, markers are added for every mile on the track:
 ```
 
 Finally, the map widget has the concept of a **current location** -- this is a
-position marked with a circle and can be set using the `set-current-location`
+position marked with a circle and can be set using the `current-location`
 method.  In addition, the map widget can automatically move the map so that
 the current location is always visible, this is done using the
-`set-track-current-location` method.
+`track-current-location` method.
 
 In the example below, an elevation plot is displayed. The plot will display
 the current elevation under the cursor as well as the position on the map
@@ -81,7 +81,7 @@ for more details):
 ```racket
 ;; Tell the map widget to move the map so that the current location is always
 ;; visible.
-(send map set-track-current-location #t)
+(send map track-current-location #t)
   
 (define (plot-callback snip event x y)
   (if (and x y (eq? (send event get-event-type) 'motion))
@@ -95,12 +95,12 @@ for more details):
                                    (~r elevation #:precision 1))
                            #:anchor 'auto)))
       (send snip set-overlay-renderers overlays)
-      (send map set-current-location position))
+      (send map current-location position))
     (begin
       ;; Mouse left the plot area, clear the renderers and the current
       ;; location
       (send snip set-overlay-renderers '())
-      (send map set-current-location #f))))
+      (send map current-location #f))))
 
 ;; Data for the elevation plot.
 (define elevation
