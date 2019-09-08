@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Interactive Maps in the DrRacket REPL</title>
+    <meta name="description" content="I updated the map-widget package to allow map objects to `snip%`'s so it can be inserted into a `pasteboard%` and a side benefit of this work is that maps can now be embedded in the DrRacket REPL -- while this was not why I did these modifications, it doe...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/09/map-snip.html">
+    <link rel="next" href="/2019/08/timezone-lookup-2.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(18)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Interactive Maps in the DrRacket REPL</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-09-08" pubdate="true">2019-09-08</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>I updated the <a href="/2018/06/racket-map-widget.html">map-widget package</a> to allow map objects to <code>snip%</code>&rsquo;s so it can be inserted into a <code>pasteboard%</code> and a side benefit of this work is that maps can now be embedded in the DrRacket REPL &mdash; while this was not why I did these modifications, it does make for a cool demo.</p>
+<!-- more-->
+
+<p>Typing <code>(new map-snip%)</code> in the Racket REPL<sup><a href="#2019-09-08-map-snip-footnote-1-definition" name="2019-09-08-map-snip-footnote-1-return">1</a></sup> will create a <code>map-snip%</code> instance, and since DrRacket will print out the result of any evaluation, the resulting map snip will be displayed in the REPL, as shown in the image below. <code>snip%</code> objects can be interactive, so you can actually drag the map around with the mouse and zoom in and out using the &ldquo;up&rdquo; and &ldquo;down&rdquo; keys &mdash; you cannot see that in the image, you will have to try it out yourself:</p>
+
+<div class="figure"><img src="/img/a029/map-snip.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="user-interaction-with-a-map-snip-in-the-repl">User interaction with a <code>map-snip%</code> in the REPL</h2>
+
+<p>Since each <code>map-snip%</code> is an individual value that is printed out, multiple maps can be shown in the REPL, each with their own positions and zoom level. You can also specify the initial position for the map using a pair of GPS coordinates, as well as an initial data track to load and display on the map snip, here is how it all works:</p>
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/MrS0FG-X8DI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<p>GPS tracks are loaded from <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPX files</a> using the <a href="https://pkgs.racket-lang.org/package/data-frame">data-frame package</a>: the <code>df-read/gpx</code> function will read a GPX file into a data frame, and the <code>df-select*</code> function can be used to extract the latitude, longitude track to use for the map snip:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">data-frame</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">track</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span> <span class="p">[</span><span class="n">track</span> <span class="n">track</span><span class="p">])</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To quickly find out what data series are available in the data frame, you can use the <code>df-describe</code> function:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">df-describe</span> <span class="n">df</span><span class="p">)</span>
+<span class="n">data-frame:</span> <span class="mi">5</span> <span class="n">columns</span><span class="o">,</span> <span class="mi">16287</span> <span class="n">rows</span>
+<span class="n">properties:</span>
+  <span class="n">waypoints</span> <span class="p">((</span><span class="mi">1485442935</span> <span class="mf">-42.67913189716637</span> <span class="mf">146.58711176365614</span> <span class="mf">1126.94</span> <span class="n">Lap</span> <span class="mi">1</span><span class="p">)</span> 
+  <span class="n">laps</span>      <span class="p">(</span><span class="mi">1485442935</span> <span class="mi">1485444483</span> <span class="mi">1485445975</span> <span class="mi">1485447502</span> <span class="mi">1485449146</span> <span class="mi">1485450523</span>
+  <span class="n">name</span>      <span class="n">Tarn</span> <span class="n">Shelf</span><span class="o">,</span> <span class="n">Mt</span> <span class="n">Field</span> <span class="n">NP</span> <span class="p">(</span><span class="n">Hiking</span><span class="p">)</span>
+<span class="n">series:</span>
+              <span class="n">NAs</span>           <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span>           <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span>          <span class="n">mean</span>        <span class="n">stddev</span>
+  <span class="n">alt</span>           <span class="mi">0</span>        <span class="mf">854.93</span>       <span class="mf">1278.35</span>       <span class="mf">1089.94</span>        <span class="mf">122.06</span>
+  <span class="n">dst</span>           <span class="mi">0</span>             <span class="mi">0</span>      <span class="mf">14903.55</span>       <span class="mf">7184.98</span>       <span class="mf">4192.82</span>
+  <span class="n">lat</span>           <span class="mi">0</span>        <span class="mf">-42.69</span>        <span class="mf">-42.65</span>        <span class="mf">-42.67</span>          <span class="mf">0.01</span>
+  <span class="n">lon</span>           <span class="mi">0</span>        <span class="mf">146.56</span>        <span class="mf">146.59</span>        <span class="mf">146.58</span>          <span class="mf">0.01</span>
+  <span class="n">timestamp</span>     <span class="mi">0</span>    <span class="mi">1485470647</span>    <span class="mi">1485490648</span>  <span class="mf">1485480878.4</span>       <span class="mf">5984.35</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h2 id="using-location-data-from-other-sources">Using location data from other sources</h2>
+
+<p>The <code>map-snip%</code> can also have an initial position specified and, as an example, I used a simple, predefined location:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">new-york</span> <span class="o">#</span><span class="p">(</span><span class="mf">40.6943</span> <span class="mf">-73.9249</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span> <span class="p">[</span><span class="n">position</span> <span class="n">new-york</span><span class="p">])</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>When presenting these demos on <a href="https://groups.google.com/forum/#!topic/racket-users/pzy1jv1s61o">racket-users</a>, a suggestion was made to provide a database of common location names. This might be a worthwhile project, but the <code>data-frame</code> package can also be used with the <a href="https://simplemaps.com/data/world-cities">world cities database</a> to query location names directly<sup><a href="#2019-09-08-map-snip-footnote-2-definition" name="2019-09-08-map-snip-footnote-2-return">2</a></sup>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1">;; Load the world cities data from the CSV file</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">world-cities</span> <span class="p">(</span><span class="n">df-read/csv</span> <span class="s2">"worldcities.csv"</span> <span class="kd">#:quoted-numbers?</span> <span class="no">#t</span><span class="p">))</span>
+
+<span class="c1">;; A filter function to check for a city name:</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">((</span><span class="n">is-city?</span> <span class="n">name</span><span class="p">)</span> <span class="n">v</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">v</span> <span class="mi">0</span><span class="p">)</span> <span class="n">name</span><span class="p">))</span>
+
+<span class="c1">;; Select the city name, country and latitude/longitude coordinates for a city:</span>
+
+<span class="p">(</span><span class="n">df-select*</span> <span class="n">world-cities</span> <span class="s2">"city"</span> <span class="s2">"country"</span> <span class="s2">"lat"</span> <span class="s2">"lng"</span> <span class="kd">#:filter</span> <span class="p">(</span><span class="n">is-city?</span> <span class="s2">"Perth"</span><span class="p">))</span>
+
+<span class="c1">;; Produces: &#39;#(#("Perth" "Australia" -31.955 115.84)</span>
+<span class="c1">;;              #("Perth" "United Kingdom" 56.4003 -3.47))</span>
+
+<span class="p">(</span><span class="n">df-select*</span> <span class="n">world-cities</span> <span class="s2">"city"</span> <span class="s2">"country"</span> <span class="s2">"lat"</span> <span class="s2">"lng"</span> <span class="kd">#:filter</span> <span class="p">(</span><span class="n">is-city?</span> <span class="s2">"New York"</span><span class="p">))</span>
+<span class="c1">;; Produces: &#39;#(#("New York" "United States" 40.6943 -73.9249))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>From the two example cities above it should be evident that the city name alone is not necessarily unique so any lookup code must account for multiple matches.</p>
+
+<h2 id="program-interaction-with-a-map-snip-in-the-repl">Program interaction with a <code>map-snip%</code> in the REPL</h2>
+
+<p>If you try out the map snip demos, it will quickly become evident one of the limitations of the REPL: each time a snip is displayed, DrRacket will create a copy of the snip to display, leaving the original as a separate object. This means that the program below will not do what you expect:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">map-widget</span> <span class="n">data-frame</span><span class="p">)</span>
+<span class="c1">;; Create a map snip, and bind it to a variable</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span><span class="p">))</span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span>   <span class="c1">;; show the map in the REPL</span>
+
+<span class="c1">;; Load a data track and add it to the displayed map</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">track</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="n">add-track</span> <span class="n">track</span><span class="p">)</span>
+
+<span class="c1">;; The original map is not updated with the track!</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The reason for this, is that the map shown in the REPL is actually a copy of the <code>map</code> snip defined earlier and since the original is updated, the copy remains unchanged. Essentially, DrRacket allows either the program or the user to interact with the snips in the REPL &mdash; and there are good reasons for that &mdash; but we can work around this limitation: the video below shows a re-work of the original <a href="/2018/06/racket-map-widget.html">map-widget demo</a>, where the elevation plot is linked to the map snips displayed inside the REPL, showing the location on the map for a position on the elevation plot:</p>
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/R2KU0ZvIJws" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<p>The above code works by defining a class derived from <code>map-snip%</code>, which keeps track of all the copies in a global <code>all-map-snips</code> variable:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">all-map-snips</span> <span class="o">'</span><span class="p">())</span>  <span class="c1">;; a list of all the map snips shown in the REPL</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cmap-snip%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">map-snip%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="c1">;; Override copy and add the copy to the `all-map-snips&#39; list before</span>
+    <span class="c1">;; returning it.</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">copy</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">c</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">copy</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">all-map-snips</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">c</span> <span class="n">all-map-snips</span><span class="p">))</span>
+      <span class="n">c</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The functions that update the current location will than update the location on all the map snips in <code>all-map-snips</code>, rather than on the first map snip that was created.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"mt clarence.gpx"</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">put-current-location</span> <span class="n">dst</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="n">df-lookup</span> <span class="n">df</span> <span class="s2">"dst"</span> <span class="o">'</span><span class="p">(</span><span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">)</span> <span class="n">dst</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">m</span> <span class="n">all-map-snips</span><span class="p">])</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">m</span> <span class="n">current-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">clear-current-location</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">m</span> <span class="n">all-map-snips</span><span class="p">])</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">m</span> <span class="n">current-location</span> <span class="no">#f</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This type of interaction is specific to the example in the video, and any user program which needs to interact with snips in the REPL will need to devise a strategy which deals with the fact that snips are copied before being displayed &mdash; an obvious limitation of the example above is that all map snips are linked to the plot, and if you want to have other map snips which show a different area, a new strategy will need to be devised for dealing with these copies.</p>
+
+<p>While using <code>map-snip%</code> objects in the REPL is interesting and makes for a cool demo, their real usefulness comes from being able to use them inside <code>pasteboard%</code> objects to build more complex GUI applications. But that is a topic for another blog post.</p>
+
+<hr />
+
+<div class="footnotes">
+ <ol>
+  <li id="2019-09-08-map-snip-footnote-1-definition" class="footnote-definition">
+   <p>The <code>map-widget</code> and <code>data-frame</code> packages must be installed and loaded&nbsp;<a href="#2019-09-08-map-snip-footnote-1-return">↩</a></p></li>
+  <li id="2019-09-08-map-snip-footnote-2-definition" class="footnote-definition">
+   <p>Thanks to Laurent for providing the link to this database&nbsp;<a href="#2019-09-08-map-snip-footnote-2-return">↩</a></p></li></ol></div>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/08/timezone-lookup-2.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; More Timezone Lookup (loading and saving data)</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3 class="index-entry">Recent Posts</h3>
+          <p><a href='/2019/09/map-snip.html'>Interactive Maps in the DrRacket REPL</a> <small class='date-and-tags'>
+        <time datetime="2019-09-08" pubdate="true">2019-09-08</time></small></p>
+        <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-10" pubdate="true">2019-08-10</time></small></p>
+        <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
+        <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
+        <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
+        <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
+        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
+        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
+        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
+        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
+        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        <p><a href='/2018/03/arduino-inclinometer-improvements.html'>Arduino Inclinometer Improvements</a> <small class='date-and-tags'>
+        <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
+        <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
+        <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

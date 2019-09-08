@@ -127,7 +127,7 @@ for more details):
 The final result can be seen in this video:
 
 <div style="text-align:center">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/--wfpzGKa90" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<iframe width="700" height="396" src="https://www.youtube.com/embed/--wfpzGKa90" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
 
 ## Loading and using GPX files

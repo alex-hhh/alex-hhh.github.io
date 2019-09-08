@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2019-08-10T00:17:06Z</updated>
+ <updated>2019-09-07T23:54:13Z</updated>
+ <entry>
+  <title type="text">Interactive Maps in the DrRacket REPL</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-09-map-snip-html</id>
+  <published>2019-09-07T23:54:13Z</published>
+  <updated>2019-09-07T23:54:13Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;I updated the &lt;a href="/2018/06/racket-map-widget.html"&gt;map-widget package&lt;/a&gt; to allow map objects to &lt;code&gt;snip%&lt;/code&gt;&amp;rsquo;s so it can be inserted into a &lt;code&gt;pasteboard%&lt;/code&gt; and a side benefit of this work is that maps can now be embedded in the DrRacket REPL &amp;mdash; while this was not why I did these modifications, it does make for a cool demo.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">More Timezone Lookup (loading and saving data)</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/08/timezone-lookup-2.html?utm_source=racket&amp;utm_medium=Atom" />

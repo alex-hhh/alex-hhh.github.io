@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sat, 10 Aug 2019 00:17:06 UT</lastBuildDate>
-  <pubDate>Sat, 10 Aug 2019 00:17:06 UT</pubDate>
+  <lastBuildDate>Sat, 07 Sep 2019 23:54:13 UT</lastBuildDate>
+  <pubDate>Sat, 07 Sep 2019 23:54:13 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Interactive Maps in the DrRacket REPL</title>
+   <link>https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-09-map-snip-html</guid>
+   <pubDate>Sat, 07 Sep 2019 23:54:13 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I updated the &lt;a href="/2018/06/racket-map-widget.html"&gt;map-widget package&lt;/a&gt; to allow map objects to &lt;code&gt;snip%&lt;/code&gt;&amp;rsquo;s so it can be inserted into a &lt;code&gt;pasteboard%&lt;/code&gt; and a side benefit of this work is that maps can now be embedded in the DrRacket REPL &amp;mdash; while this was not why I did these modifications, it does make for a cool demo.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>More Timezone Lookup (loading and saving data)</title>
    <link>https://alex-hhh.github.io/2019/08/timezone-lookup-2.html?utm_source=racket&amp;utm_medium=RSS</link>

@@ -23,7 +23,7 @@ word, authenticate it, and "act" upon it, for example open or close a garage
 door.
 
 <div style="text-align:center">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/wBQeyzdu_kk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+<iframe width="700" height="396" src="https://www.youtube.com/embed/wBQeyzdu_kk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
 </div>
 
 Sometimes these chips are also connected to 315Mhz transmitters, I found this

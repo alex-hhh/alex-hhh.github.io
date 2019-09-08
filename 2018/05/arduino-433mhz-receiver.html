@@ -52,7 +52,7 @@
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
               <ul class="dropdown-menu" role="menu">
-                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(17)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(4)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(18)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
               </ul>
             </li>
             <li>
@@ -100,7 +100,7 @@
 <p>The remote used by the garage door opener is built using the HCS200 chip, which is a code hopping encoder. It used in many remote key-less entry systems and seems to be quite popular: I personally have three key remotes that use this chip, all for different systems. The HCS200 works with digital signals only, i.e. it does not transmit anything, instead, its digital output pin is usually connected to a 433Mhz transmitter directly, to use what is known as <a href="https://en.wikipedia.org/wiki/On-off_keying">On-Off Keying</a> modulation. Up to 4 buttons can be connected tp the chip, these are wired directly to a key on the remote. Pressing any of the buttons causes the chip to continuously transmit a code word and a 433Mhz receiver can read this code word, authenticate it, and &ldquo;act&rdquo; upon it, for example open or close a garage door.</p>
 
 <div style="text-align:center">
- <iframe width="560" height="315" src="https://www.youtube.com/embed/wBQeyzdu_kk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/wBQeyzdu_kk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
 
 <p>Sometimes these chips are also connected to 315Mhz transmitters, I found this to be the case with older remotes. With such a remote, a 315Mhz receiver is needed. If you want to build a received for your own remote it is best to check what frequency it is using for its transmission.</p>
 
@@ -477,7 +477,9 @@
         <!-- Side bar -->
         <div id="sidebar-content" class="col-md-3">
           <h3 class="index-entry">Recent Posts</h3>
-          <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
+          <p><a href='/2019/09/map-snip.html'>Interactive Maps in the DrRacket REPL</a> <small class='date-and-tags'>
+        <time datetime="2019-09-08" pubdate="true">2019-09-08</time></small></p>
+        <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
         <time datetime="2019-08-10" pubdate="true">2019-08-10</time></small></p>
         <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
         <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
@@ -515,8 +517,6 @@
         <time datetime="2018-03-09" pubdate="true">2018-03-09</time></small></p>
         <p><a href='/2018/02/interactive-overlays-with-the-racket-plot-package.html'>Interactive Overlays With the Racket Plot Package</a> <small class='date-and-tags'>
         <time datetime="2018-02-03" pubdate="true">2018-02-03</time></small></p>
-        <p><a href='/2018/01/changing-built-in-racket-packages.html'>Changing Built-in Racket Packages</a> <small class='date-and-tags'>
-        <time datetime="2018-01-29" pubdate="true">2018-01-29</time></small></p>
         </div>
       </div>
       <footer>

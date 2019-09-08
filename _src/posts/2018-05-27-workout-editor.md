@@ -23,7 +23,7 @@ computer via USB, it shows up as a normal USB Drive and files can be copied on
 the "NewFiles" folder on that device.
 
 <div style="text-align:center">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/8kA0-ahHxGI" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+<iframe width="700" height="396" src="https://www.youtube.com/embed/8kA0-ahHxGI" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
 </div>
 
 ## A programmers workout editor

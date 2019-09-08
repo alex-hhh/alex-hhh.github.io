@@ -85,7 +85,7 @@ Once started, the bike-trainer application will connect to this server to
 receive telemetry values.
 
 <div style="text-align:center">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/D1E2fSQFy7k" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<iframe width="700" height="396" src="https://www.youtube.com/embed/D1E2fSQFy7k" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
 
 ## Technical details
