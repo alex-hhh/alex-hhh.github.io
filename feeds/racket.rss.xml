@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sat, 07 Sep 2019 23:54:13 UT</lastBuildDate>
-  <pubDate>Sat, 07 Sep 2019 23:54:13 UT</pubDate>
+  <lastBuildDate>Sun, 15 Sep 2019 04:42:09 UT</lastBuildDate>
+  <pubDate>Sun, 15 Sep 2019 04:42:09 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Racket Binary Packages</title>
+   <link>https://alex-hhh.github.io/2019/09/racket-binary-packages.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-09-racket-binary-packages-html</guid>
+   <pubDate>Sun, 15 Sep 2019 04:42:09 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket source code is distributed under &lt;a href="https://www.gnu.org/licenses/lgpl-3.0.html"&gt;LGPL&lt;/a&gt; and this means that any proprietary Racket application distributed must also provide a way for the user to re-link an updated Racket runtime and produce a new executable for that application. In this blog post we&amp;rsquo;ll explore how to achieve this.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/09/racket-binary-packages.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Interactive Maps in the DrRacket REPL</title>
    <link>https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=racket&amp;utm_medium=RSS</link>

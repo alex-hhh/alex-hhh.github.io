@@ -27,5 +27,6 @@ https://alex-hhh.github.io/2019/05/timezone-visualization.html
 https://alex-hhh.github.io/2019/08/timezone-lookup-2.html
 https://alex-hhh.github.io/2019/08/timezone-lookup.html
 https://alex-hhh.github.io/2019/09/map-snip.html
+https://alex-hhh.github.io/2019/09/racket-binary-packages.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html
