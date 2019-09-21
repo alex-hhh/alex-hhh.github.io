@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/activitylog2.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/activitylog2.html" />
  <id>urn:https-alex-hhh-github-io:-tags-activitylog2-html</id>
- <updated>2019-02-09T00:36:49Z</updated>
+ <updated>2019-09-20T23:04:13Z</updated>
+ <entry>
+  <title type="text">Interactive Heat Maps</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/09/interactive-heat-maps.html?utm_source=activitylog2&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-09-interactive-heat-maps-html</id>
+  <published>2019-09-20T23:04:13Z</published>
+  <updated>2019-09-20T23:04:13Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;A HeatMap chart allows displaying a collection of GPS activities on a map and it is a nice way to visualize GPS data. On-line tools provide this functionality, but I wanted to implement my own, displaying heat maps using data from my own computer, without having to upload it to another website.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/09/interactive-heat-maps.html?utm_source=activitylog2&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Building a Data Visualization Dashboard in Racket</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html?utm_source=activitylog2&amp;utm_medium=Atom" />

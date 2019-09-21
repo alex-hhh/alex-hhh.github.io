@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Interactive Heat Maps</title>
+    <meta name="description" content="A HeatMap chart allows displaying a collection of GPS activities on a map and it is a nice way to visualize GPS data. On-line tools provide this functionality, but I wanted to implement my own, displaying heat maps using data from my own computer, without...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="activitylog2, racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/09/interactive-heat-maps.html">
+    <link rel="next" href="/2019/09/racket-binary-packages.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(5)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(20)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Interactive Heat Maps</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-09-21" pubdate="true">2019-09-21</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a>, <a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>A HeatMap chart allows displaying a collection of GPS activities on a map and it is a nice way to visualize GPS data. On-line tools provide this functionality, but I wanted to implement my own, displaying heat maps using data from my own computer, without having to upload it to another website.</p>
+<!-- more-->
+
+<p>Instead of explaining it, it is much easier to show how this all works, so here is a video:</p>
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/5Op6ywIqTRc" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<h2 id="implementation-details">Implementation Details</h2>
+
+<p>Implementing the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/rkt/trend-charts/trends-heatmap.rkt">actual heatmap</a> is pretty straightforward, with less than 500 lines of Racket code, but it required several changes to the underlying libraries used by ActivityLog2, which are described in the following sections.</p>
+
+<div class="figure"><img src="/img/a031/heatmaps.png" alt="" />
+ <p class="caption"></p></div>
+
+<h3 id="trend-charts">Trend Charts</h3>
+
+<p>The ActivityLog2 application allows defining trend charts which are plots based on groups of activities. The application will manage these plots, which includes displaying the data as a plot and saving / restoring the chart parameters. Each trend chart is represented by a class which has the following responsibilities:</p>
+
+<ul>
+ <li>
+  <p>prepare and display a GUI dialog box, which allows the user to view and edit  the parameters for the chart, such as the date range and types of activities  to be included</p></li>
+ <li>
+  <p>fetch and prepare the data and setup a plot and pass it to the application  for display.</p></li></ul>
+
+<p>Each trend chart has to derive from the following <code>trends-chart%</code> interface and implement, at minimum <code>make-settings-dialog</code>, <code>invalidate-data</code> and <code>put-plot-snip</code>. There are some other optional methods, for example for saving an image of the plot or saving the plot data to file, plus some helper methods as well, which are not shown here:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">trends-chart%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="c1">;; Create a new settings dialog for this class.</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">make-settings-dialog</span><span class="p">)</span>
+      <span class="c1">;; needs implementation</span>
+      <span class="no">#f</span><span class="p">)</span>
+    <span class="c1">;; Called when the chart parameters have been changed, and the data for the</span>
+    <span class="c1">;; chart will need to be updated.</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">invalidate-data</span><span class="p">)</span>
+      <span class="c1">;; needs implementation</span>
+      <span class="no">#f</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">put-plot-snip</span> <span class="n">canvas</span><span class="p">)</span>
+      <span class="c1">;; need implementation</span>
+      <span class="no">#f</span><span class="p">)</span>
+<span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This simple trend chart interface has proved flexible enough to allow implementing a wide variety of plots from bar chart plots to histograms ans scatter plots. The plot snips themselves can be made <a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html">interactive</a>, to allow more information to be displayed, and the <code>canvas</code> argument passed to <code>put-plot-snip</code> is a special <code>editor-canvas%</code> which allows defining floating snips for displaying mode information in an enhanced plot legend.</p>
+
+<p>In fact, there are charts for Aerobic Decoupling, Mean Maximal, Body Weight, Histogram, Scatter, a Performance Management Chart, three different Training Volume charts. The user can define any number of actual trend plots from the defined types because each chart can have several instances to show the chart with different parameters.</p>
+
+<h3 id="map-snips">Map Snips</h3>
+
+<p>At first sight, the trend chart interface is designed for generating plots, and the heat map chart requires displaying a map with overlayed data on top, which is not something that <code>plot-snip</code> can produce. However, while all the methods and class names have &ldquo;plot&rdquo; in their name, they actually work with <code>snip%</code> objects. I already had a <code class="brush: mw">map-widget%</code> class which allowed displaying a map in a <code>canvas%</code>, but ultimately, the map drawing was done on a device context interface <code>dc&lt;%&gt;</code> which is common between both the <code>canvas%</code> and <code>snip%</code>. I did have to adjust the drawing methods however, because a snip&rsquo;s draw method cannot assume that it can always draw at the origin, but other than that most of the changes were about re-factoring the drawing an event handling code from <code>map-widget%</code> into a common class and providing both canvas and snip interfaces for this. The result is that a <code>map-snip%</code> object can now be created and placed inside <code>pasteboard%</code> objects, just like plot snips. The new map snip is flexible enough that it can be used directly in the <a href="/2019/09/map-snip.html">DrRacket REPL</a>.</p>
+
+<p>The <code>heatmap-chart%</code>&rsquo;s <code>put-plot-snip</code> implementation can simply create a <code>map-snip%</code> and insert that into the canvas, instead of a plot snip produced by <code>plot-snip</code>. It was a pleasant surprise that a <code>map-snip%</code> was all that was needed to allow a map to be displayed as a trend chart.</p>
+
+<h3 id="embedded-snip-controls">Embedded Snip Controls</h3>
+
+<p>The map snip responds to mouse events, so you can drag the map with the mouse and use the scroll wheel to zoom in and out, but I wanted to add some extra functionality such as a progress bar as activities are loaded, a more obvious interface for zooming in and out, a button to reset the map to a default, in case the user zooms or moves the map away from the displayed activities. I also wanted to add a &ldquo;show map&rdquo; check box to be able to hide the map itself in case the display is too cluttered:</p>
+
+<div class="figure"><img src="/img/a031/map-control.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The trend chart&rsquo;s canvas allows inserting &ldquo;floating snips&rdquo;, which are simply snips that are not resized to fill the background, so the map control can be implemented as another snip. The <code>snip%</code>s provided by Racket are pretty simple and while they have a draw method and can react to mouse events, there are no controls which can be added to snips. This does not mean that such controls cannot be written, in fact I wrote an <code>embedded-snip-button%</code> class for use in the <a href="/2018/05/workout-editor.html">workout editor</a>, this is a simple button which can be placed into individual snips and react to click events:</p>
+
+<div class="figure"><img src="/img/a031/wkedit-demo.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>The <code>embedded-snip-button%</code> was basic and specific to the task: it was my first experiment with providing snip controls. With some more experience with snips, I decided to give it a try with some more <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/rkt/widgets/esc-controls.rkt">snip controls</a>, so I implemented a button, a label a slider, a check box and a gauge control. There are too many details about the implementation to discuss them here, but below is a demo with a snip which has all the controls on it, with the source code for the demo available <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/esc-demo.rkt">here</a>. Since this is a <code>snip%</code> it can be inserted in the Racket REPL just like a plot or a map snip, it is however intended to be used inside a <code>pasteboard%</code> as part of a GUI application.</p>
+
+<div class="figure"><img src="/img/a031/esc-control-demo.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>These controls will not win any design awards, but they are functional and I could implement the map control snip using them. What is currently missing is layout control and currently the owning snip has to place and resize these controls, perhaps in the next iteration of a &ldquo;snip controls&rdquo; project I will automatic layout panels as well, some basic layout facilities are already implemented in the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/esc-demo.rkt">demo</a>.</p>
+
+<h3 id="drawing-the-heat-map-data">Drawing The Heat Map Data</h3>
+
+<p>Perhaps the least polished feature is drawing the actual heat map data &mdash; a good implementation would have to take all the GPS points from the selected activities, group them, and display the data with a color intensity depending on the number of points in each such group. More sophisticated visualizations will also apply a Gaussian Blur pass on the data to make the heat map look more diffuse.</p>
+
+<p>All this however cannot be done in real time &mdash; or at least I could not find a good way to do it, so instead I opted for just reading the GPS tracks and drawing them on the map with a small alpha value for the line, so that overlapping tracks look more intense. This is not ideal, but it is quick and the Racket graphics libraries can handle pretty large numbers of such tracks, although the application does run significantly slower if I try to display all 2000 activities that I have in my data base.</p>
+
+<p>For now, this is good enough for my uses, but something that might require improvements in the future.</p>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/09/racket-binary-packages.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Racket Binary Packages</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <!-- Side bar -->
+        <div id="sidebar-content" class="col-md-3">
+          <h3 class="index-entry">Recent Posts</h3>
+          <p><a href='/2019/09/interactive-heat-maps.html'>Interactive Heat Maps</a> <small class='date-and-tags'>
+        <time datetime="2019-09-21" pubdate="true">2019-09-21</time></small></p>
+        <p><a href='/2019/09/racket-binary-packages.html'>Racket Binary Packages</a> <small class='date-and-tags'>
+        <time datetime="2019-09-15" pubdate="true">2019-09-15</time></small></p>
+        <p><a href='/2019/09/map-snip.html'>Interactive Maps in the DrRacket REPL</a> <small class='date-and-tags'>
+        <time datetime="2019-09-08" pubdate="true">2019-09-08</time></small></p>
+        <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-10" pubdate="true">2019-08-10</time></small></p>
+        <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
+        <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
+        <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
+        <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
+        <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
+        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
+        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
+        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
+        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
+        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
+        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
+        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
+        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
+        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
+        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
+        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
+        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
+        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
+        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
+        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
+        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
+        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
+        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
+        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
+        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
+        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
+        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
+        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <!-- <p><a href="https://twitter.com/racketlang"
+                   class="twitter-follow-button"
+                   data-show-count="false"
+                   data-lang="en">
+                  "Follow RacketLang"
+                </a>
+                <script type="text/javascript">
+                  !function(d,s,id){
+                      var js,fjs=d.getElementsByTagName(s)[0];
+                      if(!d.getElementById(id)){
+                          js=d.createElement(s);
+                          js.id=id;
+                          js.src="//platform.twitter.com/widgets.js";
+                          fjs.parentNode.insertBefore(js,fjs);
+                      }
+                  }(document,"script","twitter-wjs");
+                </script></p> -->
+        <p>Site generated
+          by <a href="https://github.com/greghendershott/frog">Frog</a>,
+          the <strong>fr</strong>ozen bl<strong>og</strong>
+          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
+          available as <a href="/feeds/all.atom.xml">Atom</a>
+          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
+          a <a href="/Cookies.html">cookie policy</a>.</p>
+        <!-- <p><em>Your legal notice here</em>.</p> -->
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
