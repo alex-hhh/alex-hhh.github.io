@@ -10,7 +10,7 @@
     <meta name="author"      content="@|author|">
     <meta name="keywords"    content="@|keywords|">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <link rel="icon"      href="@|uri-prefix|/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="@|uri-prefix|/img/favicon.svg">
     <link rel="canonical" href="@|full-uri|">
     @(when rel-next @list{<link rel="next" href="@|rel-next|">})
     @(when rel-prev @list{<link rel="prev" href="@|rel-prev|">})
@@ -49,15 +49,11 @@
                 <li@(when (string-ci=? uri uri-path) " class=\"active\"")>
                   <a class="nav-link" href="@|uri|"@|a-attribs|>@|label|</a>
                 </li> })
-            @(define (craft-tag-links all-tag-info)
-              @(map (lambda (tinfo)
-                @list{<a class="dropdown-item" href="@(second tinfo)">@(first tinfo)&nbsp<small>(@(~a (third tinfo)))</small></a>})
-                all-tag-info))
             <li class="nav-item dropdown">
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu" role="menu">
-                @craft-tag-links[(all-tag-info)]
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
               </ul>
             </li>
             @ni[(string-append uri-prefix "/About.html") "About"]
@@ -80,7 +76,7 @@
              put the contents inside an if block, as all the <pre> tags will
              be indented.
           -->
-        <div id="content" class=@(if sidebar-contents "col-md-9" "col-md-12")>
+        <div id="content" class=@(if (equal? page-kind "post") "col-md-9" "col-md-12")>
           @;{ To put something only on the home page, check for
               @uri-path being "/index.html" }
           @(when (string-ci=? uri-path
@@ -98,13 +94,11 @@
           @;{ The main page contents are in @contents }
           @|contents|
         </div>
-        @(when sidebar-contents
+        @(when (equal? page-kind "post")
           @list{
-          <!-- Side bar -->
-          <div id="sidebar-content" class="col-md-3">
-            <h3 class="index-entry">Recent Posts</h3>
-            @|sidebar-contents|
-          </div>})
+            <div id="sidebar-content" class="col-md-3">
+              <!-- will be filled in dynamically by custom.js -->
+            </div>})
       </div>
       <footer>
         <hr />
@@ -121,7 +115,8 @@
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->
-  <script type="text/javascript" src="@|uri-prefix|/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="@|uri-prefix|/js/jquery-3.4.1.min.js"></script>
   <script type="text/javascript" src="@|uri-prefix|/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="@|uri-prefix|/js/custom.js"></script>
   </body>
 </html>

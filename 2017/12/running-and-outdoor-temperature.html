@@ -8,7 +8,7 @@
     <meta name="author"      content="Alex Harsányi">
     <meta name="keywords"    content="training data analysis">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <link rel="icon"      href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2017/12/running-and-outdoor-temperature.html">
     <link rel="next" href="/2017/12/arduino-inclinometer.html">
     <link rel="prev" href="/2018/01/equipment-usage-and-costs.html">
@@ -51,8 +51,8 @@
             <li class="nav-item dropdown">
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                 Tags <b class="caret"></b></a>
-              <ul class="dropdown-menu" role="menu">
-                <a class="dropdown-item" href="/tags/activitylog2.html">activitylog2&nbsp<small>(5)</small></a><a class="dropdown-item" href="/tags/arduino.html">arduino&nbsp<small>(3)</small></a><a class="dropdown-item" href="/tags/bike-trainer.html">bike trainer&nbsp<small>(1)</small></a><a class="dropdown-item" href="/tags/racket.html">racket&nbsp<small>(20)</small></a><a class="dropdown-item" href="/tags/training-data-analysis.html">training data analysis&nbsp<small>(5)</small></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
               </ul>
             </li>
             <li>
@@ -308,49 +308,8 @@
   </footer>
 </article>
         </div>
-        <!-- Side bar -->
         <div id="sidebar-content" class="col-md-3">
-          <h3 class="index-entry">Recent Posts</h3>
-          <p><a href='/2019/09/interactive-heat-maps.html'>Interactive Heat Maps</a> <small class='date-and-tags'>
-        <time datetime="2019-09-21" pubdate="true">2019-09-21</time></small></p>
-        <p><a href='/2019/09/racket-binary-packages.html'>Racket Binary Packages</a> <small class='date-and-tags'>
-        <time datetime="2019-09-15" pubdate="true">2019-09-15</time></small></p>
-        <p><a href='/2019/09/map-snip.html'>Interactive Maps in the DrRacket REPL</a> <small class='date-and-tags'>
-        <time datetime="2019-09-08" pubdate="true">2019-09-08</time></small></p>
-        <p><a href='/2019/08/timezone-lookup-2.html'>More Timezone Lookup (loading and saving data)</a> <small class='date-and-tags'>
-        <time datetime="2019-08-10" pubdate="true">2019-08-10</time></small></p>
-        <p><a href='/2019/08/timezone-lookup.html'>Timezone Lookup (an adventure in program optimization)</a> <small class='date-and-tags'>
-        <time datetime="2019-08-02" pubdate="true">2019-08-02</time></small></p>
-        <p><a href='/2019/05/timezone-visualization.html'>Timezone Visualization</a> <small class='date-and-tags'>
-        <time datetime="2019-05-18" pubdate="true">2019-05-18</time></small></p>
-        <p><a href='/2019/04/build-racket-packages-with-azure-pipelines.html'>Build Racket Packages with Azure Pipelines</a> <small class='date-and-tags'>
-        <time datetime="2019-04-18" pubdate="true">2019-04-18</time></small></p>
-        <p><a href='/2019/03/password-generator-gui.html'>Building a GUI Application for the Password Generator</a> <small class='date-and-tags'>
-        <time datetime="2019-03-23" pubdate="true">2019-03-23</time></small></p>
-        <p><a href='/2019/03/password-generator.html'>Writing a Simple Password Generator in Racket</a> <small class='date-and-tags'>
-        <time datetime="2019-03-05" pubdate="true">2019-03-05</time></small></p>
-        <p><a href='/2019/02/racket-data-structures.html'>An Overview of Common Racket Data Structures</a> <small class='date-and-tags'>
-        <time datetime="2019-02-14" pubdate="true">2019-02-14</time></small></p>
-        <p><a href='/2019/02/data-visualization-dashboard.html'>Building a Data Visualization Dashboard in Racket</a> <small class='date-and-tags'>
-        <time datetime="2019-02-09" pubdate="true">2019-02-09</time></small></p>
-        <p><a href='/2018/11/an-enhanced-text-field-gui-control-for-racket.html'>An enhanced text-field% GUI control for Racket</a> <small class='date-and-tags'>
-        <time datetime="2018-11-21" pubdate="true">2018-11-21</time></small></p>
-        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-3.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 3)</a> <small class='date-and-tags'>
-        <time datetime="2018-10-29" pubdate="true">2018-10-29</time></small></p>
-        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard-part-2.html'>Chess Game Using Racket&rsquo;s Pasteboard (part 2)</a> <small class='date-and-tags'>
-        <time datetime="2018-10-19" pubdate="true">2018-10-19</time></small></p>
-        <p><a href='/2018/10/chess-game-using-racket-s-pasteboard.html'>Chess Game Using Racket&rsquo;s Pasteboard</a> <small class='date-and-tags'>
-        <time datetime="2018-10-12" pubdate="true">2018-10-12</time></small></p>
-        <p><a href='/2018/08/racket-data-frame.html'>Racket Data Frame Package</a> <small class='date-and-tags'>
-        <time datetime="2018-08-05" pubdate="true">2018-08-05</time></small></p>
-        <p><a href='/2018/06/racket-map-widget.html'>A Racket GUI Widget to display maps based on OpenStreetMap tiles</a> <small class='date-and-tags'>
-        <time datetime="2018-06-12" pubdate="true">2018-06-12</time></small></p>
-        <p><a href='/2018/05/workout-editor.html'>Running and Cycling Workout Editor</a> <small class='date-and-tags'>
-        <time datetime="2018-05-27" pubdate="true">2018-05-27</time></small></p>
-        <p><a href='/2018/05/arduino-433mhz-receiver.html'>Arduino 433Mhz Receiver &mdash; Reading Keyfobs</a> <small class='date-and-tags'>
-        <time datetime="2018-05-19" pubdate="true">2018-05-19</time></small></p>
-        <p><a href='/2018/03/interactive-overlays-with-the-racket-plot-package-update.html'>Interactive Overlays With the Racket Plot Package &mdash; Update</a> <small class='date-and-tags'>
-        <time datetime="2018-03-20" pubdate="true">2018-03-20</time></small></p>
+          <!-- will be filled in dynamically by custom.js -->
         </div>
       </div>
       <footer>
@@ -384,7 +343,8 @@
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->
-  <script type="text/javascript" src="/js/jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
   <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
   </body>
 </html>
