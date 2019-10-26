@@ -730,6 +730,17 @@ being 40% faster in Racket 7.3 -- this needs further investigation.  I put the
 results for running these tests using Racket 7.3 in [this GitHub Gist][r73] if
 anyone is interested in looking at them.
 
+----
+
+**Update (26 Oct 2019):** It turns out the performance difference I noticed
+with Racket 7.3 were due to profiling the code, as the
+`current-inexact-milliseconds`[racket] function used by the profiling code is
+slower in Racket CS, and this affected the results.  When not running the code
+using a profiler (or just profiling the toplevel lookup function), the
+performance between Racket and Racket CS is similar.
+
+----
+
 The timings were measured using an instrumenting profiler I wrote for another
 project.  This profiles allows instrumenting individual functions and
 collecting statistics about the number of calls and the time of each call.

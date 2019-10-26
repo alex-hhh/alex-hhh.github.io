@@ -1352,6 +1352,12 @@
 
 <p>When noticing that the <code>flvector</code> changes did not produce any improvements I ran the tests against Racket 7.3 and there were no improvements in 7.3 either for this <code>flvector</code> case, however, I discovered that all the tests ran much faster in Racket 7.3 than Racket-on-Chez, with the final <code>tz-lookup</code> version being 40% faster in Racket 7.3 &mdash; this needs further investigation. I put the results for running these tests using Racket 7.3 in <a href="https://gist.github.com/alex-hhh/9ae9b30dfe869f1dcc59cfe4fd0a34d2">this GitHub Gist</a> if anyone is interested in looking at them.</p>
 
+<hr />
+
+<p><strong>Update (26 Oct 2019):</strong> It turns out the performance difference I noticed with Racket 7.3 were due to profiling the code, as the <code><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></code> function used by the profiling code is slower in Racket CS, and this affected the results. When not running the code using a profiler (or just profiling the toplevel lookup function), the performance between Racket and Racket CS is similar.</p>
+
+<hr />
+
 <p>The timings were measured using an instrumenting profiler I wrote for another project. This profiles allows instrumenting individual functions and collecting statistics about the number of calls and the time of each call. The instrumentation adds a small overhead to each function call. This overhead is not measured in the function call itself, but it is measured by any instrumented functions which call other instrumented functions. I believe the overhead is small enough to not affect the results significantly.</p>
 
 <p>Finally, the sources for the programs presented in this Blog Post are available <a href="https://github.com/alex-hhh/time-zone-lookup-tests">here</a>.</p>

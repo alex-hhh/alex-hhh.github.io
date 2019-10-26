@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 20 Sep 2019 23:04:13 UT</lastBuildDate>
-  <pubDate>Fri, 20 Sep 2019 23:04:13 UT</pubDate>
+  <lastBuildDate>Sat, 26 Oct 2019 03:18:30 UT</lastBuildDate>
+  <pubDate>Sat, 26 Oct 2019 03:18:30 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Timezone Aware Local Time</title>
+   <link>https://alex-hhh.github.io/2019/10/local-time.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-10-local-time-html</guid>
+   <pubDate>Sat, 26 Oct 2019 03:18:30 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I wanted &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; to show that my New Zealand skiing run started at 10am, rather than showing 6am, which is the local time in Western Australia, where I live. This feature took a long time to implement, plus it required a surprising amount of effort, and this blog post describes some of the implementation details.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/10/local-time.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Interactive Heat Maps</title>
    <link>https://alex-hhh.github.io/2019/09/interactive-heat-maps.html?utm_source=racket&amp;utm_medium=RSS</link>
