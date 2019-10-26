@@ -15,13 +15,44 @@ tag_entry = function(tag) {
             + tag.name + '&nbsp<small>(' + tag.count + ')</small></a>');
 };
 
+fmt_ago = function(v, plural, singular) {
+    if (v > 1.5) {
+        return Math.round(v) + " " + plural + " ago";
+    }
+    else {
+        return "a " + singular + " ago";
+    }
+};
+
+ago = function(date) {
+    var diff = Date.now() - date;
+    if (diff > (11.5 * 30 * 24 * 3600 * 1000)) {
+        var v = diff / (365 * 24 * 3600 * 1000);
+        return fmt_ago(v, "years", "year");
+    }
+    else if (diff > (0.5 * 30 * 24 * 3600 * 1000)) {
+        var v = diff / (30 * 24 * 3600 * 1000);
+        return fmt_ago(v, "months", "month");
+    }
+    else if (diff > (6.5 * 24 * 3600 * 1000)) {
+        var v = diff / (7 * 24 * 3600 * 1000);
+        return fmt_ago(v, "weeks", "week");
+    }
+    else if (diff > (23.5 * 3600 * 1000)) {
+        var v = diff / (24 * 3600 * 1000);
+        return fmt_ago(v, "days", "day");
+    }
+    else {
+        // this is a blog, don't care about smaller durations
+        return "less than a day ago";
+    }
+}
+
 post_entry = function(post) {
-    var d1 = new Date(post.date * 1000);
-    var d2 = (d1.getFullYear().toString() + '-'
-              + (d1.getMonth() + 1).toString() + '-'
-              + d1.getDate().toString());
     return ('<a href="' + post.url + '">' + post.title
-            + '</a>&nbsp<small class="date-and-tags">' + d2 + '</small>');
+            + '</a><br><small class="date-and-tags">published '
+            + ago(new Date(post.date * 1000))
+            + '</small>');
 }
 
 $(document).ready(function() {

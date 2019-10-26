@@ -35,7 +35,7 @@ times of day.
 
 ## Time-zone Aware Time Display
 
-[ActivityLog2[al2] stores times for activities as UTC seconds, which is are
+[ActivityLog2][al2] stores times for activities as UTC seconds, which is are
 integers representing the number of seconds since January 1st 1970.  The
 Racket libraries can convert this into a `date`[racket] structure using
 `seconds->date`[racket].  This conversion can be done in two ways: either show
