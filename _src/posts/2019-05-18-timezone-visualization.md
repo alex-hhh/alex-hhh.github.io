@@ -1,7 +1,7 @@
     Title: Timezone Visualization
     Date: 2019-05-18T09:23:30
     Thumbnail: /img/a026/thumb.png
-    Tags: racket
+    Tags: racket, data visualization
 
 The [timezone-boundary-builder][tzb] project publishes [GeoJSON][geojson]
 files with timezone boundaries based on [OpenStreetMap][osm] data, and I

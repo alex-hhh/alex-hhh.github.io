@@ -1,7 +1,7 @@
     Title: Interactive Overlays With the Racket Plot Package
     Date: 2018-02-03T08:08:05
     Thumbnail: /img/a010/thumb.png
-    Tags: racket
+    Tags: racket, data visualization
 
 The [Racket plot package](http://docs.racket-lang.org/plot/index.html)
 produces interactive `snip%` objects which allow zooming of the plot

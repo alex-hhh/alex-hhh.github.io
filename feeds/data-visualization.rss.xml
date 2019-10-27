@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>The Blog of Alex Harsányi: Posts tagged 'data visualization'</title>
+  <description>The Blog of Alex Harsányi: Posts tagged 'data visualization'</description>
+  <link>https://alex-hhh.github.io/tags/data-visualization.html</link>
+  <lastBuildDate>Sat, 07 Sep 2019 23:54:13 UT</lastBuildDate>
+  <pubDate>Sat, 07 Sep 2019 23:54:13 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>Interactive Maps in the DrRacket REPL</title>
+   <link>https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-09-map-snip-html</guid>
+   <pubDate>Sat, 07 Sep 2019 23:54:13 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I updated the &lt;a href="/2018/06/racket-map-widget.html"&gt;map-widget package&lt;/a&gt; to allow map objects to &lt;code&gt;snip%&lt;/code&gt;&amp;rsquo;s so it can be inserted into a &lt;code&gt;pasteboard%&lt;/code&gt; and a side benefit of this work is that maps can now be embedded in the DrRacket REPL &amp;mdash; while this was not why I did these modifications, it does make for a cool demo.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/09/map-snip.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Timezone Visualization</title>
+   <link>https://alex-hhh.github.io/2019/05/timezone-visualization.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-05-timezone-visualization-html</guid>
+   <pubDate>Sat, 18 May 2019 01:23:30 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="https://github.com/evansiroky/timezone-boundary-builder"&gt;timezone-boundary-builder&lt;/a&gt; project publishes &lt;a href="https://en.wikipedia.org/wiki/GeoJSON"&gt;GeoJSON&lt;/a&gt; files with timezone boundaries based on &lt;a href="https://www.openstreetmap.org"&gt;OpenStreetMap&lt;/a&gt; data, and I though it would be an interesting project to load this data in Racket, build some map visualizations with it and explore some of the Racket drawing facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/05/timezone-visualization.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Building a Data Visualization Dashboard in Racket</title>
+   <link>https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-02-data-visualization-dashboard-html</guid>
+   <pubDate>Sat, 09 Feb 2019 00:36:49 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;When experimenting with a new data visualization or data analysis method, it is simpler to write a prototype as a separate application, to evaluate if it is worthwhile investing the effort of adding a full feature to &lt;a href="/2017/09/introducing-activitylog2.html"&gt;ActivityLog2&lt;/a&gt;, this post illustrates the process used to write a &amp;ldquo;training load&amp;rdquo; &lt;a href="https://github.com/alex-hhh/AL2-IRisk-Dashboard"&gt;dashboard application&lt;/a&gt; in Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/02/data-visualization-dashboard.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Racket GUI Widget to display maps based on OpenStreetMap tiles</title>
+   <link>https://alex-hhh.github.io/2018/06/racket-map-widget.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-06-racket-map-widget-html</guid>
+   <pubDate>Tue, 12 Jun 2018 09:06:17 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a Racket GUI Widget which can display maps based on Open Street Map tiles &amp;mdash; it allows embedding maps in Racket GUI applications. I originally wrote this code as part of the ActivityLog2 project and, since I wanted to use it in other projects, I decided to move it onto a separate package and publish it to the Racket package server.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/06/racket-map-widget.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package -- Update</title>
+   <link>https://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-03-interactive-overlays-with-the-racket-plot-package-update-html</guid>
+   <pubDate>Tue, 20 Mar 2018 02:12:10 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;I announced my &lt;a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html"&gt;original&lt;/a&gt; plot overlay implementation on the &lt;a href="https://groups.google.com/forum/#!forum/racket-users"&gt;Racket Users&lt;/a&gt; mailing list and the Racket developers were enthusiastic about these improvements and they suggested that I contribute them to the main plot package. They also suggested a different approach for implementing this feature, which results in more flexibility for implementing overlays.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/03/interactive-overlays-with-the-racket-plot-package-update.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Interactive Overlays With the Racket Plot Package</title>
+   <link>https://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-02-interactive-overlays-with-the-racket-plot-package-html</guid>
+   <pubDate>Sat, 03 Feb 2018 00:08:05 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="http://docs.racket-lang.org/plot/index.html"&gt;Racket plot package&lt;/a&gt; produces interactive &lt;code&gt;snip%&lt;/code&gt; objects which allow zooming of the plot area. While this is a cool and sometimes useful feature, the functionality is hard coded in the &lt;code&gt;plot-snip%&lt;/code&gt; class inside the package. I extended the package to allow the user to customize the interactive features of the plot, to display additional information when the user hovers the mouse over the plot.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/02/interactive-overlays-with-the-racket-plot-package.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>

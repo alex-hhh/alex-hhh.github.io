@@ -1,7 +1,7 @@
     Title: Building a Data Visualization Dashboard in Racket
     Date: 2019-02-09T08:36:49
     Thumbnail: /img/a022/thumb.png
-    Tags: racket,activitylog2
+    Tags: racket, activitylog2, data visualization
 
 When experimenting with a new data visualization or data analysis method, it
 is simpler to write a prototype as a separate application, to evaluate if it

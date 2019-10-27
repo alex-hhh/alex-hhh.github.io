@@ -1,7 +1,7 @@
     Title: Interactive Overlays With the Racket Plot Package -- Update
     Date: 2018-03-20T10:12:10
     Thumbnail: /img/a012/thumb.png
-    Tags: racket
+    Tags: racket, data visualization
 
 I announced my
 [original](/2018/02/interactive-overlays-with-the-racket-plot-package.html)

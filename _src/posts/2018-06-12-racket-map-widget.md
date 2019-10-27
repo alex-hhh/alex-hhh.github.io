@@ -1,6 +1,6 @@
     Title: A Racket GUI Widget to display maps based on OpenStreetMap tiles
     Date: 2018-06-12T17:06:17
-    Tags: racket
+    Tags: racket, data visualization
     Thumbnail: /img/a015/thumb.png
 
 This is a Racket GUI Widget which can display maps based on Open Street Map
