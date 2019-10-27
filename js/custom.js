@@ -114,7 +114,9 @@ $(document).ready(function() {
         success: function(result) {
             fill_tags_menu($('#tags-menu-content'), result.tags);
             // Ensure posts are more recent first
-            result.posts.sort(function(a, b) { return a.date < b.date; });
+            result.posts.reverse();
+            // Does not work in Edge.
+            // result.posts.sort(function(a, b) { return a.date < b.date; });
             fill_sidebar($('#sidebar-content'), result.posts, 5);
         }
     });
