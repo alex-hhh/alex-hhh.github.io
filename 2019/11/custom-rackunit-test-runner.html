@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Custom Rackunit Test Runner</title>
+    <meta name="description" content="As the number of tests for a program continues to increase, it is no longer sufficient to know that all tests passed or which test failed. Other questions start to become important: were some tests inadvertently disabled? which tests were skipped? how did...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html">
+    <link rel="next" href="/2019/10/local-time.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Custom Rackunit Test Runner</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-11-29" pubdate="true">2019-11-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>As the number of tests for a program continues to increase, it is no longer sufficient to know that all tests passed or which test failed. Other questions start to become important: were some tests inadvertently disabled? which tests were skipped? how did the duration of a test evolve over several versions of a program? Existing build platforms, such as Azure Devops, can help with test management, but in order make use of their features, we need to extend the Racket unit test library to report the test results to the build pipeline.</p>
+<!-- more-->
+
+<p>In this blog post we&rsquo;ll look at how to provide a custom test runner for the Racket <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> package which allows reporting test results to build pipelines. While in my particular case, I used this to integrate with Azure Devops, the results are written in a <a href="https://github.com/windyroad/JUnit-Schema/blob/master/JUnit.xsd">JUnit</a> compatible format, which is read and understood by many other platforms.</p>
+
+<p><strong>If you are in a hurry</strong>, the full implementation of the custom test runner is available <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/test/custom-test-runner.rkt">here</a>, and the tests in the same location make use of all of its features. For an example of publishing test results to Azure Devops, see the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/azure-common.yml">azure-common.yml</a> file.</p>
+
+<div class="figure"><img src="/img/a033/azure-test-report.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="rackunit-overview">Rackunit Overview</h2>
+
+<p>The <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> package ships with the standard Racket installation and allows writing unit tests for Racket packages and applications. At its most basic level, one can simply use the various <a href="https://docs.racket-lang.org/rackunit/api.html#%28part._.Checks%29">check functions</a> inside <code>test</code> submodules and run the tests with a <code>raco test</code> command. A failed test will report the condition that triggered the failure an the source location where it happened, while the <code>raco test</code> command will return a non-zero exit code when tests fail &mdash; this last part is important if tests are incorporated into build pipelines.</p>
+
+<p>As a program and its test suite grows, writing checks directly inside test submodules becomes less attractive, since the test run will stop at the first failed test. <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> provides two additional constructs for organizing test code, and these help manage the complexities of a growing test suite. A <a href="https://docs.racket-lang.org/rackunit/api.html?#(form._((lib._rackunit%2Fmain..rkt)._test-case))">test-case</a> allows grouping a set of checks and, while a test case will abort if one of its checks fail, other test cases will still run. A <a href="https://docs.racket-lang.org/rackunit/api.html?#(form._((lib._rackunit%2Fmain..rkt)._test-suite))">test-suite</a> in turn is a collection of test cases. Unlike a test case, which will run immediately where it is defined, defining a test suite will only produce a test suite object which will need to be run explicitly.</p>
+
+<p>The example code below illustrates how test cases and test suites work. Test suites can be nested, as shown where the <code>inner-test-suite</code> is referenced from <code>a-test-suite</code>. Also a test can either succeed, fail when a check condition is not met, or report an error &mdash; this last part is illustrated in test cases 3 and C where the test calls <code>error</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">rackunit</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">inner-test-suite</span>
+  <span class="p">(</span><span class="n">test-suite</span> <span class="s2">"inner-test-suite"</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> 1"</span> <span class="p">(</span><span class="n">check-true</span> <span class="no">#t</span><span class="p">))</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> 2"</span> <span class="p">(</span><span class="n">check-true</span> <span class="no">#f</span><span class="p">))</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> 3"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="s2">"user error"</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">a-test-suite</span>
+  <span class="p">(</span><span class="n">test-suite</span> <span class="s2">"a-test-suite"</span>
+   <span class="n">inner-test-suite</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> A"</span> <span class="p">(</span><span class="n">check-true</span> <span class="no">#t</span><span class="p">))</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> B"</span> <span class="p">(</span><span class="n">check-true</span> <span class="no">#f</span><span class="p">))</span>
+   <span class="p">(</span><span class="n">test-case</span> <span class="s2">"test <a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a> C"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="s2">"user error"</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Evaluating the code above in Racket will not produce any output, since the test suites are only defined, but not run. To actually run these tests, we need to use a test runner, and rackunit provides two of them. The textual interface will run the tests and output any error information to the console:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span>  <span class="n">rackunit/text-ui</span><span class="p">)</span>
+<span class="p">(</span><span class="n">run-tests</span> <span class="n">a-test-suite</span> <span class="o">'</span><span class="ss">verbose</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Running it produces the output below. Note how all the test failures are reported (two failures and two errors), and the test run does not stop at the first failure:</p>
+
+<pre><code>--------------------
+inner-test-suite &gt; a-test-suite &gt; test case 2
+; FAILURE
+; custom-runner-0a.rkt:7:28
+name:        check-true
+location:    custom-runner-0a.rkt:7:28
+expression:  (check-true #f)
+params:      '(#f)
+--------------------
+inner-test-suite &gt; a-test-suite &gt; test case 3
+; ERROR
+user error
+--------------------
+a-test-suite &gt; test case B
+; FAILURE
+; custom-runner-0a.rkt:14:28
+name:        check-true
+location:    custom-runner-0a.rkt:14:28
+expression:  (check-true #f)
+params:      '(#f)
+--------------------
+a-test-suite &gt; test case C
+; ERROR
+user error
+--------------------
+2 success(es) 2 failure(s) 2 error(s) 6 test(s) run
+4</code></pre>
+
+<p>The second test runner provides a GUI interface and it is available from the <code>rackunit/gui</code> module and Running it will open a window showing the progress of test execution along with detailed information about each test case:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">rackunit/gui</span><span class="p">)</span>
+<span class="p">(</span><span class="n">test/gui</span> <span class="n">a-test-suite</span> <span class="kd">#:wait?</span> <span class="no">#t</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a033/rackunit-gui-runner.png" alt="" />
+ <p class="caption"></p></div>
+
+<h3 id="what-about-raco-test-and-the-test-submodules">What about &ldquo;raco test&rdquo; and the <code>test</code> submodules?</h3>
+
+<p>The examples so far are plain Racket programs and the tests are evaluated when the program is run. Since it is not useful to run the tests every time the program is run, test code would have to be placed in separate files. In Racked, one can mix tests and regular code in the same file and this is done by placing the tests inside <code>test</code> submodules, like so:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/module.html#(form._((lib._racket/private/base..rkt)._module+))" style="color: inherit">module+</a></span> <span class="n">test</span>
+  <span class="c1">;; add test case and test suite definitions here</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">rackunit/gui</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">test/gui</span> <span class="n">a-test-suite</span> <span class="kd">#:wait?</span> <span class="no">#t</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The test submodules in the source files are ignored when Racket compiles and runs a program, so there is no runtime cost of placing them along with the source. The &ldquo;raco test&rdquo; command can be used to run these submodules, and therefore the tests themselves.</p>
+
+<h2 id="a-custom-test-runner">A Custom Test Runner</h2>
+
+<p>The rackunit text interface is useful for running tests from the command line, which in turn makes it useful for placing it into build pipelines so test are automatically run. Unfortunately, it only provides detailed information about failures: a successful run will only report the number of tests that were run. The GUI interface provides detailed information about all the tests that are run, including successful ones, but it is not suitable for use in automated build pipelines. If we want a test runner which can both be run from the command line and reports detailed results, we must build our own. Fortunately, <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> provides the necessary extension mechanisms.</p>
+
+<h3 id="the-basics">The Basics</h3>
+
+<p>The <a href="https://docs.racket-lang.org/rackunit/internals.html#%28def._%28%28lib._rackunit%2Fmain..rkt%29._foldts-test-suite%29%29">foldts-test-suite</a> function is part of the rackunit library and can be used to run the test cases inside a test suite, while allowing customization on how the test run. The function is passed in the test suite to run and three functions: one which will be called before a test suite beings to execute, one called after a test suite completes and a function to run the test case itself. The last function is important because it allows the user to control whether a test case runs or not.</p>
+
+<p>The full details for <a href="https://docs.racket-lang.org/rackunit/internals.html#%28def._%28%28lib._rackunit%2Fmain..rkt%29._foldts-test-suite%29%29">foldts-test-suite</a> are available in the documentation, but for our purposes, we&rsquo;ll write a wrapper function which uses a collector object to report and control how tests are run. Each callback function simply delegate the call to this collector object:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fold-test-results</span> <span class="n">collector</span> <span class="n">test-suite</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">foldts-test-suite</span>
+   <span class="c1">;; Called before a test suite is run</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">suite</span> <span class="n">name</span> <span class="n">before</span> <span class="n">after</span> <span class="n">seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">before</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-suite-start</span> <span class="n">name</span><span class="p">))</span>
+   <span class="c1">;; Called after a test suite completed</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">suite</span> <span class="n">name</span> <span class="n">before</span> <span class="n">after</span> <span class="n">seed</span> <span class="n">kid-seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">after</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-suite-completed</span> <span class="n">name</span><span class="p">))</span>
+   <span class="c1">;; Called once for each test case in a suite</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span> <span class="n">name</span> <span class="n">action</span> <span class="n">seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">before-test-case-start</span> <span class="n">name</span><span class="p">)</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">result</span> <span class="p">(</span><span class="n">run-test-case</span> <span class="n">name</span> <span class="n">action</span><span class="p">))</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-case-completed</span> <span class="n">result</span><span class="p">)))</span>
+   <span class="c1">;; The seed (unused by our code)</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/void.html#(def._((quote._~23~25kernel)._void))" style="color: inherit">void</a></span><span class="p">)</span>
+   <span class="c1">;; The test suite we run</span>
+   <span class="n">test-suite</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The collector class provides four methods that are used to report the progress of running the test suite. The <code>before-test-case-start</code> method is somewhat special: it returns <code>#t</code> if the test case should be run and <code>#f</code> if it should be skipped. For now this method always returns <code>#t</code>, but we&rsquo;ll use this to control which tests are run and which are skipped. Other than that, the methods simply print the progress of the test:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-result-collector%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-suite-start</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"*** Testsuite ~a~%"</span> <span class="n">name</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-suite-completed</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"*** Testsuite <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> completed~%"</span> <span class="n">name</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">before-test-case-start</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"</span><span class="se">\t</span><span class="s2">~a: "</span> <span class="n">name</span><span class="p">)</span>
+      <span class="no">#t</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>on-test-case-completed</code> method also receives the result of running the test, as a <code>test-result</code> structure (defined in the rackunit library). rackunit will supply different structure instances for each result type (success, failure and error), and this makes it somewhat difficult to just print out a simple result tag. The <code>test-result-tag</code> function helps with this:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span>
+    <span class="p">((</span><span class="n">test-failure?</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">fail</span><span class="p">)</span>
+    <span class="p">((</span><span class="n">test-success?</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)</span>
+    <span class="p">((</span><span class="n">test-error?</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span><span class="p">)</span>
+    <span class="p">(</span><span class="no">#t</span> <span class="o">'</span><span class="ss">unknown</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, we can write our own <code>run-tests</code> function to run the test suite and running it on the sample test suite will produce the output below:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">run-tests</span> <span class="n">test-suite</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">collector</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">test-result-collector%</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">fold-test-results</span> <span class="n">collector</span> <span class="n">test-suite</span><span class="p">))</span>
+<span class="p">(</span><span class="n">run-tests</span> <span class="n">a-test-suite</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Our test runner now reports each test case as it runs, but even though several tests fail, running the program using raco test will still return a 0 exit code, indicating success. We&rsquo;ll need to address this next.</p>
+
+<pre><code>*** Testsuite a-test-suite
+*** Testsuite inner-test-suite
+	test case 1: ok
+	test case 2: fail
+	test case 3: error
+*** Testsuite inner-test-suite completed
+	test case A: ok
+	test case B: fail
+	test case C: error
+*** Testsuite a-test-suite completed</code></pre>
+
+<h3 id="non-zero-exit-code-report-failures-to-raco-test">Non-zero exit code: report failures to &ldquo;raco test&rdquo;</h3>
+
+<p>The <code>raco test</code> command will monitor the test logger for any test failures, so to inform it of the test status, we need to update the <code>on-test-case-completed</code> method to use <code>test-log!</code> to report the status of a test:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">rackunit/log</span><span class="p">)</span> <span class="c1">;; for test-log!</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-result-collector%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="c1">;; other methods are unchanged</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">))</span>
+      <span class="c1">;; Report the result to raco test</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Running the program using <code>raco test</code> will now result in an exit code of 1, since tests failed. While still very basic, this test runner can now be used in build pipelines and the build will fail when tests fail:</p>
+
+<pre><code>$ raco test custom-runner-2.rkt
+raco test: "custom-runner-2.rkt"
+*** Testsuite outer-test-suite
+*** Testsuite inner-test-suite
+	test case 1: ok
+	test case 2: fail
+	test case 3: error
+*** Testsuite inner-test-suite completed
+	test case A: ok
+	test case B: fail
+	test case C: error
+*** Testsuite outer-test-suite completed
+4/6 test failures
+alexh@ALEX-S2 ~/Projects/Racket/junit-runner
+$ echo $?
+1</code></pre>
+
+<h3 id="detailed-failure-information">Detailed Failure Information</h3>
+
+<p>The rackunit text runner will report detailed information when a test fails, and it would be nice if our test runner did the same, as it is very hard to determine what went wrong when only &ldquo;fail&rdquo; or &ldquo;error&rdquo; is reported. The <code>test-result</code> that is passed to <code>on-test-case-completed</code> contains detailed information about the failure or error, but it is in the form of nested <code>check-info</code> structures, which is difficult to use. Fortunately, the <code>display-test-failure/error</code> can be used to print out the result to the <code><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-error-port))" style="color: inherit">current-error-port</a></code>. We can write a wrapper around <code>display-test-failure/error</code> to only display this information when it is needed:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">name</span> <span class="p">(</span><span class="n">test-result-test-case-name</span> <span class="n">result</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">value</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="n">test-failure?</span> <span class="n">result</span><span class="p">)</span>
+                       <span class="p">(</span><span class="n">test-failure-result</span> <span class="n">result</span><span class="p">))</span>
+                      <span class="p">((</span><span class="n">test-error?</span> <span class="n">result</span><span class="p">)</span>
+                       <span class="p">(</span><span class="n">test-error-result</span> <span class="n">result</span><span class="p">))</span>
+                      <span class="p">(</span><span class="no">#t</span> <span class="no">#f</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">value</span>
+    <span class="p">(</span><span class="n">display-test-failure/error</span> <span class="n">value</span> <span class="n">name</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>&hellip; and we&rsquo;ll need to update the <code>on-test-case-completed</code> to use this wrapper function:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-result-collector%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="c1">;; other methods are unchanged</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">))</span>
+      <span class="c1">;; Maybe display failure information</span>
+      <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Another small detail is that <code>display-test-failure/error</code> will print out to the <code><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-error-port))" style="color: inherit">current-error-port</a></code> not the <code><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-output-port))" style="color: inherit">current-output-port</a></code>, so by default, the errors will not be interleaved correctly with the progress report. To fix that, we can make the two output ports the same in our version of <code>run-tests</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">run-tests</span> <span class="n">test-suite</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-output-port))" style="color: inherit">current-output-port</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-error-port))" style="color: inherit">current-error-port</a></span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">collector</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">test-result-collector%</span><span class="p">))</span>
+    <span class="p">(</span><span class="n">fold-test-results</span> <span class="n">collector</span> <span class="n">test-suite</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, we have the same level of information that the default text runner provides, plus additional reports about the successful test cases:</p>
+
+<pre><code>$ raco test custom-runner-3.rkt
+raco test: "custom-runner-3.rkt"
+*** Testsuite outer-test-suite
+*** Testsuite inner-test-suite
+	test case 1: ok
+	test case 2: fail
+--------------------
+test case 2
+FAILURE
+name:       check-true
+location:   custom-runner-3.rkt:80:28
+params:     '(#f)
+--------------------
+	test case 3: error
+--------------------
+test case 3
+ERROR
+user error
+--------------------
+*** Testsuite inner-test-suite completed
+	test case A: ok
+	test case B: fail
+--------------------
+test case B
+FAILURE
+name:       check-true
+location:   custom-runner-3.rkt:91:28
+params:     '(#f)
+--------------------
+	test case C: error
+--------------------
+test case C
+ERROR
+user error
+--------------------
+*** Testsuite outer-test-suite completed
+4/6 test failures</code></pre>
+
+<p>So far, our test runner provides little more information when compared to the one supplied by rackunit. While the text output can be enhanced in various ways, such as displaying test durations, the real usefulness comes when tests are reported in formats that other systems understand, and the first real step towards that goal is to collect the test results.</p>
+
+<h3 id="test-duration">Test Duration</h3>
+
+<p>An JUnit test report requires the test duration to be reported for each test case, so before we look at collecting test results, let&rsquo;s measure and display the duration of our tests. The easiest way to measure the duration of the test is inside <code>fold-test-results</code>, where the test is run, than report it to the <code>on-test-case-completed</code> method:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fold-test-results</span> <span class="n">test-suite</span> <span class="n">collector</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">foldts-test-suite</span>
+   <span class="c1">;; Called before a test suite is run</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">suite</span> <span class="n">name</span> <span class="n">before</span> <span class="n">after</span> <span class="n">seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">before</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-suite-start</span> <span class="n">name</span><span class="p">))</span>
+   <span class="c1">;; Called after a test suite completed</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">suite</span> <span class="n">name</span> <span class="n">before</span> <span class="n">after</span> <span class="n">seed</span> <span class="n">kid-seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">after</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-suite-completed</span> <span class="n">name</span><span class="p">))</span>
+   <span class="c1">;; Called once for each test case in a suite</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span> <span class="n">name</span> <span class="n">action</span> <span class="n">seed</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">before-test-case-start</span> <span class="n">name</span><span class="p">)</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">start</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">))</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">result</span> <span class="p">(</span><span class="n">run-test-case</span> <span class="n">name</span> <span class="n">action</span><span class="p">))</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">end</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">))</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">on-test-case-completed</span> <span class="n">result</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">end</span> <span class="n">start</span><span class="p">))))</span>
+   <span class="c1">;; The seed (unused by our code)</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/void.html#(def._((quote._~23~25kernel)._void))" style="color: inherit">void</a></span><span class="p">)</span>
+   <span class="c1">;; The test suite we run</span>
+   <span class="n">test-suite</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>For now, the <code>on-test-case-completed</code> method will simply display the test duration along with the result status:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-result-collector%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="c1">;; Other methods are unchanged...</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span> <span class="n">duration</span><span class="p">)</span>
+      <span class="c1">;; Display the result of running this test</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a (~a ms)~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">duration</span> <span class="kd">#:precision</span> <span class="mi">2</span><span class="p">))</span>
+      <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+  <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="collect-test-results">Collect Test Results</h3>
+
+<p>The methods of the <code>test-result-collector%</code> class can also collect data about the tests that re run, in addition to printing the results. Rather than storing the data as lists-of-lists, it is useful to define some structures and helper functions: the <code>tcr</code> structure holds the result and duration of a test case. Since the name of the test case is in the result object itself, it is not stored directly in the <code>tcr</code> structure. A <code>tsr</code> structure holds information about the test suite and associated test cases: start time, total duration, number of tests and how many errors there were, plus a list of test case results. Since the <code>tsr</code> structure has lots of members, which are all either 0 or empty when a new test suite is run, the <code>fresh-tsr</code> function helps create a new <code>tsr</code> instance.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">tcr</span> <span class="p">(</span><span class="n">result</span> <span class="n">duration</span><span class="p">)</span> <span class="kd">#:transparent</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">tsr</span> <span class="p">(</span><span class="n">name</span> <span class="n">timestamp</span> <span class="n">duration</span> <span class="n">total</span> <span class="n">failures</span> <span class="n">errors</span> <span class="n">tcrs</span><span class="p">)</span> <span class="kd">#:transparent</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fresh-tsr</span> <span class="n">name</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">tsr</span> <span class="n">name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">)</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">'</span><span class="p">()))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The structures, as we defined them, are immutable. To &ldquo;add&rdquo; a new test case result to a test suite, one must create a copy of the structure and update the fields as needed. The <code>update-tsr</code> function does this: it takes an existing <code>tsr</code> and updates the duration and various counters based on a new test case result and duration.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">update-tsr</span> <span class="n">ts-result</span> <span class="n">tc-result</span> <span class="n">tc-duration</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">tsr</span> <span class="n">name</span> <span class="n">timestamp</span> <span class="n">duration</span> <span class="n">total</span> <span class="n">failures</span> <span class="n">errors</span> <span class="n">tcrs</span><span class="p">)</span> <span class="n">ts-result</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/struct-copy.html#(form._((lib._racket/private/base..rkt)._struct-copy))" style="color: inherit">struct-copy</a></span>
+   <span class="n">tsr</span> <span class="n">ts-result</span>
+   <span class="c1">;; Add the current duration to the current duration</span>
+   <span class="p">[</span><span class="n">duration</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">duration</span> <span class="n">tc-duration</span><span class="p">)]</span>
+   <span class="c1">;; Increment the total number of test cases</span>
+   <span class="p">[</span><span class="n">total</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">total</span><span class="p">)]</span>
+   <span class="c1">;; If this was a failure, increment the number of failures</span>
+   <span class="p">[</span><span class="n">failures</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">test-failure?</span> <span class="n">tc-result</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">failures</span><span class="p">)</span> <span class="n">failures</span><span class="p">)]</span>
+   <span class="c1">;; If this was an error, increment the number of errors</span>
+   <span class="p">[</span><span class="n">errors</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">test-error?</span> <span class="n">tc-result</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">errors</span><span class="p">)</span> <span class="n">errors</span><span class="p">)]</span>
+   <span class="c1">;; Add the test case result to the list of results for this test</span>
+   <span class="c1">;; suite</span>
+   <span class="p">[</span><span class="n">tcrs</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">tcr</span> <span class="n">tc-result</span> <span class="n">tc-duration</span><span class="p">)</span> <span class="n">tcrs</span><span class="p">)]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, the <code>test-result-collector%</code> needs to be updated to collect the information about the test results: (1) A current test suite is maintained in <code>current</code>, (2) since <code>on-test-case-completed</code> does not receive a test suite name, suites that have been completed are stored in <code>completed</code>, and (3) the <code>aside</code> list contains test suites which are set aside, because an inner test suite is being run. The various methods of <code>test-result-collector%</code> simply update these three structures as needed:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">test-result-collector%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span> <span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._only))" style="color: inherit">only</a></span> <span class="no">#f</span><span class="p">]</span> <span class="p">[</span><span class="n">exclude</span> <span class="n">exclude</span><span class="p">])</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">current</span> <span class="no">#f</span><span class="p">)</span>                 <span class="c1">; the current TSR</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">completed</span> <span class="o">'</span><span class="p">())</span>              <span class="c1">; completed TSRs</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">aside</span> <span class="o">'</span><span class="p">())</span> <span class="c1">; TSRs that we set aside while running nested test suites</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">get-test-suite-results</span><span class="p">)</span> <span class="n">completed</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-suite-start</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"*** Testsuite ~a~%"</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">current</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">aside</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">current</span> <span class="n">aside</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current</span> <span class="p">(</span><span class="n">fresh-tsr</span> <span class="n">name</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-suite-completed</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">tsr</span> <span class="n">name</span> <span class="n">timestamp</span> <span class="n">duration</span> <span class="n">total</span> <span class="n">failures</span> <span class="n">errors</span> <span class="n">skipped</span> <span class="n">tsrs</span><span class="p">)</span> <span class="n">current</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"*** Testsuite <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> completed in <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> ms~%*** Total tests: ~a, failures: ~a, errors: ~a, skipped: ~a~%"</span>
+              <span class="n">name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">duration</span> <span class="kd">#:precision</span> <span class="mi">2</span><span class="p">)</span> <span class="n">total</span> <span class="n">failures</span> <span class="n">errors</span> <span class="n">skipped</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">completed</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">current</span> <span class="n">completed</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">aside</span><span class="p">)</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current</span> <span class="no">#f</span><span class="p">)</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">aside</span><span class="p">))</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">aside</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">aside</span><span class="p">)))))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">before-test-case-start</span> <span class="n">name</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"</span><span class="se">\t</span><span class="s2">~a: "</span> <span class="n">name</span><span class="p">)</span>
+      <span class="no">#t</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span> <span class="n">duration</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a (~a ms)~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">duration</span> <span class="kd">#:precision</span> <span class="mi">2</span><span class="p">))</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/base..rkt)._member))" style="color: inherit">member</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="ss">ok</span> <span class="ss">skipped</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current</span> <span class="p">(</span><span class="n">update-tsr</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">current</span> <span class="p">(</span><span class="n">fresh-tsr</span> <span class="s2">"unnamed test suite"</span><span class="p">))</span> <span class="n">result</span> <span class="n">duration</span><span class="p">)))</span>
+    <span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Collecting the test results has no visible effect on the program output, but it opens the possibility of publishing the test results in a machine-readable format which is understood by other systems.</p>
+
+<h3 id="interlude-reporting-test-results-to-azure-devops">Interlude: Reporting Test Results to Azure Devops</h3>
+
+<p>A build pipeline can report test results to Azure DevOps by having the tests write their results in one of their supported formats and uploading it using a <code>PublishTestResults</code> task. Here is an example of publishing the test results for running the &ldquo;aggregate-test&rdquo; in <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a>:</p>
+
+<div class="brush: yaml">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>  <span class="p p-Indicator">-</span> <span class="nt">task</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PublishTestResults@2</span>
+    <span class="nt">condition</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">succeededOrFailed()</span>
+    <span class="nt">inputs</span><span class="p">:</span>
+      <span class="nt">testResultsFiles</span><span class="p">:</span> <span class="s">&#39;test/test-results-aggregate.xml&#39;</span>
+      <span class="nt">testRunTitle</span><span class="p">:</span> <span class="s">&#39;aggregate-test</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">$(Agent.OS)&#39;</span>
+    <span class="nt">displayName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Publish Test Results (aggregate-test)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The task expects the test results to be present in the &ldquo;test-results-aggregate.xml&rdquo; file and one of the formats supported is the <a href="https://github.com/windyroad/JUnit-Schema/blob/master/JUnit.xsd">JUnit result format</a>. The next step is to update our test runner to write the results to file.</p>
+
+<h3 id="writing-an-xml-document">Writing an XML Document</h3>
+
+<p>The simplest way to write an XML document in Racket is to produce an XEXPR, which is just a nested Racket list, than use <code><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._write-xml))" style="color: inherit">write-xml</a></code> to write the document. The invocation is not entirely trivial, but not very complex either:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">save-xexpr-to-file</span> <span class="n">xexpr</span> <span class="n">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="n">file-name</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
+      <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._write-xml))" style="color: inherit">write-xml</a></span>
+       <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._document))" style="color: inherit">document</a></span>
+        <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._prolog))" style="color: inherit">prolog</a></span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._p-i))" style="color: inherit">p-i</a></span> <span class="no">#f</span> <span class="no">#f</span> <span class="o">'</span><span class="ss">xml</span> <span class="s2">"version=</span><span class="se">\"</span><span class="s2">1.0</span><span class="se">\"</span><span class="s2"> encoding=</span><span class="se">\"</span><span class="s2">utf-8</span><span class="se">\"</span><span class="s2">"</span><span class="p">))</span>
+         <span class="no">#f</span> <span class="o">'</span><span class="p">())</span>
+        <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._xexpr-~3exml))" style="color: inherit">xexpr-&gt;xml</a></span> <span class="n">xexpr</span><span class="p">)</span>
+        <span class="o">'</span><span class="p">())</span>
+       <span class="n">out</span><span class="p">))</span>
+    <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>All we need now is to produce XEXPR structures for our test case and test suite results. Let&rsquo;s start with the test case result: this function outputs a <code>&lt;testcase&gt;</code> XML tag, containing information about a test case. If there is an error or a failure, the detailed information is also stored in the XML tag:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tcr-&gt;junit-xexpr</span> <span class="n">data</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">tcr</span> <span class="n">result</span> <span class="n">duration</span><span class="p">)</span> <span class="n">data</span><span class="p">)</span>
+  <span class="o">`</span><span class="p">(</span><span class="ss">testcase</span>
+    <span class="p">((</span><span class="ss">name</span> <span class="o">,</span><span class="p">(</span><span class="n">test-result-test-case-name</span> <span class="n">result</span><span class="p">))</span>
+     <span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/reference/time.html#(form._((lib._racket/private/more-scheme..rkt)._time))" style="color: inherit">time</a></span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">duration</span> <span class="mf">1000.0</span><span class="p">))))</span>     <span class="c1">;; time must be in seconds</span>
+    <span class="o">,</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="n">test-failure?</span> <span class="n">result</span><span class="p">)</span>
+            <span class="o">`</span><span class="p">(</span><span class="ss">failure</span>
+              <span class="p">((</span><span class="ss">message</span> <span class="o">,</span><span class="p">(</span><span class="n">test-result-message</span> <span class="n">result</span><span class="p">))</span> <span class="p">(</span><span class="ss">type</span> <span class="s2">"failure"</span><span class="p">))</span>
+              <span class="o">,</span><span class="p">(</span><span class="n">error-&gt;string</span> <span class="n">result</span><span class="p">)))</span>
+           <span class="p">((</span><span class="n">test-error?</span> <span class="n">result</span><span class="p">)</span>
+            <span class="o">`</span><span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span>
+              <span class="p">((</span><span class="ss">message</span> <span class="o">,</span><span class="p">(</span><span class="n">test-result-message</span> <span class="n">result</span><span class="p">))</span> <span class="p">(</span><span class="ss">type</span> <span class="s2">"error"</span><span class="p">))</span>
+              <span class="o">,</span><span class="p">(</span><span class="n">error-&gt;string</span> <span class="n">result</span><span class="p">)))</span>
+           <span class="p">(</span><span class="no">#t</span> <span class="s2">""</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">error-&gt;string</span> <span class="n">result</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-string))" style="color: inherit">call-with-output-string</a></span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-error-port))" style="color: inherit">current-error-port</a></span> <span class="n">out</span><span class="p">])</span>
+       <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>A <code>&lt;testsuite&gt;</code> XML tag contains information about all the test cases in a test suite along with the number of tests and errors plus some other bookkeeping information, such as the time when the test started and the host on which the test suite run. The JUnit XML Schema requires a package name to be present in the test results. The rackunit test suites don&rsquo;t have this information, so the package name is supplied to <code>tsr-&gt;junit-xexpr</code> as a function argument:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tsr-&gt;junit-xexpr</span> <span class="n">result</span> <span class="n">package</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">tsr</span> <span class="n">name</span> <span class="n">timestamp</span> <span class="n">duration</span> <span class="n">total</span> <span class="n">failures</span> <span class="n">errors</span> <span class="n">skipped</span> <span class="n">results</span><span class="p">)</span> <span class="n">result</span><span class="p">)</span>
+  <span class="o">`</span><span class="p">(</span><span class="ss">testsuite</span>
+    <span class="p">((</span><span class="ss">name</span> <span class="o">,</span><span class="n">name</span><span class="p">)</span> <span class="p">(</span><span class="ss">package</span> <span class="o">,</span><span class="n">package</span><span class="p">)</span> <span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">))</span>
+     <span class="p">(</span><span class="ss">timestamp</span> <span class="o">,</span><span class="p">(</span><span class="n">-&gt;timestamp</span> <span class="n">timestamp</span><span class="p">))</span> <span class="p">(</span><span class="ss">hostname</span> <span class="o">,</span><span class="p">(</span><span class="n">gethostname</span><span class="p">))</span>
+     <span class="p">(</span><span class="ss">tests</span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="n">total</span><span class="p">))</span> <span class="p">(</span><span class="ss">failures</span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="n">failures</span><span class="p">))</span> <span class="p">(</span><span class="ss">errors</span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="n">errors</span><span class="p">))</span>
+     <span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/reference/time.html#(form._((lib._racket/private/more-scheme..rkt)._time))" style="color: inherit">time</a></span> <span class="o">,</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">duration</span> <span class="mf">1000.0</span><span class="p">))))</span> <span class="c1">; time must be in seconds</span>
+    <span class="o">,@</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="n">tcr-&gt;junit-xexpr</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._reverse))" style="color: inherit">reverse</a></span> <span class="n">results</span><span class="p">))))</span>
+
+<span class="c1">;; Convert a UTC timestamp (in milliseconds) into a string suitable for</span>
+<span class="c1">;; writing to the XML file.</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">-&gt;timestamp</span> <span class="n">utc-milliseconds</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fmt</span> <span class="n">num</span> <span class="n">width</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="kd">#:width</span> <span class="n">width</span> <span class="kd">#:align</span> <span class="o">'</span><span class="ss">right</span> <span class="kd">#:pad-string</span> <span class="s2">"0"</span> <span class="n">num</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">d</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">utc-milliseconds</span> <span class="mf">1000.0</span><span class="p">))</span> <span class="no">#f</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-append))" style="color: inherit">string-append</a></span>
+     <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-year))" style="color: inherit">date-year</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">4</span><span class="p">)</span> <span class="s2">"-"</span> <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-month))" style="color: inherit">date-month</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="s2">"-"</span> <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-day))" style="color: inherit">date-day</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span>
+     <span class="s2">"T"</span>
+     <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-hour))" style="color: inherit">date-hour</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="s2">":"</span> <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-minute))" style="color: inherit">date-minute</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="s2">":"</span> <span class="p">(</span><span class="n">fmt</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._date-second))" style="color: inherit">date-second</a></span> <span class="n">d</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="s2">"Z"</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, all the test suites are wrapped in a <code>&lt;testsuites&gt;</code> XML tag. The package name is also supplied as an argument, as it is required by the JUnit schema, since the rackunit library has no concept of a package:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tsrs-&gt;junit-xepr</span> <span class="n">tsrs</span> <span class="n">package</span><span class="p">)</span>
+  <span class="o">`</span><span class="p">(</span><span class="ss">testsuites</span>
+    <span class="p">()</span>
+    <span class="o">,@</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([(</span><span class="n">tsr</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-indexed))" style="color: inherit">in-indexed</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._reverse))" style="color: inherit">reverse</a></span> <span class="n">tsrs</span><span class="p">))])</span>
+        <span class="p">(</span><span class="n">tsr-&gt;junit-xexpr</span> <span class="n">tsr</span> <span class="n">package</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, the <code>run-tests</code> function can be updated to allow specifying an output file where the results are written, as well as the package name. Since most build systems can collect build results from files on disk, this is sufficient to integrate the test runner into build pipelines, although other implementations are possible where results are directly uploaded to some online service:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">run-tests</span> <span class="kd">#:package</span> <span class="p">[</span><span class="n">package</span> <span class="s2">"unnamed package"</span><span class="p">]</span>
+                   <span class="kd">#:results-file</span> <span class="p">[</span><span class="n">results-file</span> <span class="no">#f</span><span class="p">]</span>
+                   <span class="o">.</span> <span class="n">test-suites</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-output-port))" style="color: inherit">current-output-port</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-ops.html#(def._((quote._~23~25kernel)._current-error-port))" style="color: inherit">current-error-port</a></span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">collector</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">test-result-collector%</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">ts</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">test-suites</span><span class="p">)])</span>
+      <span class="p">(</span><span class="n">fold-test-results</span> <span class="n">ts</span> <span class="n">collector</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">results-file</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"*** Writing results to ~a~%"</span> <span class="n">results-file</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">xexpr</span> <span class="p">(</span><span class="n">tsrs-&gt;junit-xepr</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">collector</span> <span class="n">get-test-suite-results</span><span class="p">)</span> <span class="n">package</span><span class="p">))</span>
+      <span class="p">(</span><span class="n">save-xexpr-to-file</span> <span class="n">xexpr</span> <span class="n">results-file</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="one-last-thing-skipping-tests">One Last Thing: Skipping Tests</h3>
+
+<p>In a complex application, there are many reasons to temporarily disable tests, but the rackunit way to deal with this is to just comment out the test. This is not ideal, since it is easy to forget about a commented out test, as it is not failing and not reported anywhere as being disabled.</p>
+
+<p>The JUnit schema and Azure DevOps allow marking a test as &ldquo;skipped&rdquo;, meaning that the test is present, but it did not run. A skipped test will show up in reports as &ldquo;skipped&rdquo; and it is less likely to be ignored long term. Rackunit has no direct support for skipped tests, but they can be implemented in the custom test runner. This implementation is not very complex, but this blog post has already become too long, so it will just be outlined here. For the full details, you can have a look at the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/test/custom-test-runner.rkt">custom-test-runner.rkt</a> which implements all the ideas presented here.</p>
+
+<p>There are two possibilities to skip a test (1) mark the test as &ldquo;skipped&rdquo; and (2) allow the test to report a &ldquo;skipped&rdquo; error code. The first case is obvious: perhaps the test is failing and we are not ready to fix it yet. The need for the second case is less obvious, but a use case is presented by <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a>, where some tests run against database containing private data and the build pipeline is set up such that this data is not downloaded for builds outside the main repository. These tests cannot run successfully on builds outside the main repository. These are not failed tests and they are run by the test runner, yet they cannot test anything. These test will report as &ldquo;skipped&rdquo; when they don&rsquo;t have the necessary data to run.</p>
+
+<p>The first case is easy to implement: <code>run-tests</code> accepts a list of tests to omit using the <code>#:exclude</code> argument, the <code>before-test-case-start</code> method is updated to consult this list and return <code>#f</code> for tests that are not supposed to be run and also update the results to record that the test is skipped. The <code>run-tests</code> function also has a mechanism to specify only a subset of tests to run, using the <code>#:only</code> argument &mdash; this feature is useful when debugging a particular test in a test suite that has a long running time (and ActivityLog2 has lots of those.)</p>
+
+<p>The second case, allowing a test to report itself that it should be skipped, is implemented by raising a special exception, <code>exn:test:skip</code> &mdash; rackunit will consider that the test error-ed, but our test runner can inspect the exception and conclude that the test is skipped. To implement this, a <code>skip-test</code> function is provided for tests to report that they are skipped, and the <code>on-test-case-completed</code> method is updated to record this information.</p>
+
+<h2 id="final-thoughs">Final thoughs</h2>
+
+<p>The <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/test/custom-test-runner.rkt">custom-test-runner.rkt</a> provides the necessary glue between writing <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> tests using a familiar library and collecting and systems that can be used to manage tests and test runs when programs grow larger, providing better visibility into which tests are run, which ones are skipped and how the test performance has evolved over time. At this stage, the runner may not be sufficiently general for all complex use cases, but I believe that it can be easily extended to meet future needs.</p>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/10/local-time.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Timezone Aware Local Time</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <div class="fine-print">© Alex Harsányi, licensed under
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+          , and there's a <a href="/Cookies.html">cookie policy</a>.
+        </div>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

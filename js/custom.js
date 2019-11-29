@@ -54,17 +54,21 @@ post_entry = function(post) {
             + '</small>');
 }
 
-function fill_sidebar(sb, posts, max_posts_in_group)
+function fill_sidebar(sb, posts, tagRank, max_posts_in_group)
 {
     if (! sb) {
         return;                         // no sidebar was found
     }
-    var me =  posts.find(function(element) { return element.url === window.location.pathname; });
+    var me =  posts.find(function(e) { return e.url === window.location.pathname; });
     if (! me) {                         // non-post page
         return;
     }
+
+    myTags = me.tags.slice(0);          // copy the tags
+    myTags.sort(function (a, b) { return (tagRank[a] < tagRank[b]) ? -1 : 1; });
+
     var emitted = [me];
-    me.tags.forEach(function(tag) {
+    myTags.forEach(function(tag) {
         var count = 0;
         posts.forEach(function(post) {
             if (count < max_posts_in_group
@@ -86,7 +90,7 @@ function fill_sidebar(sb, posts, max_posts_in_group)
     var count = 0;
     posts.forEach(function(post) {
         if (count < max_posts_in_group
-            && emitted.indexOf(post) === -1)                        
+            && emitted.indexOf(post) === -1)
         {
             if (count === 0) {
                 sb.append('<h3 class="index-entry">Recent Posts</h3>');
@@ -112,13 +116,16 @@ $(document).ready(function() {
         type: 'GET',
         url: '/metadata.json',
         success: function(result) {
+
+            // Map each tag name to the number of posts with that tag.
+            tagRank = {};
+            result.tags.forEach(function(tag) { tagRank[tag.name] = tag.count; });
+            // Ensure posts are more recent first, frog outputs them
+            // oldest-to-newest
+            result.posts.sort(function(a, b) { return (a.date > b.date) ? -1 : 1; });
+
             fill_tags_menu($('#tags-menu-content'), result.tags);
-            // Ensure posts are more recent first
-            result.posts.reverse();
-            // Does not work in Edge.
-            // result.posts.sort(function(a, b) { return a.date < b.date; });
-            fill_sidebar($('#sidebar-content'), result.posts, 5);
+            fill_sidebar($('#sidebar-content'), result.posts, tagRank, 5);
         }
     });
 });
-

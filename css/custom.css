@@ -43,7 +43,7 @@ a:hover {
 body {
     font-size: 18px;
     font-family: Roboto,Georgia,"Times New Roman",Times,sans-serif;
-    color: #444444
+    color: #333333
 }
 
 .date-and-tags {
@@ -138,4 +138,10 @@ blockquote {
 
 footer {
     margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.fine-print {
+    text-align: center;
+    font-size: small;
 }

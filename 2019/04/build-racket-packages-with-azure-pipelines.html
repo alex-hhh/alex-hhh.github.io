@@ -134,22 +134,22 @@
 16</pre></div></td>
     <td class="code">
      <div class="source">
-      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">pool</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">vmImage</span><span class="p p-Indicator">:</span> <span class="s">&#39;Ubuntu-16.04&#39;</span>
-<span class="l l-Scalar l-Scalar-Plain">variables</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">PACKAGE_NAME</span><span class="p p-Indicator">:</span> <span class="s">"plot-container"</span>
-  <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
-  <span class="l l-Scalar l-Scalar-Plain">RACKET_DIR</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">$(Agent.BuildDirectory)/racket</span>
-  <span class="l l-Scalar l-Scalar-Plain">PLTSTDERR</span><span class="p p-Indicator">:</span> <span class="s">&#39;error</span><span class="nv"> </span><span class="s">warning@optimizer&#39;</span>
-<span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span>
-<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bash ./ci/install-racket.sh</span>
-  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">&#39;Install</span><span class="nv"> </span><span class="s">Racket</span><span class="nv"> </span><span class="s">$(RACKET_VERSION)&#39;</span>
-<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">|</span>
+      <pre><span></span><span class="nt">pool</span><span class="p">:</span>
+  <span class="nt">vmImage</span><span class="p">:</span> <span class="s">&#39;Ubuntu-16.04&#39;</span>
+<span class="nt">variables</span><span class="p">:</span>
+  <span class="nt">PACKAGE_NAME</span><span class="p">:</span> <span class="s">"plot-container"</span>
+  <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
+  <span class="nt">RACKET_DIR</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(Agent.BuildDirectory)/racket</span>
+  <span class="nt">PLTSTDERR</span><span class="p">:</span> <span class="s">&#39;error</span><span class="nv"> </span><span class="s">warning@optimizer&#39;</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bash ./ci/install-racket.sh</span>
+  <span class="nt">displayName</span><span class="p">:</span> <span class="s">&#39;Install</span><span class="nv"> </span><span class="s">Racket</span><span class="nv"> </span><span class="s">$(RACKET_VERSION)&#39;</span>
+<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="p p-Indicator">|</span>
     <span class="no">PATH="$(RACKET_DIR)/bin:$(PATH)"</span>
     <span class="no">raco pkg install --deps search-auto  --type dir --name $(PACKAGE_NAME)</span>
     <span class="no">raco setup --check-pkg-deps --pkgs $(PACKAGE_NAME)</span>
     <span class="no">raco test --no-run-if-absent --package $(PACKAGE_NAME)</span>
-  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">&#39;Build</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Test</span><span class="nv"> </span><span class="s">$(PACKAGE_NAME)&#39;</span>
+  <span class="nt">displayName</span><span class="p">:</span> <span class="s">&#39;Build</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Test</span><span class="nv"> </span><span class="s">$(PACKAGE_NAME)&#39;</span>
 </pre></div>
 </td></tr></tbody></table>
 </div>
@@ -180,13 +180,13 @@
 7</pre></div></td>
     <td class="code">
      <div class="source">
-      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">strategy</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">maxParallel</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
-  <span class="l l-Scalar l-Scalar-Plain">matrix</span><span class="p p-Indicator">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">Racket_7_2</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
-    <span class="l l-Scalar l-Scalar-Plain">Racket_7_1</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">RACKET_VERSION</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">7.1</span>
+      <pre><span></span><span class="nt">strategy</span><span class="p">:</span>
+  <span class="nt">maxParallel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+  <span class="nt">matrix</span><span class="p">:</span>
+    <span class="nt">Racket_7_2</span><span class="p">:</span>
+      <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
+    <span class="nt">Racket_7_1</span><span class="p">:</span>
+      <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.1</span>
 </pre></div>
 </td></tr></tbody></table>
 </div>
@@ -208,12 +208,12 @@
 7</pre></div></td>
     <td class="code">
      <div class="source">
-      <pre><span></span><span class="l l-Scalar l-Scalar-Plain">variables</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">DISPLAY</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">:99.0</span>
+      <pre><span></span><span class="nt">variables</span><span class="p">:</span>
+  <span class="nt">DISPLAY</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">:99.0</span>
   <span class="c1"># other variables follow here</span>
-<span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span>
-<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">script</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">(/usr/bin/Xvfb :99 -screen 0 1280x1024x24 &amp;)</span>
-  <span class="l l-Scalar l-Scalar-Plain">displayName</span><span class="p p-Indicator">:</span> <span class="s">"Start</span><span class="nv"> </span><span class="s">Xvfb</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">DISPLAY=$(DISPLAY)"</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(/usr/bin/Xvfb :99 -screen 0 1280x1024x24 &amp;)</span>
+  <span class="nt">displayName</span><span class="p">:</span> <span class="s">"Start</span><span class="nv"> </span><span class="s">Xvfb</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">DISPLAY=$(DISPLAY)"</span>
 <span class="c1"># other steps folow here</span>
 </pre></div>
 </td></tr></tbody></table>
@@ -332,31 +332,10 @@ curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
       </div>
       <footer>
         <hr />
-        <!-- <p><a href="https://twitter.com/racketlang"
-                   class="twitter-follow-button"
-                   data-show-count="false"
-                   data-lang="en">
-                  "Follow RacketLang"
-                </a>
-                <script type="text/javascript">
-                  !function(d,s,id){
-                      var js,fjs=d.getElementsByTagName(s)[0];
-                      if(!d.getElementById(id)){
-                          js=d.createElement(s);
-                          js.id=id;
-                          js.src="//platform.twitter.com/widgets.js";
-                          fjs.parentNode.insertBefore(js,fjs);
-                      }
-                  }(document,"script","twitter-wjs");
-                </script></p> -->
-        <p>Site generated
-          by <a href="https://github.com/greghendershott/frog">Frog</a>,
-          the <strong>fr</strong>ozen bl<strong>og</strong>
-          tool. Using <a href="http://twitter.github.com/bootstrap/index.html">Bootstrap</a>. Also
-          available as <a href="/feeds/all.atom.xml">Atom</a>
-          and <a href="/feeds/all.rss.xml">RSS</a> feeds. . There is also
-          a <a href="/Cookies.html">cookie policy</a>.</p>
-        <!-- <p><em>Your legal notice here</em>.</p> -->
+        <div class="fine-print">© Alex Harsányi, licensed under
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+          , and there's a <a href="/Cookies.html">cookie policy</a>.
+        </div>
       </footer>
     </div>
     <!-- </body> JS -->

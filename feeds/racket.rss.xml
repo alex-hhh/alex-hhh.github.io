@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sat, 26 Oct 2019 03:18:30 UT</lastBuildDate>
-  <pubDate>Sat, 26 Oct 2019 03:18:30 UT</pubDate>
+  <lastBuildDate>Fri, 29 Nov 2019 00:31:21 UT</lastBuildDate>
+  <pubDate>Fri, 29 Nov 2019 00:31:21 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Custom Rackunit Test Runner</title>
+   <link>https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2019-11-custom-rackunit-test-runner-html</guid>
+   <pubDate>Fri, 29 Nov 2019 00:31:21 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;As the number of tests for a program continues to increase, it is no longer sufficient to know that all tests passed or which test failed. Other questions start to become important: were some tests inadvertently disabled? which tests were skipped? how did the duration of a test evolve over several versions of a program? Existing build platforms, such as Azure Devops, can help with test management, but in order make use of their features, we need to extend the Racket unit test library to report the test results to the build pipeline.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Timezone Aware Local Time</title>
    <link>https://alex-hhh.github.io/2019/10/local-time.html?utm_source=racket&amp;utm_medium=RSS</link>

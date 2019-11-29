@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2019-10-26T03:18:30Z</updated>
+ <updated>2019-11-29T00:31:21Z</updated>
+ <entry>
+  <title type="text">Custom Rackunit Test Runner</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2019-11-custom-rackunit-test-runner-html</id>
+  <published>2019-11-29T00:31:21Z</published>
+  <updated>2019-11-29T00:31:21Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;As the number of tests for a program continues to increase, it is no longer sufficient to know that all tests passed or which test failed. Other questions start to become important: were some tests inadvertently disabled? which tests were skipped? how did the duration of a test evolve over several versions of a program? Existing build platforms, such as Azure Devops, can help with test management, but in order make use of their features, we need to extend the Racket unit test library to report the test results to the build pipeline.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Timezone Aware Local Time</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/10/local-time.html?utm_source=all&amp;utm_medium=Atom" />

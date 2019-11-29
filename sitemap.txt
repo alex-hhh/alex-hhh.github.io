@@ -30,5 +30,6 @@ https://alex-hhh.github.io/2019/09/interactive-heat-maps.html
 https://alex-hhh.github.io/2019/09/map-snip.html
 https://alex-hhh.github.io/2019/09/racket-binary-packages.html
 https://alex-hhh.github.io/2019/10/local-time.html
+https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html
