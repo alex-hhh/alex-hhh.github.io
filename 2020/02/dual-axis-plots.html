@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Dual Axis Plots</title>
+    <meta name="description" content="in which we explore how to show on the same plot two data series that have different data ranges. The Racket Plot package does not support this functionality directly, but with the help of some data transformation, we can still achieve good results....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2020/02/dual-axis-plots.html">
+    <link rel="next" href="/2019/11/custom-rackunit-test-runner.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Dual Axis Plots</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-02-08" pubdate="true">2020-02-08</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>&hellip; in which we explore how to show on the same plot two data series that have different data ranges. The <a href="https://docs.racket-lang.org/plot/index.html">Racket Plot</a> package does not support this functionality directly, but with the help of some data transformation, we can still achieve good results.</p>
+<!-- more-->
+
+<p>The plot below shows the elevation and grade plotted against distance for a hiking activity. Elevation values range between 850 and 1300 meters, and the grade values range from &ndash;30% to about 30%, so simply plotting them together would not produce a nice looking result. Instead the data needs to be transformed and some extra plot parameters need to be used to show a correct scale for both data series.</p>
+
+<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>This blog post aims to illustrate a general mechanism for constructing dual axis plots, but since it is difficult to have an abstract discussion, all the examples will show how to plot elevation and grade (slope) data from a hiking activity. However, the same idea can be used for any type of data.</p>
+
+<h2 id="limitations-of-the-plot-package">Limitations of the Plot Package</h2>
+
+<p>So you have some data recorded for a hiking activity and you would like to plot the elevation profile as well as the grade along the route. The task is simple enough: just load the data in a <a href="/2018/08/racket-data-frame.html">data frame</a> and use the plot package to display it:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/csv</span> <span class="s2">"./track-data-1858.csv"</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Grade (%)"</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"grade"</span><span class="p">))))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Elevation (meters)"</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"calt"</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Which will produce two plots side-by-side:</p>
+
+<div class="figure"><img src="/img/a034/grade-elevation-separate.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>How can we combine these two plots into a single one? After all, both the elevation and grade data samples are from the same hiking activity and they share the same X axis (distance, in this case). Well, the plot package allows rendering multiple data sets on the same plot, and it does allow defining a &ldquo;far Y axis&rdquo;, which is the axis on the right of the plot. So, in the first try, we could write:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Grade (%)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-y-far-label</span> <span class="s2">"Elevation (meters)"</span><span class="p">])</span>
+  <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+         <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"grade"</span><span class="p">))</span>
+         <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"calt"</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Unfortunately, this does not produce a good result: the elevation data series shows up relatively OK on the plot, but the grade series is barely visible as it hovers around the 0 axis. It does make sense, however: there is a single X axis (distance), but also a single Y axis, which shows both elevation and grade. Since elevation values range between 850 and 1300 meters, and the grade values range from &ndash;30% to about 30%, the Y axis will display a data range from &ndash;30 to about 1300. This range represents about 33% of the elevation data range, but only about 4% of the grade data range, so neither plots will occupy the entire Y range and the grade plot, using only 4% of the plot area, will be practically useless.</p>
+
+<div class="figure"><img src="/img/a034/grade-elevation-combined.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="dual-axis-plot">Dual Axis Plot</h2>
+
+<p>The Racket plot package is only able to use a single Y axis for the plot area, and our data series use separate ranges &mdash; [&ndash;30 .. 30] for the grade data and [850 .. 1300] for elevation &mdash; so we will need to transform one of the data series to have the same data range before plotting them.</p>
+
+<p>What is the range of our data series anyway? The data-frame package provides a <code>df-statistics</code> function which returns a <a href="https://docs.racket-lang.org/math/stats.html#(def._((lib._math%2Fstatistics..rkt)._statistics))">statistics</a> object about a data series. This statistics object contains information about the minimum, maximum, average values of the data (plus a few more things). Since we are interested in only the minimum and maximum values for a data series, we will write a helper function, <code>get-low+high</code>, which returns these two values, adjusted to allow for some room at the top and bottom of the plot:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="n">series</span> <span class="p">[</span><span class="n">room</span> <span class="mf">0.25</span><span class="p">])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">stats</span> <span class="p">(</span><span class="n">df-statistics</span> <span class="n">df</span> <span class="n">series</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">low</span> <span class="p">(</span><span class="n">statistics-min</span> <span class="n">stats</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">high</span> <span class="p">(</span><span class="n">statistics-max</span> <span class="n">stats</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">adjust</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="n">statistics-range</span> <span class="n">stats</span><span class="p">)</span> <span class="n">room</span><span class="p">)])</span>
+    <span class="c1">;; Make the Y range of the plot slightly larger than </span>
+    <span class="c1">;; the min/max values</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">low</span> <span class="n">adjust</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">high</span> <span class="n">adjust</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>get-low+high</code> function can be tested directly in DrRacket, to check that it produces reasonable values for our data series. Note that the function does not return the minimum and maximum values of the series, but a slightly larger interval, so there will be an &ldquo;inset&rdquo; inside the plot, and the plotted lines will not touch the plot borders.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"grade"</span><span class="p">)</span>
+<span class="mf">-46.699999999999996</span>
+<span class="mf">48.099999999999994</span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"calt"</span><span class="p">)</span>
+<span class="mf">749.0727499999999</span>
+<span class="mf">1384.21025</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The next step is to write a function which transforms values from one data range to another. We could put the above numbers directly in the transform, but it is useful to create a more general function, which takes the two ranges as parameters and constructs the transform:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-g-&gt;b</span> <span class="n">base-min</span> <span class="n">base-max</span> <span class="n">guest-min</span> <span class="n">guest-max</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">base-range</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">base-max</span> <span class="n">base-min</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">guest-range</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">guest-max</span> <span class="n">guest-min</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">v</span> <span class="n">guest-min</span><span class="p">)</span> <span class="n">guest-range</span><span class="p">)])</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">base-min</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">p</span> <span class="n">base-range</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And here is another helper function which transforms an entire data set from one range to another:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">g-&gt;b</span> <span class="n">data</span> <span class="n">transform</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/vector))" style="color: inherit">for/vector</a></span> <span class="p">([</span><span class="n">item</span> <span class="n">data</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="n">item</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="p">(</span><span class="n">transform</span> <span class="n">y</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>With the data transformation routines in place, we can now create a plot where we transform one data set to use the data range of another. In the example below, the altitude data series is transformed into the range of the grade series, but this choice is arbitrary, and we could have equally well transformed the grade series into the range of he elevation series with the same result. To do that, the arguments to <code>make-g-&gt;b</code> would have to be swapped.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">([(</span><span class="n">alt-min</span> <span class="n">alt-max</span><span class="p">)</span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"calt"</span><span class="p">)]</span>
+             <span class="p">[(</span><span class="n">grade-min</span> <span class="n">grade-max</span><span class="p">)</span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"grade"</span><span class="p">)])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">transform</span> <span class="p">(</span><span class="n">make-g-&gt;b</span> <span class="n">grade-min</span> <span class="n">grade-max</span> <span class="n">alt-min</span> <span class="n">alt-max</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Grade (%)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-far-label</span> <span class="s2">"Elevation (meters)"</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">plot-pict</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+                <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"grade"</span><span class="p">))</span>
+                <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">g-&gt;b</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"calt"</span><span class="p">)</span> <span class="n">transform</span><span class="p">))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>&hellip; and the result is more pleasing:</p>
+
+<div class="figure"><img src="/img/a034/grade-elevation-1.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="drawing-labels-for-both-data-series">Drawing Labels for Both Data Series</h2>
+
+<p>The two data series now occupy the entire plot area, but the &ldquo;guest&rdquo; series, which in our case is the elevation, has no labels drawn on the right hand axis, creating the appearance that the elevation also ranges from &ndash;30 to 30. The <a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html?#(def._((lib._plot%2Fmain..rkt)._plot-y-far-ticks))">plot-y-far-ticks</a> plot parameter can be used to specify the ticks to be drawn, but we will need to scale them as well in order to display values in the appropriate range, which can be done using <a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html#(def._((lib._plot%2Fmain..rkt)._ticks-scale))">ticks-scale</a>.</p>
+
+<p>The <a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html#(def._((lib._plot%2Fmain..rkt)._ticks-scale))">ticks-scale</a> function requires two parameters: the plot ticks to scale, here we can use <a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html#%28def._%28%28lib._plot%2Fmain..rkt%29._time-ticks%29%29">linear-ticks</a> which are the default, and something called an <a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html#(def._((lib._plot%2Fmain..rkt)._invertible-function~3f))">invertible-function</a>.</p>
+
+<p><a href="https://docs.racket-lang.org/plot/ticks_and_transforms.html#(def._((lib._plot%2Fmain..rkt)._invertible-function~3f))">invertible-function</a> is a structure containing two functions used to convert from one range to another and back. The <code>make-g-&gt;b</code> function already creates one of these functions, the one which transforms a &ldquo;guest&rdquo; data range into a &ldquo;base&rdquo; data range, and we will need to define the reverse one which transforms the &ldquo;base&rdquo; data range into the &ldquo;guest&rdquo; data range. The two functions are similar, with just the parameters reversed, and to avoid confusion, we&rsquo;ll create the invertible-function in <code>make-guest-transform</code> which will replace <code>make-g-&gt;b</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-guest-transform</span> <span class="n">base-min</span> <span class="n">base-max</span> <span class="n">guest-min</span> <span class="n">guest-max</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">base-range</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">base-max</span> <span class="n">base-min</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">guest-range</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">guest-max</span> <span class="n">guest-min</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">invertible-function</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>                          <span class="c1">; Transform from base to guest</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">v</span> <span class="n">base-min</span><span class="p">)</span> <span class="n">base-range</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">guest-min</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">p</span> <span class="n">guest-range</span><span class="p">))))</span>
+   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>                          <span class="c1">; Transform from guest to base</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">p</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">v</span> <span class="n">guest-min</span><span class="p">)</span> <span class="n">guest-range</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">base-min</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">p</span> <span class="n">base-range</span><span class="p">))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The invertible function structure contains one of the function to transform the input data, so we can use the result of <code>make-guest-transform</code> to <code>guest-&gt;base</code> which does the data transform (again, to avoid confusion, we didn&rsquo;t update <code>g-&gt;b</code>):</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">guest-&gt;base</span> <span class="n">guest-data</span> <span class="n">transform</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tr</span> <span class="p">(</span><span class="n">invertible-function-g</span> <span class="n">transform</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/vector))" style="color: inherit">for/vector</a></span> <span class="p">([</span><span class="n">item</span> <span class="n">guest-data</span><span class="p">])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="n">item</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="p">(</span><span class="n">tr</span> <span class="n">y</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>With all this preparation, we can now plot the altitude and grade data series on the same plot, with an Y axis on each side, the left one corresponding to grade data and the right one to the elevation data:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">([(</span><span class="n">alt-min</span> <span class="n">alt-max</span><span class="p">)</span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"calt"</span><span class="p">)]</span>
+             <span class="p">[(</span><span class="n">grade-min</span> <span class="n">grade-max</span><span class="p">)</span> <span class="p">(</span><span class="n">get-low+high</span> <span class="n">df</span> <span class="s2">"grade"</span><span class="p">)])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">transform</span> <span class="p">(</span><span class="n">make-guest-transform</span> <span class="n">grade-min</span> <span class="n">grade-max</span> <span class="n">alt-min</span> <span class="n">alt-max</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-far-label</span> <span class="s2">"Elevation (meters)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Grade (%)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-far-ticks</span> <span class="p">(</span><span class="n">ticks-scale</span> <span class="p">(</span><span class="n">linear-ticks</span><span class="p">)</span> <span class="n">transform</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+           <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"grade"</span><span class="p">))</span>
+           <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="n">guest-&gt;base</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"calt"</span><span class="p">)</span> <span class="n">transform</span><span class="p">))))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>which produces the following plot:</p>
+
+<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="final-thoughts">Final thoughts</h2>
+
+<p>Can this technique be extended for more than two data series? Well, yes and no: any number of data series can be transformed into the base data range by creating individual transforms, but the problem is that the Racket plot package only allows two Y axis on the plot, left and right (also called near and far axis), and this means that no axis can be displayed for the additional data series. In fact, this blog post is inspired by a <a href="https://github.com/racket/plot/issues/25">Racket Plot Package Issue</a>, which illustrates this limitation of the plot package.</p>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2019/11/custom-rackunit-test-runner.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Custom Rackunit Test Runner</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <div class="fine-print">© Alex Harsányi, licensed under
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+          , and there's a <a href="/Cookies.html">cookie policy</a>.
+        </div>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

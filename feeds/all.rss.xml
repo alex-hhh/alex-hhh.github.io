@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Fri, 29 Nov 2019 00:31:21 UT</lastBuildDate>
-  <pubDate>Fri, 29 Nov 2019 00:31:21 UT</pubDate>
+  <lastBuildDate>Fri, 07 Feb 2020 23:10:18 UT</lastBuildDate>
+  <pubDate>Fri, 07 Feb 2020 23:10:18 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Dual Axis Plots</title>
+   <link>https://alex-hhh.github.io/2020/02/dual-axis-plots.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-02-dual-axis-plots-html</guid>
+   <pubDate>Fri, 07 Feb 2020 23:10:18 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we explore how to show on the same plot two data series that have different data ranges. The &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;Racket Plot&lt;/a&gt; package does not support this functionality directly, but with the help of some data transformation, we can still achieve good results.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/02/dual-axis-plots.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Custom Rackunit Test Runner</title>
    <link>https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html?utm_source=all&amp;utm_medium=RSS</link>
