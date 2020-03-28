@@ -3,7 +3,7 @@
   <head>
 
     <meta charset="utf-8">
-    <title>A Game of Tetris</title>
+    <title>A Game of Tetris (gameplay)</title>
     <meta name="description" content=".. in which we implement a Tetris game step-by-step in Racket, exploring pict graphics, contracts and unit tests....">
     <meta name="author"      content="Alex Harsányi">
     <meta name="keywords"    content="racket">
@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2020/03/a-game-of-tetris.html">
     <link rel="next" href="/2020/02/dual-axis-plots.html">
-
+    <link rel="prev" href="/2020/03/a-game-of-tetris-2.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -89,7 +89,7 @@
 
           <article>
   <header>
-    <h1>A Game of Tetris</h1>
+    <h1>A Game of Tetris (gameplay)</h1>
     <p class='date-and-tags'>
 <time datetime="2020-03-05" pubdate="true">2020-03-05</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
   </header>
@@ -128,7 +128,7 @@
 </td></tr></tbody></table>
 </div>
 
-<p>The "#lang racket/gui" defines this as a Racket GUI program, and <code>pict</code>, <code>racket/draw</code> and <code>racket/contract</code> are libraries that are used by the program. The <code>rackunit</code> library will be used for the unit tests. All these libraries are part of the standard Racket installation.</p>
+<p>The "#lang racket/gui" defines this as a Racket GUI program, and <code>pict</code>, <code>racket/draw</code> and <code>racket/contract</code> are libraries that are used by the program, while the <code>rackunit</code> library will be used for the unit tests. All these libraries are part of the standard Racket installation.</p>
 
 <h2 id="the-tetris-blocks">The Tetris Blocks</h2>
 
@@ -459,7 +459,7 @@
 <div class="figure"><img src="/img/a035/tetris-play-0.gif" alt="" />
  <p class="caption"></p></div>
 
-<p>Looking through the <a href="https://docs.racket-lang.org/gui/index.html">Racket GUI</a>, one can easily find the documentation for creating frames, various types of widgets, or timers, but it is not immediately obvious how to handle keyboard input. This is because keyboard input is handled by each individual widget itself, usually by overriding the <code>on-subwindow-char</code> method of a relevant widget. In our case, we need to define a game specific frame class to intercept these keyboard events. <code>tetris-frame%</code> acts like a <code>frame%</code> (which are used for toplevel windows), except it overrides the <code>on-subwindow-char</code> method and passes on the keyboard events to <code>on-tetris-event</code> function, which will be defined later. Note that keyboard events are passed to the super class first, the method only handles events which were not handled by the superclass: failure to do so would make the application unresponsive to usual keyboard events (the same rule applies for mouse events, but mouse events are not used by this application):</p>
+<p>Looking through the <a href="https://docs.racket-lang.org/gui/index.html">Racket GUI</a>, one can easily find the documentation for creating frames, various types of widgets, or timers, but it is not immediately obvious how to handle keyboard input. This is because keyboard input is handled by each individual widget itself, usually by overriding the <code>on-subwindow-char</code> method of a relevant widget. In our case, we need to define a game specific frame class to intercept these keyboard events. <code>tetris-frame%</code> acts like a <code>frame%</code> (which are used for toplevel windows), except it overrides the <code>on-subwindow-char</code> method and passes on the keyboard events to <code>on-tetris-event</code> function, which will be defined later. Note that keyboard events are also passed to the super class, failure to do so would make the application unresponsive to usual keyboard events (the same rule applies for mouse events, but mouse events are not used by this application):</p>
 
 <div class="brush: racket">
  <table class="sourcetable">
@@ -472,19 +472,15 @@
 3
 4
 5
-6
-7
-8</pre></div></td>
+6</pre></div></td>
     <td class="code">
      <div class="source">
       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">tetris-frame%</span>
   <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">frame%</span>
     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">)</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">handled?</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">))</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">handled?</span>
-          <span class="no">#t</span>                            <span class="c1">; one of the system events</span>
-          <span class="p">(</span><span class="n">on-tetris-event</span> <span class="n">event</span><span class="p">)))))</span>
+      <span class="p">(</span><span class="n">on-tetris-event</span> <span class="n">event</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">on-subwindow-char</span> <span class="n">receiver</span> <span class="n">event</span><span class="p">))))</span>
 </pre></div>
 </td></tr></tbody></table>
 </div>
@@ -1253,14 +1249,33 @@
 
 <p>We can now update the interactive application to add support for filling lines at the bottom, rather than just discarding the blocks. First, we need to track the filled lines, in addition to the current block, as part of the program state, and <code>start-game</code> will need to initialize this state correctly (since <code>start-game</code> can be called multiple times, to re-start a game):</p>
 
-<pre><code>(define filled-lines '())
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">filled-lines</span> <span class="o">'</span><span class="p">())</span>
 
-(define (start-game)
-  (set! filled-lines '())
-  (set! current-block #f)
-  (spawn-new-block)
-  (send canvas focus)
-  (send frame show #t))</code></pre>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">start-game</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">filled-lines</span> <span class="o">'</span><span class="p">())</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-block</span> <span class="no">#f</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">spawn-new-block</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">canvas</span> <span class="n">focus</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">frame</span> <span class="n">show</span> <span class="no">#t</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
 
 <p>Next, we need to update <code>spawn-new-block</code> to merge the previous block into the filled lines. Since the playing field is now filling up, the &ldquo;end of game&rdquo; condition also needs to be handled, this is where a new block can no longer be spawned as it would immediately collide with the filled lines. The <code>current-block</code> will be set to <code>#f</code> when this occurs, and all the other functions will need to check this, they can no longer assume that <code>current-block</code> is always a tetris block.</p>
 
@@ -1481,10 +1496,25 @@
 
 <p>With <code>full-line?</code> written, the completed lines can be &ldquo;collapsed&rdquo; simply by removing them from the list of filled lines:</p>
 
-<pre><code>(define (remove-full-lines filled-lines)
-  (-&gt; (listof valid-filled-line?) (listof valid-filled-line?))
-  (for/list ([line (in-list filled-lines)] #:unless (full-line? line))
-    line))</code></pre>
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">remove-full-lines</span> <span class="n">filled-lines</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/function-contracts.html#(form._((lib._racket/contract/base..rkt)._-~3e))" style="color: inherit">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/data-structure-contracts.html#(def._((lib._racket/contract/base..rkt)._listof))" style="color: inherit">listof</a></span> <span class="n">valid-filled-line?</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/data-structure-contracts.html#(def._((lib._racket/contract/base..rkt)._listof))" style="color: inherit">listof</a></span> <span class="n">valid-filled-line?</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">line</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">filled-lines</span><span class="p">)]</span> <span class="kd">#:unless</span> <span class="p">(</span><span class="n">full-line?</span> <span class="n">line</span><span class="p">))</span>
+    <span class="n">line</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
 
 <p>As with other functions in this blog posts, these functions have tests associated with them, which you can check out in the completed application, linked below.</p>
 
@@ -1492,17 +1522,39 @@
 
 <p>The only update is to the <code>spawn-new-block</code> which will remove filled lines after a block is merged. Since the game is now complete, <code>spawn-new-block</code> has also been updated to pick a random piece from the list of blocks, instead of cycling through the blocks:</p>
 
-<pre><code>(define (spawn-new-block)
-  (when current-block
-    (set! filled-lines (merge-block current-block block-x block-y filled-lines))
-    (set! filled-lines (remove-full-lines filled-lines)))
-  (define candidate (random (length all-blocks)))
-  (set! current-block (list-ref all-blocks candidate))
-  (set! block-y 0)
-  (set! block-x (exact-truncate (- (/ field-width 2) 2)))
-  ;; Playing field is full.  Game Over.
-  (when (block-collision? current-block block-x block-y filled-lines)
-    (set! current-block #f)))</code></pre>
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">spawn-new-block</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">current-block</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">filled-lines</span> <span class="p">(</span><span class="n">merge-block</span> <span class="n">current-block</span> <span class="n">block-x</span> <span class="n">block-y</span> <span class="n">filled-lines</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">filled-lines</span> <span class="p">(</span><span class="n">remove-full-lines</span> <span class="n">filled-lines</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">candidate</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/private/base..rkt)._random))" style="color: inherit">random</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span> <span class="n">all-blocks</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-block</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">all-blocks</span> <span class="n">candidate</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">block-y</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">block-x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">field-width</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">2</span><span class="p">)))</span>
+  <span class="c1">;; Playing field is full.  Game Over.</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="n">block-collision?</span> <span class="n">current-block</span> <span class="n">block-x</span> <span class="n">block-y</span> <span class="n">filled-lines</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-block</span> <span class="no">#f</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
 
 <p>So there it is, a Tetris game implemented in about 700 lines of Racket code, together with comments and unit tests. You can find the final program in <a href="https://gist.github.com/alex-hhh/2ceb76ef29e964ae00e06edaa389b75c">this GitHub Gist</a>. The program is still missing several features that would make it a user friendly game, perhaps the most important one is that it does not keep score. This, and other aspects will be discussed in a future blog post.</p>
 
@@ -1545,7 +1597,12 @@
               <span aria-hidden="true">&larr; Dual Axis Plots</span>
             </a>
           </li>
-
+          <li class="page-item">
+            <a class="page-link" href="/2020/03/a-game-of-tetris-2.html"
+               aria-label="Next">
+              <span aria-hidden="true">A Game of Tetris (user interface) &rarr;</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>

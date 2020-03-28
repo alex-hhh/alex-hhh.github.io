@@ -1,7 +1,7 @@
     Title: Dual Axis Plots
     Date: 2020-02-08T07:10:18
     Thumbnail: /img/a034/thumb.png
-    Tags: racket
+    Tags: racket, data visualization
 
 ... in which we explore how to show on the same plot two data series that have
 different data ranges.  The [Racket Plot][plot] package does not support this

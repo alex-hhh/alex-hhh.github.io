@@ -4,11 +4,19 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Thu, 05 Mar 2020 08:24:02 UT</lastBuildDate>
-  <pubDate>Thu, 05 Mar 2020 08:24:02 UT</pubDate>
+  <lastBuildDate>Fri, 27 Mar 2020 23:08:35 UT</lastBuildDate>
+  <pubDate>Fri, 27 Mar 2020 23:08:35 UT</pubDate>
   <ttl>1800</ttl>
   <item>
-   <title>A Game of Tetris</title>
+   <title>A Game of Tetris (user interface)</title>
+   <link>https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-03-a-game-of-tetris-2-html</guid>
+   <pubDate>Fri, 27 Mar 2020 23:08:35 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="/2020/03/a-game-of-tetris.html"&gt;previous&lt;/a&gt; blog post introduced the Tetris game mechanics and made the game playable. In this blog post we&amp;rsquo;ll look at how to build an actual GUI application around the game mechanics: we&amp;rsquo;ll keep score, increase difficulty, peek at the next block and more. As we do that, we&amp;rsquo;ll explore some more interesting things you can do with the Racket pict library, and look at some of the GUI facilities available in Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Game of Tetris (gameplay)</title>
    <link>https://alex-hhh.github.io/2020/03/a-game-of-tetris.html?utm_source=racket&amp;utm_medium=RSS</link>
    <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-03-a-game-of-tetris-html</guid>
    <pubDate>Thu, 05 Mar 2020 08:24:02 UT</pubDate>

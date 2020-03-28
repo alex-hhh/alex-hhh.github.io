@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>A Game of Tetris (user interface)</title>
+    <meta name="description" content="The previous blog post introduced the Tetris game mechanics and made the game playable. In this blog post we'll look at how to build an actual GUI application around the game mechanics: we'll keep score, increase difficulty, peek at the next block and mor...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html">
+    <link rel="next" href="/2020/03/a-game-of-tetris.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>A Game of Tetris (user interface)</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-03-28" pubdate="true">2020-03-28</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>The <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post introduced the Tetris game mechanics and made the game playable. In this blog post we&rsquo;ll look at how to build an actual GUI application around the game mechanics: we&rsquo;ll keep score, increase difficulty, peek at the next block and more. As we do that, we&rsquo;ll explore some more interesting things you can do with the Racket pict library, and look at some of the GUI facilities available in Racket.</p>
+<!-- more-->
+
+<div class="figure"><img src="/img/a036/completed-game.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>If you want to follow along with adding features to the program, this is the <a href="https://gist.github.com/alex-hhh/2ceb76ef29e964ae00e06edaa389b75c">program we start with</a>, it is the last program from the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post. Also if you are in a hurry, you can download the complete program from this <a href="https://gist.github.com/alex-hhh/2233aee39852f4e0aead4af4cafb40d5">GitHub Gist</a>.</p>
+
+<h2 id="end-of-game-overlay">End of Game Overlay</h2>
+
+<p>The last version of the tetris game from the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post would simply stop when the playing field was full and a new block could not be spawned, and the first improvement we can make is to display a &ldquo;Game Over&rdquo; message when the game ends, to inform the user of what happened.</p>
+
+<p>As with the rest of the game drawing, we will use a <a href="https://docs.racket-lang.org/pict/index.html">pict</a> to construct the overlay for the &ldquo;Game Over&rdquo; message and we will draw it onto the canvas using <code>draw-pict</code>. This overlay is simply a colored text shown on top of a rounded rectangle:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">game-over-pict</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">label</span> <span class="p">(</span><span class="n">text</span> <span class="s2">"Game Over"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="o">'</span><span class="ss">bold</span> <span class="o">'</span><span class="ss">default</span><span class="p">)</span> <span class="mi">24</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">background</span> <span class="p">(</span><span class="n">filled-rounded-rectangle</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">25</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">label</span><span class="p">))</span>
+                      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">25</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">label</span><span class="p">)))])</span>
+    <span class="p">(</span><span class="n">cc-superimpose</span>
+     <span class="p">(</span><span class="n">cellophane</span> <span class="p">(</span><span class="n">colorize</span> <span class="n">background</span> <span class="o">'</span><span class="p">(</span><span class="mi">221</span> <span class="mi">221</span> <span class="mi">221</span><span class="p">))</span> <span class="mf">0.9</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">colorize</span> <span class="n">label</span> <span class="o">'</span><span class="p">(</span><span class="mi">165</span> <span class="mi">0</span> <span class="mi">38</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The advantage of using the pict library is that the image itself can be designed inside DrRacket, before it is added to the game itself:</p>
+
+<div class="figure"><img src="/img/a036/game-over-pict.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>With the picture in place, we need to update the paint function, <code>on-tetris-paint</code>, to show the <code>game-over-pict</code> at the end of the game. The end of the game is detected when the <code>current-block</code> is <code>#f</code> (meaning there is no current block), so the game over picture is drawn when <code>current-block</code> is <code>#t</code>. The drawing code also obtains the size of the drawing area and centers the picture in this area. This block is added as the last form to <code>on-tetris-paint</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="n">current-block</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">([(</span><span class="n">width</span> <span class="n">height</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-size</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">x</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">width</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">game-over-pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">)]</span>
+          <span class="p">[</span><span class="n">y</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">height</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">game-over-pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">)])</span>
+      <span class="p">(</span><span class="n">draw-pict</span> <span class="n">game-over-pict</span> <span class="n">dc</span> <span class="n">x</span> <span class="n">y</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a036/game-over.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="restart-game-button">Restart Game Button</h2>
+
+<p>The next improvement is to add a &ldquo;Start New Game&rdquo; button to the form, so the user does not have to type the <code>(start-game)</code> command in the REPL to start a new game. A button can be added using a <code>button%</code> instance, but in the current application we don&rsquo;t have a place where to put it. The current application just uses a <code>canvas%</code> inside a <code>frame%</code> and all the drawing is done inside this canvas. The layout is very simple:</p>
+
+<div class="figure"><img src="/img/a036/old-layout.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>To make room for the new widgets which we will add to the application, we must introduce container controls, these are controls which can hold widgets such as buttons, messages or canvas objects. These widgets and containers form a tree hierarchy and, at the end of the blog post, the widget hierarchy will look like the picture below. Even for a simple application like this, the widget hierarchy can become large and complex very quickly, but we will update the application step by step, to make things easier to understand.</p>
+
+<div class="figure"><img src="/img/a036/new-layout.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>To avoid confusion, the name of the top-level window was changed from <code>frame</code> to <code>toplevel</code> and the playing field canvas was renamed from <code>canvas</code> to <code>playing-field</code>, since there will be multiple canvas objects in the application.</p>
+
+<p>The first step is to add a <code>horizontal-panel%</code> instance as the first child of the toplevel frame object. The horizontal panel will arrange all its contents from left to right. The <code>border</code> argument represents the amount of space to leave around the panel while the <code>spacing</code> argument specifies the amount of space between the children added to this panel:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">game-panel</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">horizontal-panel%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]</span> <span class="p">[</span><span class="n">border</span> <span class="mi">20</span><span class="p">]</span> <span class="p">[</span><span class="n">spacing</span> <span class="mi">20</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The playing-field <code>canvas%</code> will need to be re-parented to the <code>game-panel</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">play-field</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">canvas%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">game-panel</span><span class="p">]</span>
+                        <span class="p">[</span><span class="n">min-width</span> <span class="n">window-width</span><span class="p">]</span>
+                        <span class="p">[</span><span class="n">min-height</span> <span class="n">window-height</span><span class="p">]</span>
+                        <span class="p">[</span><span class="n">stretchable-width</span> <span class="no">#f</span><span class="p">]</span>
+                        <span class="p">[</span><span class="n">stretchable-height</span> <span class="no">#f</span><span class="p">]</span>
+                        <span class="p">[</span><span class="n">paint-callback</span> <span class="n">on-tetris-paint</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Next, we&rsquo;ll add a <code>vertical-panel%</code> which will hold the various controls for the game (we&rsquo;ll add only the &ldquo;Start New Game&rdquo; button in this section, but there will be several added later in the blog post). For this panel, we also specify an <code>alignment</code> mode, which defines how controls are aligned relative to each other. In this case, the child widgets in the panel will all be aligned vertically to the left and horizontally from top to bottom:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">controls</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">vertical-panel%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">game-panel</span><span class="p">]</span> <span class="p">[</span><span class="n">alignment</span> <span class="o">'</span><span class="p">(</span><span class="ss">left</span> <span class="ss">top</span><span class="p">)]</span> <span class="p">[</span><span class="n">spacing</span> <span class="mi">20</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, we can add the <code>button%</code> to this panel. The button is a widget which allows user input (clicking on the button), and the function to call when the user clicks the button is specified as the <code>callback</code> parameter. The callback is a function which takes two arguments: the button itself and the event which triggered the callback. In our case, we don&rsquo;t use these arguments, so the callback simply invokes <code>start-game</code> which resets the playing field and re-initializes the game state (the <code>start-game</code> function was defined in the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post):</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">start-new-game</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">button%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Start New Game"</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">controls</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">callback</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">button</span> <span class="n">event</span><span class="p">)</span> <span class="p">(</span><span class="n">start-game</span><span class="p">))]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Order of widget instantiation is important when working with GUI controls: the horizontal and vertical panels will lay out objects in the order they are added to the control. In our code, the playing field canvas was created first and the controls panel was created second, so the playing field will be to the left of the button, if we reverse the order, the playing field would be to the right.</p>
+
+<div class="figure"><img src="/img/a036/start-new-game.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="keeping-score">Keeping Score</h2>
+
+<p>There are several possibilities for keeping score (for example higher score for multiple lines cleared), but here we&rsquo;ll keep things simple: the user will get one point for each line they clear and the user interface will display the score using a <code>message%</code> object:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">score</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">message%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Score: 000000"</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">controls</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The message object needs to be created after the &ldquo;Start New Game&rdquo; button, for it to be placed underneath it. The message starts with an initial label, but this will be updated later. The curious &ldquo;000000&rdquo; string is there to ensure the control is big enough to hold any score: since a <code>message%</code> object will calculate its minimum size based on the initial label, if we start with the empty string, the message will not display anything when we set an actual label<sup><a href="#2020-03-28-a-game-of-tetris-2-footnote-1-definition" name="2020-03-28-a-game-of-tetris-2-footnote-1-return">1</a></sup>.</p>
+
+<p>The actual score will be kept in the <code>current-score</code> variable and will be updated using the function <code>on-update-score</code>. Since we need to keep the current score variable and the GUI display consistent, it is worth grouping those operations inside a single function. In our case, the function will only update the score if it increases &mdash; this saves some time as we can call this function as often as we want and will only update the GUI when the score changes:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">current-score</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-update-score</span> <span class="n">new-score</span> <span class="kd">#:force?</span> <span class="p">(</span><span class="n">force?</span> <span class="no">#f</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">force?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">new-score</span> <span class="n">current-score</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-score</span> <span class="n">new-score</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">score</span> <span class="n">set-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"Score: ~a"</span> <span class="n">current-score</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p><code>on-update-score</code> also has a <code>force?</code> parameter which, when set to <code>#t</code>, will update the score even if it is less than the current score. This is a convenience used to reset the score in the <code>start-game</code> function when a new game starts:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">start-game</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">on-update-score</span> <span class="mi">0</span> <span class="kd">#:force?</span> <span class="no">#t</span><span class="p">)</span>
+  <span class="c1">;; ... rest of the start game initialization unchanged</span>
+  <span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To update the score, we count the full lines after the current block has been merged into the filled lines but before we remove them. This happens in <code>spawn-new-block</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">spawn-new-block</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">current-block</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">filled-lines</span> <span class="p">(</span><span class="n">merge-block</span> <span class="n">current-block</span> <span class="n">block-x</span> <span class="n">block-y</span> <span class="n">filled-lines</span><span class="p">))</span>
+    <span class="p">(</span><span class="n">on-update-score</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">current-score</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._count))" style="color: inherit">count</a></span> <span class="n">full-line?</span> <span class="n">filled-lines</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">filled-lines</span> <span class="p">(</span><span class="n">remove-full-lines</span> <span class="n">filled-lines</span><span class="p">)))</span>
+  <span class="c1">;; ... Rest of the spawn new block is is unchanged</span>
+  <span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a036/keeping-score.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="increasing-difficulty">Increasing Difficulty</h2>
+
+<p>To encourage players to use the &ldquo;Start New Game&rdquo; button, we need to increase the difficulty of the game as the play progresses. In Tetris, difficulty can be increased by making blocks fall faster. To keep things simple, we&rsquo;ll increase the speed of the blocks every 10 completed lines. The game has no direct concept of speed, but pieces fall (move down) on a timer, which in our program &ldquo;ticks&rdquo; every 500 milliseconds. If we decrease this timer interval, pieces will fall faster.</p>
+
+<p>We&rsquo;ll call this increased difficulty, &ldquo;game level&rdquo; and it will be displayed in a <code>message%</code> under the game score:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">level</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">message%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Score: 000000"</span><span class="p">]</span> <span class="p">[</span><span class="n">parent</span> <span class="n">controls</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>As with the game score, we will need to keep track of the current level and update it. Since the level is always determined from the score (number of completed lines), we only need to update the <code>on-update-score</code> function to calculate and update the level value, display that value in the GUI and create a new timer with a faster tick rate (unfortunately timer objects cannot change their tick rate once created):</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">current-level</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-update-score</span> <span class="n">new-score</span> <span class="kd">#:force?</span> <span class="p">(</span><span class="n">force?</span> <span class="no">#f</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">force?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">new-score</span> <span class="n">current-score</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-score</span> <span class="n">new-score</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">score</span> <span class="n">set-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"Score: ~a"</span> <span class="n">current-score</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">new-level</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">current-score</span> <span class="mi">10</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="n">force?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">new-level</span> <span class="n">current-level</span><span class="p">))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-level</span> <span class="n">new-level</span><span class="p">)</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">level</span> <span class="n">set-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"Level: ~a"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">current-level</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">timer</span> <span class="n">stop</span><span class="p">)</span>                 <span class="c1">; stop previous timer</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">new-interval</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="mi">100</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">500</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">10</span> <span class="n">current-level</span><span class="p">))))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">timer</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">timer%</span> <span class="p">[</span><span class="n">notify-callback</span> <span class="n">on-tetris-tick</span><span class="p">]</span> <span class="p">[</span><span class="n">interval</span> <span class="n">new-interval</span><span class="p">])))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>A few interesting things to note about keeping track of the game level: like many things with computers, the lowest level is level 0 and it is a natural calculation when the current score is less than 10. Users might not appreciate however that they are at level 0, so the code which updates the GUI will add 1 to the value of <code>current-level</code>, so the displayed levels are 1, 2, 3, etc.</p>
+
+<p>Second, the timer value is limited to a minimum value (100 milliseconds in our case): time interval is decreased by 10 milliseconds each level, a crafty player might reach level 51, the timer interval would become negative and our program would fail with an exception. Better not risk it.</p>
+
+<p>Increasing the play speed is not something that can be captured in a screen shot, so you need to try it out:</p>
+
+<div class="figure"><img src="/img/a036/increasing-difficulty.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="peeking-at-the-next-block">Peeking at the Next Block</h2>
+
+<p>To assist the player with the decision of where and how to place the current block, it might be useful to show what the next block will be. Our current program will select the next block in <code>spawn-new-block</code> only after the current block has fallen all the way to the bottom, but this can be easily changed: the program must track the next block and this is done in <code>the-next-block</code> variable, <code>pick-new-block</code> is a new function to select a new block from the list of available ones (this code was extracted out of <code>spawn-new-block</code>), <code>spawn-new-block</code> is updated to assign the next block to the current one and spawn a new next block, and finally, <code>start-game</code> is updated to set the next block to <code>#f</code>, so the next game does not start with the last block of the previous game.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-next-block</span> <span class="no">#f</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">pick-new-block</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">candidate</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/private/base..rkt)._random))" style="color: inherit">random</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span> <span class="n">all-blocks</span><span class="p">))])</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list-ref))" style="color: inherit">list-ref</a></span> <span class="n">all-blocks</span> <span class="n">candidate</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">spawn-new-block</span><span class="p">)</span>
+  <span class="c1">;; ... Code to merge current block into the playing field remains unchanged</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">current-block</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">the-next-block</span> <span class="n">the-next-block</span> <span class="p">(</span><span class="n">pick-new-block</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">the-next-block</span> <span class="p">(</span><span class="n">pick-new-block</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">next-block</span> <span class="n">refresh</span><span class="p">)</span>
+  <span class="c1">;; ... Code to handle full playing field remains the same</span>
+  <span class="p">)</span><span class="err">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">start-game</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">the-next-block</span> <span class="no">#f</span><span class="p">)</span>
+  <span class="c1">;; ... Code to handle the rest of start-game initialization remains the same</span>
+  <span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Notice in the code above that <code>spawn-new-block</code> also sends a refresh message to <code>next-block</code>, which is the canvas showing the next bloc. Let&rsquo;s implement that next.</p>
+
+<p>The next block is shown inside a <code>group-box-panel%</code>. This panel draws a border and places a label around its child controls and it was the easiest way to label the canvas which shows the next block &mdash; this way, the canvas only has to display the block inside it.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">next-block-panel</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">group-box-panel%</span>
+                              <span class="p">[</span><span class="n">label</span> <span class="s2">"Next Block"</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">border</span> <span class="mi">10</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">parent</span> <span class="n">controls</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">stretchable-width</span> <span class="no">#f</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">stretchable-height</span> <span class="no">#f</span><span class="p">]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The next block will be displayed in a <code>canvas%</code>, object, but we use a one of the blocks as a sample, to make the canvas the same size as the blocks:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">next-block</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">sample-pict</span> <span class="p">(</span><span class="n">block-&gt;pict</span> <span class="n">I-Block</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">canvas%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">next-block-panel</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">min-width</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">sample-pict</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">min-height</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">sample-pict</span><span class="p">)]</span>
+         <span class="p">[</span><span class="n">stretchable-width</span> <span class="no">#f</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">stretchable-height</span> <span class="no">#f</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">paint-callback</span> <span class="n">on-next-block-paint</span><span class="p">])))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Finally, below is the paint method for the next block canvas, which simply draws the block picture in the middle of the canvas. Note that the function takes care to draw the block in the center of the canvas by obtaining the canvas dimensions and the pict dimensions &mdash; this would appear unnecessary, given that we created the canvas to be the same size as the pictures, but a windowing system will not always respect the requested widget dimensions, and it is best to always calculate positions and dimensions based on the current values obtained from the widget.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-next-block-paint</span> <span class="n">canvas</span> <span class="n">dc</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">clear</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">the-next-block</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pict</span> <span class="p">(</span><span class="n">block-&gt;pict</span> <span class="n">the-next-block</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">([(</span><span class="n">dc-width</span> <span class="n">dc-height</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-size</span><span class="p">)])</span>
+      <span class="p">(</span><span class="n">draw-pict</span> <span class="n">pict</span>
+                 <span class="n">dc</span>
+                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-width</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">)</span>
+                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-height</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>If you try the code above, you will see that, while working, the blocks are not drawn in the center of the canvas. This is because all the blocks are defined inside a 4x4 grid, but they are not centered inside this grid. Here is what the blocks look again:</p>
+
+<div class="figure"><img src="/img/a036/tetris-blocks.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Since we already defined a function to determine the bounding box of a block inside its 4x4 grid (the function is <code>block-bounding-box</code> and was defined in the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post), we can use <code>inset/clip</code>, which is part of the <a href="https://docs.racket-lang.org/pict/index.html">pict</a> package, to trim a Tetris block so it contains only the actual block:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/attaching-contracts-to-values.html#(form._((lib._racket/contract/region..rkt)._define/contract))" style="color: inherit">define/contract</a></span> <span class="p">(</span><span class="n">trim-block-pict</span> <span class="n">block</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/function-contracts.html#(form._((lib._racket/contract/base..rkt)._-~3e))" style="color: inherit">-&gt;</a></span> <span class="n">valid-block?</span> <span class="n">pict?</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span> <span class="p">(</span><span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">)</span> <span class="p">(</span><span class="n">block-bounding-box</span> <span class="n">block</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">inset/clip</span>
+   <span class="p">(</span><span class="n">block-&gt;pict</span> <span class="n">block</span><span class="p">)</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">square-size</span> <span class="n">min-x</span><span class="p">))</span> <span class="c1">;; left</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">square-size</span> <span class="n">min-y</span><span class="p">))</span> <span class="c1">;; top</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">square-size</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">3</span> <span class="n">max-x</span><span class="p">)))</span> <span class="c1">;; right</span>
+   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">square-size</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">3</span> <span class="n">max-y</span><span class="p">)))))</span> <span class="c1">;; bottom</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Here is what the trimmed blocks look like:</p>
+
+<div class="figure"><img src="/img/a036/all-blocks-trimmed.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The next block canvas pain function, <code>on-next-block-paint</code>, can now use the <code>trim-block-pict</code> instead of <code>block-&gt;pict</code>, and blocks will be centered inside the canvas:</p>
+
+<div class="figure"><img src="/img/a036/next-block.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="showing-block-statistics">Showing Block Statistics</h2>
+
+<p>Perhaps I am not the only one who wondered if the blocks are actually randomly selected while waiting for an I-Block that never shows up, so, as a last improvement, we&rsquo;ll display the number of times each block showed up.</p>
+
+<p>To keep track of the number of times each block was spawned, we&rsquo;ll use a hash table mapping the block itself to the spawn count. If you remember, the blocks are defined as a list of strings, but Racket can use these as hash keys just fine, so there is no need to come up with another block naming convention to use as hash keys. The <code>the-block-statistics</code> is part of the game state and needs to be reset in the <code>start-game</code> function:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-block-statistics</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">start-game</span><span class="p">)</span>
+  <span class="c1">;; ... Rest of the `start-game` initialization remains the same</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">the-block-statistics</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Statistics are updated in <code>spawn-new-block</code>, which just increments the counter corresponding to each block and refreshes the <code>block-statistics</code> canvas which shows these statistics (this will be defined later).</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">spawn-new-block</span><span class="p">)</span>
+  <span class="c1">;; ... Rest of the block spawning code remains the same</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((lib._racket/private/more-scheme..rkt)._hash-update!))" style="color: inherit">hash-update!</a></span> <span class="n">the-block-statistics</span> <span class="n">current-block</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="mi">0</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">block-statistics</span> <span class="n">refresh</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Perhaps, using the <code>hash-update!</code> to increment the count requires some explanation: <code>hash-update!</code> applies a function to the value stored in the hash table for a key (the <code>current-block</code> in our case) and updates the value with what the function returns. <code><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></code> is used as the update function, which simply returns its argument incremented by 1. The last parameter in the <code>hash-update!</code> call is the value to use when there is no value for the key in the hash table. This is convenient, because we can simply initialize our statistics to the empty hash table, and a new entry will be created the first time we try to update the statistics for each block.</p>
+
+<p>The next step is to display the statistics, and, as with the rest of the drawing in this program, we&rsquo;ll use the <a href="https://docs.racket-lang.org/pict/index.html">pict</a> package. The <code>table</code> pict constructor builds a table out of the corresponding picts, and we can use it to construct a table with the block image and the count and percentage next to it. We also scale the block size to 80%, to try to keep the picture size a bit smaller:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-statistics-pict</span> <span class="n">stats</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">total</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/sum))" style="color: inherit">for/sum</a></span> <span class="p">([</span><span class="n">value</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash-values))" style="color: inherit">in-hash-values</a></span> <span class="n">stats</span><span class="p">)])</span> <span class="n">value</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">picts</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._flatten))" style="color: inherit">flatten</a></span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">block</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">all-blocks</span><span class="p">)])</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._count))" style="color: inherit">count</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">stats</span> <span class="n">block</span> <span class="mi">0</span><span class="p">))</span>
+       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">percent</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">total</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._count))" style="color: inherit">count</a></span> <span class="n">total</span><span class="p">)</span> <span class="mi">0</span><span class="p">)))</span>
+       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+        <span class="p">(</span><span class="n">scale</span> <span class="p">(</span><span class="n">trim-block-pict</span> <span class="n">block</span><span class="p">)</span> <span class="mf">0.80</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">text</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"~a  (~a %)"</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._count))" style="color: inherit">count</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="n">percent</span><span class="p">))</span> <span class="o">'</span><span class="ss">default</span> <span class="mi">16</span><span class="p">)))))</span>
+  <span class="p">(</span><span class="n">table</span> <span class="mi">2</span> <span class="n">picts</span> <span class="n">lc-superimpose</span> <span class="n">cc-superimpose</span> <span class="mi">5</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>We can test the function separately from the Tetris program, by generating some test data and running it in the DrRacket REPL:</p>
+
+<div class="figure"><img src="/img/a036/block-statistics-pict.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The GUI changes for displaying block statistics should look familiar by now: we&rsquo;ll create a <code>group-box-panel%</code> to surround the statistics picture and a canvas to hold the picture, similar to what we did for showing the next block. The <code>block-statistics-panel</code> is added to the <code>game-panel</code>, which means that the statistics will show up to the right of the other controls on the window:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">block-statistics-panel</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">group-box-panel%</span>
+                              <span class="p">[</span><span class="n">label</span> <span class="s2">"Block Statistics"</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">font</span> <span class="n">game-font</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">border</span> <span class="mi">10</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">parent</span> <span class="n">game-panel</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">stretchable-width</span> <span class="no">#f</span><span class="p">]</span>
+                              <span class="p">[</span><span class="n">stretchable-height</span> <span class="no">#f</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">on-block-statistics-paint</span> <span class="n">canvas</span> <span class="n">dc</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">clear</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pict</span> <span class="p">(</span><span class="n">make-statistics-pict</span> <span class="n">the-block-statistics</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((quote._~23~25kernel)._let-values))" style="color: inherit">let-values</a></span> <span class="p">([(</span><span class="n">dc-width</span> <span class="n">dc-height</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-size</span><span class="p">)])</span>
+      <span class="p">(</span><span class="n">draw-pict</span> <span class="n">pict</span>
+                 <span class="n">dc</span>
+                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-width</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">)</span>
+                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-height</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">pict</span><span class="p">))</span> <span class="mi">2</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">block-statistics</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">sample-pict</span> <span class="p">(</span><span class="n">make-statistics-pict</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">))))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">canvas%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">block-statistics-panel</span><span class="p">]</span>
+         <span class="c1">;; The height of the statistics pict will not change, but the width</span>
+         <span class="c1">;; will, as the numbers grow, leave some room in the canvas!</span>
+         <span class="p">[</span><span class="n">min-width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">50</span> <span class="p">(</span><span class="n">pict-width</span> <span class="n">sample-pict</span><span class="p">)))]</span>
+         <span class="p">[</span><span class="n">min-height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">10</span> <span class="p">(</span><span class="n">pict-height</span> <span class="n">sample-pict</span><span class="p">)))]</span>
+         <span class="p">[</span><span class="n">stretchable-width</span> <span class="no">#t</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">stretchable-height</span> <span class="no">#t</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">paint-callback</span> <span class="n">on-block-statistics-paint</span><span class="p">])))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And here is the result:</p>
+
+<div class="figure"><img src="/img/a036/completed-game.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="final-thoughts">Final thoughts</h2>
+
+<p>There are a lot of things which would require additional polishing in this GUI application, for example, things don&rsquo;t quite line up and resizing the window is good, but not great. Laying out the GUI controls is one area where a lot of time can be spent when writing GUI applications. The Racket GUI library supports layout control by specifying the minimum widget dimensions and whether they are allowed to stretch or not, alignment, spacing and borders for container controls, nesting container controls and even writing your own container control with its own custom rules. However, all these topics were omitted from this blog post, to keep things simple (or at least, simpler).</p>
+
+<p>In this program, there is also lot of game state kept around (current block, block position, next block, filled lines, score, level, etc), which are all global variables and <code>start-game</code> is really a state initialization function. For a blog post, I decided to do this, since this is the simplest design which allows incremental code updates. As an application grows in complexity, it is a good idea to be more disciplined the global state and perhaps group it in a structure or object.</p>
+
+<p>Finally, there are several variations on the Tetris game, and this blog post is not really about implementing them all, however, if you like a particular Tetris feature that is missing, why not try to add it yourself?</p>
+
+<p>The full code for the program presented in this blog post is available in this <a href="https://gist.github.com/alex-hhh/2233aee39852f4e0aead4af4cafb40d5">GitHub Gist</a></p>
+
+<div class="footnotes">
+ <ol>
+  <li id="2020-03-28-a-game-of-tetris-2-footnote-1-definition" class="footnote-definition">
+   <p>&hellip; <code>reflow-container</code> and <code>stretchable-width</code> are beyond the scope of this blog post&nbsp;<a href="#2020-03-28-a-game-of-tetris-2-footnote-1-return">↩</a></p></li></ol></div>
+  <footer>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2020/03/a-game-of-tetris.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; A Game of Tetris (gameplay)</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <div class="fine-print">© Alex Harsányi, licensed under
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+          , and there's a <a href="/Cookies.html">cookie policy</a>.
+        </div>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

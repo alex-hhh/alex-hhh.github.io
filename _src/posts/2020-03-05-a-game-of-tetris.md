@@ -1,4 +1,4 @@
-    Title: A Game of Tetris
+    Title: A Game of Tetris (gameplay)
     Date: 2020-03-05T16:24:02
     Thumbnail: /img/a035/thumb.png
     Tags: racket
@@ -288,8 +288,7 @@ we need to define a game specific frame class to intercept these keyboard
 events.  `tetris-frame%` acts like a `frame%` (which are used for toplevel
 windows), except it overrides the `on-subwindow-char` method and passes on the
 keyboard events to `on-tetris-event` function, which will be defined later.
-Note that keyboard events are passed to the super class first, the method only
-handles events which were not handled by the superclass: failure to do so
+Note that keyboard events are also passed to the super class, failure to do so
 would make the application unresponsive to usual keyboard events (the same
 rule applies for mouse events, but mouse events are not used by this
 application):
@@ -299,10 +298,8 @@ application):
   (class frame%
     (init) (super-new)
     (define/override (on-subwindow-char receiver event)
-      (define handled? (super on-subwindow-char receiver event))
-      (if handled?
-          #t                            ; one of the system events
-          (on-tetris-event event)))))
+      (on-tetris-event event)
+      (super on-subwindow-char receiver event))))
 ```
 
 With the `tetris-frame%` created, the toplevel frame of the game can be
@@ -764,7 +761,7 @@ track the filled lines, in addition to the current block, as part of the
 program state, and `start-game` will need to initialize this state correctly
 (since `start-game` can be called multiple times, to re-start a game):
 
-```
+```racket
 (define filled-lines '())
 
 (define (start-game)
@@ -894,7 +891,7 @@ are represented by the dot (.) character:
 With `full-line?` written, the completed lines can be "collapsed" simply by
 removing them from the list of filled lines:
 
-```
+```racket
 (define (remove-full-lines filled-lines)
   (-> (listof valid-filled-line?) (listof valid-filled-line?))
   (for/list ([line (in-list filled-lines)] #:unless (full-line? line))
@@ -912,7 +909,7 @@ after a block is merged.  Since the game is now complete, `spawn-new-block`
 has also been updated to pick a random piece from the list of blocks, instead
 of cycling through the blocks:
 
-```
+```racket
 (define (spawn-new-block)
   (when current-block
     (set! filled-lines (merge-block current-block block-x block-y filled-lines))
