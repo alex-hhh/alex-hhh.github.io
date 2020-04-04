@@ -35,7 +35,7 @@ do that by saving the data for each timezone in a separate file and only load
 them when needed.  Finally we'll try to reduce the space used on disk by
 compressing the data files and decompressing them in memory.
 
-![](/img/a028/timezone-map-2.png)
+![World TimeZones](/img/a028/timezone-map-2.png)
 
 ## Short refresher
 

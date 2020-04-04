@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -99,8 +98,8 @@
 
 <p>The plot below shows the elevation and grade plotted against distance for a hiking activity. Elevation values range between 850 and 1300 meters, and the grade values range from &ndash;30% to about 30%, so simply plotting them together would not produce a nice looking result. Instead the data needs to be transformed and some extra plot parameters need to be used to show a correct scale for both data series.</p>
 
-<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="Combined Elevation and Grade Plot" />
+ <p class="caption">Combined Elevation and Grade Plot</p></div>
 
 <p>This blog post aims to illustrate a general mechanism for constructing dual axis plots, but since it is difficult to have an abstract discussion, all the examples will show how to plot elevation and grade (slope) data from a hiking activity. However, the same idea can be used for any type of data.</p>
 
@@ -140,8 +139,8 @@
 
 <p>Which will produce two plots side-by-side:</p>
 
-<div class="figure"><img src="/img/a034/grade-elevation-separate.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a034/grade-elevation-separate.svg" alt="Grade and Elevation as Separate Plots" />
+ <p class="caption">Grade and Elevation as Separate Plots</p></div>
 
 <p>How can we combine these two plots into a single one? After all, both the elevation and grade data samples are from the same hiking activity and they share the same X axis (distance, in this case). Well, the plot package allows rendering multiple data sets on the same plot, and it does allow defining a &ldquo;far Y axis&rdquo;, which is the axis on the right of the plot. So, in the first try, we could write:</p>
 
@@ -171,8 +170,8 @@
 
 <p>Unfortunately, this does not produce a good result: the elevation data series shows up relatively OK on the plot, but the grade series is barely visible as it hovers around the 0 axis. It does make sense, however: there is a single X axis (distance), but also a single Y axis, which shows both elevation and grade. Since elevation values range between 850 and 1300 meters, and the grade values range from &ndash;30% to about 30%, the Y axis will display a data range from &ndash;30 to about 1300. This range represents about 33% of the elevation data range, but only about 4% of the grade data range, so neither plots will occupy the entire Y range and the grade plot, using only 4% of the plot area, will be practically useless.</p>
 
-<div class="figure"><img src="/img/a034/grade-elevation-combined.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a034/grade-elevation-combined.svg" alt="Combined Grade and Elevation Plot, Wrong Scale" />
+ <p class="caption">Combined Grade and Elevation Plot, Wrong Scale</p></div>
 
 <h2 id="dual-axis-plot">Dual Axis Plot</h2>
 
@@ -316,8 +315,8 @@
 
 <p>&hellip; and the result is more pleasing:</p>
 
-<div class="figure"><img src="/img/a034/grade-elevation-1.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a034/grade-elevation-1.svg" alt="Combined Grade and Elevation Plot, no Axis Ticks for Elevation" />
+ <p class="caption">Combined Grade and Elevation Plot, no Axis Ticks for Elevation</p></div>
 
 <h2 id="drawing-labels-for-both-data-series">Drawing Labels for Both Data Series</h2>
 
@@ -419,13 +418,17 @@
 
 <p>which produces the following plot:</p>
 
-<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a034/grade-elevation.svg" alt="Combined Elevation and Grade Plot" />
+ <p class="caption">Combined Elevation and Grade Plot</p></div>
 
 <h2 id="final-thoughts">Final thoughts</h2>
 
 <p>Can this technique be extended for more than two data series? Well, yes and no: any number of data series can be transformed into the base data range by creating individual transforms, but the problem is that the Racket plot package only allows two Y axis on the plot, left and right (also called near and far axis), and this means that no axis can be displayed for the additional data series. In fact, this blog post is inspired by a <a href="https://github.com/racket/plot/issues/25">Racket Plot Package Issue</a>, which illustrates this limitation of the plot package.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -472,14 +475,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

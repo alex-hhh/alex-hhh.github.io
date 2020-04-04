@@ -54,7 +54,7 @@ and this blog post is not legal advice.  I only address the technical problem
 of distributing applications as bytecode code files.  I don't know if this is
 sufficient to comply with the current Racket license.
 
-![](/img/a030/crocodile_safety.jpg)
+![Crocodile Safety](/img/a030/crocodile_safety.jpg)
 
 -----
 

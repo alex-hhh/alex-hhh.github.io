@@ -1,6 +1,6 @@
 <div class"index-entry">
   <div>
-    <h2 class="index-entry"><a href='@|uri-path|'>@|title|</a></h2>
+    <h2 class="index-entry"><a href='@|uri-path|' title='@|title|'>@|title|</a></h2>
     <p class='date-and-tags'>@|date| :: @|tags|</p>
   </div>
   @(if thumbnail
@@ -20,4 +20,5 @@
   @|content-only|
   @(when more?
   @list{<footer> <a href='@|uri-path|'>&hellip; more &hellip;</a> </footer>})})
+  <hr>
 </div>

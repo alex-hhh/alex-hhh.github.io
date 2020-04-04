@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -99,8 +98,8 @@
 
 <p>If you are not familiar with the <a href="https://en.wikipedia.org/wiki/Tetris">Tetris</a>, you can watch a (really bad) game play below. In the game, tiles fall from above and accumulate at the bottom of the playing field and any lines that are completely filled will disappear, and all the accumulated squares will collapse below, making room for more pieces. You can play the game forever, assuming you are skilled enough to match and complete full lines to make them disappear.</p>
 
-<div class="figure"><img src="/img/a035/tetris-play.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-play.gif" alt="Tetris Gameplay" />
+ <p class="caption">Tetris Gameplay</p></div>
 
 <hr />
 
@@ -132,8 +131,8 @@
 
 <h2 id="the-tetris-blocks">The Tetris Blocks</h2>
 
-<div class="figure"><img src="/img/a035/tetris-blocks.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-blocks.png" alt="The Tetris Blocks" />
+ <p class="caption">The Tetris Blocks</p></div>
 
 <p>There are seven shapes that make up the set of blocks used in Tetris, all of them fit into a 4x4 grid. The color of the blocks is not important for the game, except that it makes blocks easier to differentiate. The blocks are named using letters which roughly resemble their shape (from left to right): I, Q (from square), L, J, T, Z and S. In Racket, each block can be defined as a list of strings, with the dot (.) character stating for an empty square and a letter standing for a filled in one:</p>
 
@@ -327,15 +326,15 @@
 
 <p>The graphics can be inspected directly in the DrRacket REPL, by running <code>(block-&gt;pict T-Block)</code> to display a single block, or building a list of these pictures using <code>(map block-&gt;pict all-blocks)</code>:</p>
 
-<div class="figure"><img src="/img/a035/block-graphics.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/block-graphics.png" alt="Block Picts in DrRacket REPL" />
+ <p class="caption">Block Picts in DrRacket REPL</p></div>
 
 <p>The graphics representation prints out the tetris block using the entire 4x4 grid. This is not desirable in the final game, but it is useful while developing the application, as we can see how each piece aligns with the rest. Once the application is ready, these grid lines can be removed by using the <code>ghost</code> pict constructor on the <code>rectangle</code> one.</p>
 
 <h2 id="block-rotation">Block Rotation</h2>
 
-<div class="figure"><img src="/img/a035/all-tetris-blocks.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/all-tetris-blocks.png" alt="Tetris Blocks And Their Rotations" />
+ <p class="caption">Tetris Blocks And Their Rotations</p></div>
 
 <p>Blocks can be rotated clockwise and counter clockwise during the game, in 90 degree increments, so we need to implement a mechanism to rotate the blocks. It is not sufficient to just rotate the graphics representation (the pict library provides a <code>rotate</code> drawing adjuster), instead we need to construct new blocks which are rotated. This is needed because the blocks will also be used to determine if they collide with the bottom of the field or other blocks already at the bottom.</p>
 
@@ -393,8 +392,8 @@
 </td></tr></tbody></table>
 </div>
 
-<div class="figure"><img src="/img/a035/all-j-block-rotations.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/all-j-block-rotations.png" alt="All Rotations of the J Block in the DrRacket REPL" />
+ <p class="caption">All Rotations of the J Block in the DrRacket REPL</p></div>
 
 <p>Rotating counter clockwise could also be done using string and list manipulation, but since we already have a function to rotate clockwise, which we now know it works as expected, ca can define counter clockwise rotation simply as rotating a block clockwise 3 times. This is a bit inefficient, but it is fast enough; there will be a discussion on efficiency at the end of this blog post. For now, the aim is to get things working (and working correctly) with a minimum of effort:</p>
 
@@ -456,8 +455,8 @@
 
 <p>There&rsquo;s now enough functionality implemented that we can start working on the actual game. To put things together, we need a <code>frame%</code> for the toplevel window, a <code>canvas%</code> to draw the playing field, a <code>timer%</code> to update the game state (which in tetris means making the pieces fall) and some mechanism to read keyboard input from the player and move the pieces.</p>
 
-<div class="figure"><img src="/img/a035/tetris-play-0.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-play-0.gif" alt="Falling Blocks with Translation and Rotation" />
+ <p class="caption">Falling Blocks with Translation and Rotation</p></div>
 
 <p>Looking through the <a href="https://docs.racket-lang.org/gui/index.html">Racket GUI</a>, one can easily find the documentation for creating frames, various types of widgets, or timers, but it is not immediately obvious how to handle keyboard input. This is because keyboard input is handled by each individual widget itself, usually by overriding the <code>on-subwindow-char</code> method of a relevant widget. In our case, we need to define a game specific frame class to intercept these keyboard events. <code>tetris-frame%</code> acts like a <code>frame%</code> (which are used for toplevel windows), except it overrides the <code>on-subwindow-char</code> method and passes on the keyboard events to <code>on-tetris-event</code> function, which will be defined later. Note that keyboard events are also passed to the super class, failure to do so would make the application unresponsive to usual keyboard events (the same rule applies for mouse events, but mouse events are not used by this application):</p>
 
@@ -873,8 +872,8 @@
 
 <p>This is all that is needed to keep the blocks inside the playing field, next we&rsquo;ll look into making blocks accumulate at the bottom of the field. You can find the updated program at <a href="https://gist.github.com/alex-hhh/c9e1298515a90aa97f9fb140abba5cca">this GitHub Gist</a>.</p>
 
-<div class="figure"><img src="/img/a035/tetris-play-1.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-play-1.gif" alt="Blocks Staying Inside the Playing Field" />
+ <p class="caption">Blocks Staying Inside the Playing Field</p></div>
 
 <h2 id="accumulating-blocks-at-the-bottom">Accumulating Blocks at the Bottom</h2>
 
@@ -948,8 +947,8 @@
 
 <p>With <code>filled-lines-&gt;pict</code> it is now easy to visualize how the filled lines look like:</p>
 
-<div class="figure"><img src="/img/a035/filled-lines.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/filled-lines.png" alt="Inspecting Filled Lines in DrRacket REPL" />
+ <p class="caption">Inspecting Filled Lines in DrRacket REPL</p></div>
 
 <p>There are two operations that we need to implement: detecting if a block collides with the existing filled lines, and merging a block into the filled lines. These are relatively complex operations, so we&rsquo;ll define some helper functions first.</p>
 
@@ -1467,8 +1466,8 @@
 
 <p>The application now starts to resemble a Tetris game, and you can find it in <a href="https://gist.github.com/alex-hhh/4d1b07c1672edf8f62e08a1a5012b923">this GitHub Gist</a>. If you got this far into the blog post, the remaining parts are easy, so there is no reason not to complete it.</p>
 
-<div class="figure"><img src="/img/a035/tetris-play-2.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-play-2.gif" alt="Accumulating Blocks at the Bottom of the Play Field" />
+ <p class="caption">Accumulating Blocks at the Bottom of the Play Field</p></div>
 
 <h2 id="collapsing-the-complete-lines">Collapsing the Complete Lines</h2>
 
@@ -1558,8 +1557,8 @@
 
 <p>So there it is, a Tetris game implemented in about 700 lines of Racket code, together with comments and unit tests. You can find the final program in <a href="https://gist.github.com/alex-hhh/2ceb76ef29e964ae00e06edaa389b75c">this GitHub Gist</a>. The program is still missing several features that would make it a user friendly game, perhaps the most important one is that it does not keep score. This, and other aspects will be discussed in a future blog post.</p>
 
-<div class="figure"><img src="/img/a035/tetris-play-3.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/tetris-play-3.gif" alt="Collapsing Completed Lines" />
+ <p class="caption">Collapsing Completed Lines</p></div>
 
 <h2 id="final-thoughts">Final Thoughts</h2>
 
@@ -1583,11 +1582,15 @@
 
 <p>The firsts reaction is to address the immediate problem: contracts are slow, so we disable them. After all, &ldquo;we know&rdquo; that the program is correct and nobody wants a slow program. Perhaps you would also try to implement <code>rotate-counter-clockwise</code> more efficiently, struggling with some list and string manipulation. But sometimes, it is worth taking a step back and looking at the big picture. And in the case of Tetris, the big picture is very small indeed, here is in its entirety:</p>
 
-<div class="figure"><img src="/img/a035/all-tetris-blocks.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a035/all-tetris-blocks.png" alt="Tetris Blocks and Their Rotations" />
+ <p class="caption">Tetris Blocks and Their Rotations</p></div>
 
 <p>The key observation is that there are only 28 possible combinations for all the Tetris blocks. This means that all block rotations can be pre-calculated, together with the pict corresponding to each one as well as the bounding box for collision checks. To implement block rotations, all we would have to to is move up and down in the table. To draw the blocks we simply keep the current pict around until we need it. Even filled lines only change when a block is merged, so a pict for them can be pre-calculated. This type of optimization would be many times faster than the best you could achieve by removing contracts or hand optimizing code, and you still get to keep the simplicity and verification code. Something to think about.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -1634,14 +1637,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

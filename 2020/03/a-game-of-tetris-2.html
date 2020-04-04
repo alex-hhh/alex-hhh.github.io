@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -97,8 +96,8 @@
 <p>The <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post introduced the Tetris game mechanics and made the game playable. In this blog post we&rsquo;ll look at how to build an actual GUI application around the game mechanics: we&rsquo;ll keep score, increase difficulty, peek at the next block and more. As we do that, we&rsquo;ll explore some more interesting things you can do with the Racket pict library, and look at some of the GUI facilities available in Racket.</p>
 <!-- more-->
 
-<div class="figure"><img src="/img/a036/completed-game.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/completed-game.png" alt="Tetris Game With Completed GUI" />
+ <p class="caption">Tetris Game With Completed GUI</p></div>
 
 <p>If you want to follow along with adding features to the program, this is the <a href="https://gist.github.com/alex-hhh/2ceb76ef29e964ae00e06edaa389b75c">program we start with</a>, it is the last program from the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post. Also if you are in a hurry, you can download the complete program from this <a href="https://gist.github.com/alex-hhh/2233aee39852f4e0aead4af4cafb40d5">GitHub Gist</a>.</p>
 
@@ -138,8 +137,8 @@
 
 <p>The advantage of using the pict library is that the image itself can be designed inside DrRacket, before it is added to the game itself:</p>
 
-<div class="figure"><img src="/img/a036/game-over-pict.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/game-over-pict.png" alt="The Game Over Pict" />
+ <p class="caption">The Game Over Pict</p></div>
 
 <p>With the picture in place, we need to update the paint function, <code>on-tetris-paint</code>, to show the <code>game-over-pict</code> at the end of the game. The end of the game is detected when the <code>current-block</code> is <code>#f</code> (meaning there is no current block), so the game over picture is drawn when <code>current-block</code> is <code>#t</code>. The drawing code also obtains the size of the drawing area and centers the picture in this area. This block is added as the last form to <code>on-tetris-paint</code>:</p>
 
@@ -165,20 +164,20 @@
 </td></tr></tbody></table>
 </div>
 
-<div class="figure"><img src="/img/a036/game-over.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/game-over.png" alt="Game Over Overlay Over The Playing Field" />
+ <p class="caption">Game Over Overlay Over The Playing Field</p></div>
 
 <h2 id="restart-game-button">Restart Game Button</h2>
 
 <p>The next improvement is to add a &ldquo;Start New Game&rdquo; button to the form, so the user does not have to type the <code>(start-game)</code> command in the REPL to start a new game. A button can be added using a <code>button%</code> instance, but in the current application we don&rsquo;t have a place where to put it. The current application just uses a <code>canvas%</code> inside a <code>frame%</code> and all the drawing is done inside this canvas. The layout is very simple:</p>
 
-<div class="figure"><img src="/img/a036/old-layout.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/old-layout.svg" alt="Original Widget Hierarchy" />
+ <p class="caption">Original Widget Hierarchy</p></div>
 
 <p>To make room for the new widgets which we will add to the application, we must introduce container controls, these are controls which can hold widgets such as buttons, messages or canvas objects. These widgets and containers form a tree hierarchy and, at the end of the blog post, the widget hierarchy will look like the picture below. Even for a simple application like this, the widget hierarchy can become large and complex very quickly, but we will update the application step by step, to make things easier to understand.</p>
 
-<div class="figure"><img src="/img/a036/new-layout.svg" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/new-layout.svg" alt="Updated Widget Hierarchy" />
+ <p class="caption">Updated Widget Hierarchy</p></div>
 
 <p>To avoid confusion, the name of the top-level window was changed from <code>frame</code> to <code>toplevel</code> and the playing field canvas was renamed from <code>canvas</code> to <code>playing-field</code>, since there will be multiple canvas objects in the application.</p>
 
@@ -266,8 +265,8 @@
 
 <p>Order of widget instantiation is important when working with GUI controls: the horizontal and vertical panels will lay out objects in the order they are added to the control. In our code, the playing field canvas was created first and the controls panel was created second, so the playing field will be to the left of the button, if we reverse the order, the playing field would be to the right.</p>
 
-<div class="figure"><img src="/img/a036/start-new-game.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/start-new-game.png" alt="The Start New Game Button" />
+ <p class="caption">The Start New Game Button</p></div>
 
 <h2 id="keeping-score">Keeping Score</h2>
 
@@ -365,8 +364,8 @@
 </td></tr></tbody></table>
 </div>
 
-<div class="figure"><img src="/img/a036/keeping-score.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/keeping-score.png" alt="Game Score Display" />
+ <p class="caption">Game Score Display</p></div>
 
 <h2 id="increasing-difficulty">Increasing Difficulty</h2>
 
@@ -436,8 +435,8 @@
 
 <p>Increasing the play speed is not something that can be captured in a screen shot, so you need to try it out:</p>
 
-<div class="figure"><img src="/img/a036/increasing-difficulty.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/increasing-difficulty.png" alt="The Game Level Display" />
+ <p class="caption">The Game Level Display</p></div>
 
 <h2 id="peeking-at-the-next-block">Peeking at the Next Block</h2>
 
@@ -583,8 +582,8 @@
 
 <p>If you try the code above, you will see that, while working, the blocks are not drawn in the center of the canvas. This is because all the blocks are defined inside a 4x4 grid, but they are not centered inside this grid. Here is what the blocks look again:</p>
 
-<div class="figure"><img src="/img/a036/tetris-blocks.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/tetris-blocks.png" alt="The Tetris Blocks" />
+ <p class="caption">The Tetris Blocks</p></div>
 
 <p>Since we already defined a function to determine the bounding box of a block inside its 4x4 grid (the function is <code>block-bounding-box</code> and was defined in the <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post), we can use <code>inset/clip</code>, which is part of the <a href="https://docs.racket-lang.org/pict/index.html">pict</a> package, to trim a Tetris block so it contains only the actual block:</p>
 
@@ -620,13 +619,13 @@
 
 <p>Here is what the trimmed blocks look like:</p>
 
-<div class="figure"><img src="/img/a036/all-blocks-trimmed.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/all-blocks-trimmed.png" alt="The Tetris Blocks, Trimmed to Size" />
+ <p class="caption">The Tetris Blocks, Trimmed to Size</p></div>
 
 <p>The next block canvas pain function, <code>on-next-block-paint</code>, can now use the <code>trim-block-pict</code> instead of <code>block-&gt;pict</code>, and blocks will be centered inside the canvas:</p>
 
-<div class="figure"><img src="/img/a036/next-block.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/next-block.png" alt="The Next Block Display" />
+ <p class="caption">The Next Block Display</p></div>
 
 <h2 id="showing-block-statistics">Showing Block Statistics</h2>
 
@@ -718,8 +717,8 @@
 
 <p>We can test the function separately from the Tetris program, by generating some test data and running it in the DrRacket REPL:</p>
 
-<div class="figure"><img src="/img/a036/block-statistics-pict.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/block-statistics-pict.png" alt="The Block Statistics Picture" />
+ <p class="caption">The Block Statistics Picture</p></div>
 
 <p>The GUI changes for displaying block statistics should look familiar by now: we&rsquo;ll create a <code>group-box-panel%</code> to surround the statistics picture and a canvas to hold the picture, similar to what we did for showing the next block. The <code>block-statistics-panel</code> is added to the <code>game-panel</code>, which means that the statistics will show up to the right of the other controls on the window:</p>
 
@@ -791,8 +790,8 @@
 
 <p>And here is the result:</p>
 
-<div class="figure"><img src="/img/a036/completed-game.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a036/completed-game.png" alt="Tetris Game With Completed GUI" />
+ <p class="caption">Tetris Game With Completed GUI</p></div>
 
 <h2 id="final-thoughts">Final thoughts</h2>
 
@@ -809,6 +808,10 @@
   <li id="2020-03-28-a-game-of-tetris-2-footnote-1-definition" class="footnote-definition">
    <p>&hellip; <code>reflow-container</code> and <code>stretchable-width</code> are beyond the scope of this blog post&nbsp;<a href="#2020-03-28-a-game-of-tetris-2-footnote-1-return">↩</a></p></li></ol></div>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -850,14 +853,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

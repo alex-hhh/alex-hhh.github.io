@@ -69,9 +69,24 @@ code {
 }
 
 .figure {
-  height: auto;
-  display: block;
-  margin: 0 auto;
+    height: auto;
+    display: block;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*
+.caption {
+    font-size: 9px;
+    color: #777777;
+    text-align: center;
+}
+*/
+
+.caption {
+    display: none;
 }
 
 /* Make sure that images within blog articles never take more width than the
@@ -83,10 +98,10 @@ code {
    behavior.
 */
 article img {
-  max-width: 80%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+    max-width: 80%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
 
 /* for some strange reason, the next,prev icons are white on a white
@@ -142,6 +157,90 @@ footer {
 }
 
 .fine-print {
-    text-align: center;
+    text-align: right;
     font-size: small;
+    margin-bottom: 40px;
+}
+
+
+/*............................................................... OOT ....*/
+
+/** Table of contents CSS objects, based off
+ * https://github.com/teesloane/ootliner, adapted to match the look-and-feel
+ * of this blog.
+ */
+
+.toc_base {
+    max-height: 90vh;
+    /* overflow-y: scroll; */
+    padding-right: 24px !important;
+    background-color: #343a40 !important; /* Same color as the nav-bar */
+    color: rgba(255,255,255,.75);
+    position: fixed;
+    top: 10vh;
+    opacity: 0.95;
+}
+
+.toc_full {
+    left: 0;
+    padding: 32px 8px 32px 8px !important;
+    margin: 0;
+    transition: all 0.7s ease;
+}
+
+.toc_mini {
+    left: 0px !important;
+    padding: 32px 8px 32px 0px !important;
+    margin: 0 !important;
+    transition: all 0.7s ease;
+}
+
+.toc_entry {
+    font-family: 'Roboto Condensed',Georgia,"Times New Roman",Times,sans-serif;
+    list-style-type: none;
+    padding: 4px;
+    margin: 0px;
+    cursor: pointer;
+    max-width: 500px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.toc_entry:hover {
+    color: rgba(255,255,255,1.0);
+}
+
+.toc_h_mini {
+    padding-left: 0 !important;
+}
+
+.toc_h1 {
+    font-size: 1.0rem;
+    font-weight: bold;
+}
+
+.toc_h2 {
+    font-size: 1.0rem;
+    font-weight: 400;
+    padding-left: 1rem;
+}
+
+.toc_h3 {
+    font-size: 1.0rem;
+    padding-left: 2rem;
+}
+
+.toc_h4 {
+    font-size: 0.8rem;
+    padding-left: 3rem;
+}
+
+.toc_h5 {
+    font-size: 0.8rem;
+    padding-left: 3rem;
+}
+
+.toc_h6 {
+    font-size: 0.8rem;
+    padding-left: 3rem;
 }

@@ -18,7 +18,7 @@ time for the skiing run is shown as 9:48am, even though it would have been
 5:48am in Western Australia where I live.  The only "hint" is a time zone
 abbreviation in the session inspector:
 
-![](/img/a032/local-time.png)
+![Local Time Displayed for a Session in ActivityLog2](/img/a032/local-time.png)
 
 All the other places where timestamps are shown, such as the activity list or
 the lap viewer will display the time relative to the destination location and
@@ -215,7 +215,7 @@ The application already had a mechanism of running a batch task against the
 database, together with a progress bar and a mechanism to cancel the jobs, so
 it was easy to add this upgrade code to the application GUI:
 
-![](/img/a032/update-time-zones.png)
+![Updating Time Zones for Existing Activities](/img/a032/update-time-zones.png)
 
 ## Allowing the User to Edit the Time Zone
 
@@ -228,7 +228,7 @@ can be done: the first one is the session inspector headline which allows
 switching to "Edit" mode, to allow the user to quickly adjust the title, sport
 and now time zone:
 
-![](/img/a032/edit-headline.png)
+![Edit Timezone in the Session Headline](/img/a032/edit-headline.png)
 
 The second place is the dialog where the full activity details can be edited.
 As a side note, the activity editor was one of the first things I wrote for
@@ -236,7 +236,7 @@ ActivityLog2, doing it while still learning Racket, and the code base was
 "less than ideal", I would probably approach the task differently if I had to
 do it again, but my opportunities to do things a second time are limited...
 
-![](/img/a032/activity-edit.png)
+![Edit Timezone in the Session Editor](/img/a032/activity-edit.png)
 
 ## Package Dependency Management
 

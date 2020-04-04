@@ -16,7 +16,7 @@ collapse below, making room for more pieces.  You can play the game forever,
 assuming you are skilled enough to match and complete full lines to make them
 disappear.
 
-![](/img/a035/tetris-play.gif)
+![Tetris Gameplay](/img/a035/tetris-play.gif)
 
 ----
 
@@ -43,7 +43,7 @@ these libraries are part of the standard Racket installation.
 
 ## The Tetris Blocks
 
-![](/img/a035/tetris-blocks.png)
+![The Tetris Blocks](/img/a035/tetris-blocks.png)
 
 There are seven shapes that make up the set of blocks used in Tetris, all of
 them fit into a 4x4 grid.  The color of the blocks is not important for the
@@ -180,7 +180,7 @@ The graphics can be inspected directly in the DrRacket REPL, by running
 `(block->pict T-Block)` to display a single block, or building a list of these
 pictures using `(map block->pict all-blocks)`:
 
-![](/img/a035/block-graphics.png)
+![Block Picts in DrRacket REPL](/img/a035/block-graphics.png)
 
 The graphics representation prints out the tetris block using the entire 4x4
 grid.  This is not desirable in the final game, but it is useful while
@@ -190,7 +190,7 @@ Once the application is ready, these grid lines can be removed by using the
 
 ## Block Rotation
 
-![](/img/a035/all-tetris-blocks.png)
+![Tetris Blocks And Their Rotations](/img/a035/all-tetris-blocks.png)
 
 Blocks can be rotated clockwise and counter clockwise during the game, in 90
 degree increments, so we need to implement a mechanism to rotate the blocks.
@@ -234,7 +234,7 @@ visually inspect them for correctness:
      (cons (rotate-clockwise (car rotations)) rotations))))
 ```
 
-![](/img/a035/all-j-block-rotations.png)
+![All Rotations of the J Block in the DrRacket REPL](/img/a035/all-j-block-rotations.png)
 
 Rotating counter clockwise could also be done using string and list
 manipulation, but since we already have a function to rotate clockwise, which
@@ -277,7 +277,7 @@ window, a `canvas%` to draw the playing field, a `timer%` to update the game
 state (which in tetris means making the pieces fall) and some mechanism to
 read keyboard input from the player and move the pieces.
 
-![](/img/a035/tetris-play-0.gif)
+![Falling Blocks with Translation and Rotation](/img/a035/tetris-play-0.gif)
 
 Looking through the [Racket GUI][racket-gui], one can easily find the
 documentation for creating frames, various types of widgets, or timers, but it
@@ -544,7 +544,7 @@ This is all that is needed to keep the blocks inside the playing field, next
 we'll look into making blocks accumulate at the bottom of the field.  You can
 find the updated program at [this GitHub Gist][gist-2].
 
-![](/img/a035/tetris-play-1.gif)
+![Blocks Staying Inside the Playing Field](/img/a035/tetris-play-1.gif)
 
 ## Accumulating Blocks at the Bottom
 
@@ -592,7 +592,7 @@ functions, but they are omitted from this blog post:
 With `filled-lines->pict` it is now easy to visualize how the filled lines
 look like:
 
-![](/img/a035/filled-lines.png)
+![Inspecting Filled Lines in DrRacket REPL](/img/a035/filled-lines.png)
 
 There are two operations that we need to implement: detecting if a block
 collides with the existing filled lines, and merging a block into the filled
@@ -873,7 +873,7 @@ The application now starts to resemble a Tetris game, and you can find it in
 [this GitHub Gist][gist-3].  If you got this far into the blog post, the
 remaining parts are easy, so there is no reason not to complete it.
 
-![](/img/a035/tetris-play-2.gif)
+![Accumulating Blocks at the Bottom of the Play Field](/img/a035/tetris-play-2.gif)
 
 ## Collapsing the Complete Lines
 
@@ -930,7 +930,7 @@ that would make it a user friendly game, perhaps the most important one is
 that it does not keep score.  This, and other aspects will be discussed in a
 future blog post.
 
-![](/img/a035/tetris-play-3.gif)
+![Collapsing Completed Lines](/img/a035/tetris-play-3.gif)
 
 ## Final Thoughts
 
@@ -973,7 +973,7 @@ string manipulation.  But sometimes, it is worth taking a step back and
 looking at the big picture.  And in the case of Tetris, the big picture is
 very small indeed, here is in its entirety:
 
-![](/img/a035/all-tetris-blocks.png)
+![Tetris Blocks and Their Rotations](/img/a035/all-tetris-blocks.png)
 
 The key observation is that there are only 28 possible combinations for all
 the Tetris blocks.  This means that all block rotations can be pre-calculated,

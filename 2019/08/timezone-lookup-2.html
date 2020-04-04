@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -103,8 +102,8 @@
 
 <p>In this blog post we&rsquo;ll look at how to improve the load times: we&rsquo;ll try to use the <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> and <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> built-in Racket functions to save the prepared features to disk once and read them when using the lookup program, but it turns out that these functions are slower than just reading the GeoJSON data directly. Next, we&rsquo;ll try the Fast-Load Serialization functions and these will provide significantly faster load times. After that, we&rsquo;ll explore how to avoid loading the entire data set into memory, and we&rsquo;ll do that by saving the data for each timezone in a separate file and only load them when needed. Finally we&rsquo;ll try to reduce the space used on disk by compressing the data files and decompressing them in memory.</p>
 
-<div class="figure"><img src="/img/a028/timezone-map-2.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a028/timezone-map-2.png" alt="World TimeZones" />
+ <p class="caption">World TimeZones</p></div>
 
 <h2 id="short-refresher">Short refresher</h2>
 
@@ -785,6 +784,10 @@
 
 <p>Finally, the sources for the programs presented in this Blog Post are available <a href="https://github.com/alex-hhh/time-zone-lookup-tests">here</a>.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -831,14 +834,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

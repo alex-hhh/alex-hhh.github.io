@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -101,8 +100,8 @@
 
 <p><strong>If you are in a hurry</strong>, the full implementation of the custom test runner is available <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/test/custom-test-runner.rkt">here</a>, and the tests in the same location make use of all of its features. For an example of publishing test results to Azure Devops, see the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/azure-common.yml">azure-common.yml</a> file.</p>
 
-<div class="figure"><img src="/img/a033/azure-test-report.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a033/azure-test-report.png" alt="Racket Reports in Azure Pipelines" />
+ <p class="caption">Racket Reports in Azure Pipelines</p></div>
 
 <h2 id="rackunit-overview">Rackunit Overview</h2>
 
@@ -220,8 +219,8 @@ user error
 </td></tr></tbody></table>
 </div>
 
-<div class="figure"><img src="/img/a033/rackunit-gui-runner.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a033/rackunit-gui-runner.png" alt="DrRacket GUI Test Runner" />
+ <p class="caption">DrRacket GUI Test Runner</p></div>
 
 <h3 id="what-about-raco-test-and-the-test-submodules">What about &ldquo;raco test&rdquo; and the <code>test</code> submodules?</h3>
 
@@ -1079,6 +1078,10 @@ user error
 
 <p>The <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/test/custom-test-runner.rkt">custom-test-runner.rkt</a> provides the necessary glue between writing <a href="https://docs.racket-lang.org/rackunit/api.html">rackunit</a> tests using a familiar library and collecting and systems that can be used to manage tests and test runs when programs grow larger, providing better visibility into which tests are run, which ones are skipped and how the test performance has evolved over time. At this stage, the runner may not be sufficiently general for all complex use cases, but I believe that it can be easily extended to meet future needs.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -1125,14 +1128,9 @@ user error
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

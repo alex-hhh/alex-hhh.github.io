@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -106,8 +105,8 @@
 
 <p>Implementing the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/rkt/trend-charts/trends-heatmap.rkt">actual heatmap</a> is pretty straightforward, with less than 500 lines of Racket code, but it required several changes to the underlying libraries used by ActivityLog2, which are described in the following sections.</p>
 
-<div class="figure"><img src="/img/a031/heatmaps.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a031/heatmaps.png" alt="Interatctive HeatMaps in ActivityLog2" />
+ <p class="caption">Interatctive HeatMaps in ActivityLog2</p></div>
 
 <h3 id="trend-charts">Trend Charts</h3>
 
@@ -177,18 +176,18 @@
 
 <p>The map snip responds to mouse events, so you can drag the map with the mouse and use the scroll wheel to zoom in and out, but I wanted to add some extra functionality such as a progress bar as activities are loaded, a more obvious interface for zooming in and out, a button to reset the map to a default, in case the user zooms or moves the map away from the displayed activities. I also wanted to add a &ldquo;show map&rdquo; check box to be able to hide the map itself in case the display is too cluttered:</p>
 
-<div class="figure"><img src="/img/a031/map-control.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a031/map-control.png" alt="The MapControl snip overlayed over the map" />
+ <p class="caption">The MapControl snip overlayed over the map</p></div>
 
 <p>The trend chart&rsquo;s canvas allows inserting &ldquo;floating snips&rdquo;, which are simply snips that are not resized to fill the background, so the map control can be implemented as another snip. The <code>snip%</code>s provided by Racket are pretty simple and while they have a draw method and can react to mouse events, there are no controls which can be added to snips. This does not mean that such controls cannot be written, in fact I wrote an <code>embedded-snip-button%</code> class for use in the <a href="/2018/05/workout-editor.html">workout editor</a>, this is a simple button which can be placed into individual snips and react to click events:</p>
 
-<div class="figure"><img src="/img/a031/wkedit-demo.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a031/wkedit-demo.gif" alt="Snips in Workout Editor" />
+ <p class="caption">Snips in Workout Editor</p></div>
 
 <p>The <code>embedded-snip-button%</code> was basic and specific to the task: it was my first experiment with providing snip controls. With some more experience with snips, I decided to give it a try with some more <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/rkt/widgets/esc-controls.rkt">snip controls</a>, so I implemented a button, a label a slider, a check box and a gauge control. There are too many details about the implementation to discuss them here, but below is a demo with a snip which has all the controls on it, with the source code for the demo available <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/esc-demo.rkt">here</a>. Since this is a <code>snip%</code> it can be inserted in the Racket REPL just like a plot or a map snip, it is however intended to be used inside a <code>pasteboard%</code> as part of a GUI application.</p>
 
-<div class="figure"><img src="/img/a031/esc-control-demo.gif" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a031/esc-control-demo.gif" alt="Snip Controls Demo" />
+ <p class="caption">Snip Controls Demo</p></div>
 
 <p>These controls will not win any design awards, but they are functional and I could implement the map control snip using them. What is currently missing is layout control and currently the owning snip has to place and resize these controls, perhaps in the next iteration of a &ldquo;snip controls&rdquo; project I will automatic layout panels as well, some basic layout facilities are already implemented in the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/esc-demo.rkt">demo</a>.</p>
 
@@ -200,6 +199,10 @@
 
 <p>For now, this is good enough for my uses, but something that might require improvements in the future.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -246,14 +249,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

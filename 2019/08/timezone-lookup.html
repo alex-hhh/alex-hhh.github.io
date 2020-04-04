@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -99,8 +98,8 @@
 
 <p>In my <a href="/2019/05/timezone-visualization.html">previous blog post</a> I used geographic time zone boundaries from a GeoJSON file to create visual maps of these boundaries, but this data can also be used to determine the time zone for a certain location. In this blog post, we&rsquo;ll implement a function which takes a GPS coordinate and returns the name of the time zone where this location. For the lookup itself, we&rsquo;ll perform a point-in-polygon test on the polygons which define the time zones, determining which one contains the given coordinates. Since the time zone boundary definitions contain many thousands of points, with the top 20 timezones containing in excess of 50&prime;000 points, we&rsquo;ll need to be mindful of the performance of our lookup function.</p>
 
-<div class="figure"><img src="/img/a027/timezone-map-2.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a027/timezone-map-2.png" alt="World Timezones" />
+ <p class="caption">World Timezones</p></div>
 
 <p>The first implementation uses the GeoJSON object directly and, while the implementation is straightforward and passes a comprehensive test suite, it is also very slow, taking about 8 seconds for one lookup. Since this implementation is too slow for anything except a proof-of-concept implementation, it is time to look into speeding things up. We&rsquo;ll work on the improvements by running a profiler to measure running times for various functions and try to improve them.</p>
 
@@ -1362,6 +1361,10 @@
 
 <p>Finally, the sources for the programs presented in this Blog Post are available <a href="https://github.com/alex-hhh/time-zone-lookup-tests">here</a>.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -1408,14 +1411,9 @@
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

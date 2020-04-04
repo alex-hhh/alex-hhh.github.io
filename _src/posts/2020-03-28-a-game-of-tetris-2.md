@@ -12,7 +12,7 @@ at some of the GUI facilities available in Racket.
 
 <!-- more -->
 
-![](/img/a036/completed-game.png)
+![Tetris Game With Completed GUI](/img/a036/completed-game.png)
 
 If you want to follow along with adding features to the program, this is the
 [program we start with][gist-start], it is the last program from the
@@ -45,7 +45,7 @@ rounded rectangle:
 The advantage of using the pict library is that the image itself can be
 designed inside DrRacket, before it is added to the game itself:
 
-![](/img/a036/game-over-pict.png)
+![The Game Over Pict](/img/a036/game-over-pict.png)
 
 With the picture in place, we need to update the paint function,
 `on-tetris-paint`, to show the `game-over-pict` at the end of the game.  The
@@ -63,7 +63,7 @@ the picture in this area. This block is added as the last form to
       (draw-pict game-over-pict dc x y))))
 ```
 
-![](/img/a036/game-over.png)
+![Game Over Overlay Over The Playing Field](/img/a036/game-over.png)
 
 ## Restart Game Button
 
@@ -74,7 +74,7 @@ the current application we don't have a place where to put it.  The current
 application just uses a `canvas%`[racket] inside a `frame%`[racket] and all
 the drawing is done inside this canvas.  The layout is very simple:
 
-![](/img/a036/old-layout.svg)
+![Original Widget Hierarchy](/img/a036/old-layout.svg)
 
 To make room for the new widgets which we will add to the application, we must
 introduce container controls, these are controls which can hold widgets such
@@ -84,7 +84,7 @@ look like the picture below.  Even for a simple application like this, the
 widget hierarchy can become large and complex very quickly, but we will update
 the application step by step, to make things easier to understand.
 
-![](/img/a036/new-layout.svg)
+![Updated Widget Hierarchy](/img/a036/new-layout.svg)
 
 To avoid confusion, the name of the top-level window was changed from `frame`
 to `toplevel` and the playing field canvas was renamed from `canvas` to
@@ -149,7 +149,7 @@ and the controls panel was created second, so the playing field will be to the
 left of the button, if we reverse the order, the playing field would be to the
 right.
 
-![](/img/a036/start-new-game.png)
+![The Start New Game Button](/img/a036/start-new-game.png)
 
 ## Keeping Score
 
@@ -213,7 +213,7 @@ merged into the filled lines but before we remove them.  This happens in
   )
 ```
 
-![](/img/a036/keeping-score.png)
+![Game Score Display](/img/a036/keeping-score.png)
 
 ## Increasing Difficulty
 
@@ -271,7 +271,7 @@ program would fail with an exception.  Better not risk it.
 Increasing the play speed is not something that can be captured in a screen
 shot, so you need to try it out:
 
-![](/img/a036/increasing-difficulty.png)
+![The Game Level Display](/img/a036/increasing-difficulty.png)
 
 ## Peeking at the Next Block
 
@@ -366,7 +366,7 @@ not drawn in the center of the canvas.  This is because all the blocks are
 defined inside a 4x4 grid, but they are not centered inside this grid.  Here
 is what the blocks look again:
 
-![](/img/a036/tetris-blocks.png)
+![The Tetris Blocks](/img/a036/tetris-blocks.png)
 
 Since we already defined a function to determine the bounding box of a block
 inside its 4x4 grid (the function is `block-bounding-box` and was defined in
@@ -388,13 +388,13 @@ the actual block:
 
 Here is what the trimmed blocks look like:
 
-![](/img/a036/all-blocks-trimmed.png)
+![The Tetris Blocks, Trimmed to Size](/img/a036/all-blocks-trimmed.png)
 
 The next block canvas pain function, `on-next-block-paint`, can now use the
 `trim-block-pict` instead of `block->pict`, and blocks will be centered inside
 the canvas:
 
-![](/img/a036/next-block.png)
+![The Next Block Display](/img/a036/next-block.png)
 
 ## Showing Block Statistics
 
@@ -462,7 +462,7 @@ to keep the picture size a bit smaller:
 We can test the function separately from the Tetris program, by generating
 some test data and running it in the DrRacket REPL:
 
-![](/img/a036/block-statistics-pict.png)
+![The Block Statistics Picture](/img/a036/block-statistics-pict.png)
 
 The GUI changes for displaying block statistics should look familiar by now:
 we'll create a `group-box-panel%`[racket] to surround the statistics picture
@@ -503,7 +503,7 @@ window:
 
 And here is the result:
 
-![](/img/a036/completed-game.png)
+![Tetris Game With Completed GUI](/img/a036/completed-game.png)
 
 ## Final thoughts
 

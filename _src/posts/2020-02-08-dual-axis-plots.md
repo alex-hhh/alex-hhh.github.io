@@ -17,7 +17,7 @@ would not produce a nice looking result.  Instead the data needs to be
 transformed and some extra plot parameters need to be used to show a correct
 scale for both data series.
 
-![](/img/a034/grade-elevation.svg)
+![Combined Elevation and Grade Plot](/img/a034/grade-elevation.svg)
 
 This blog post aims to illustrate a general mechanism for constructing dual
 axis plots, but since it is difficult to have an abstract discussion, all the
@@ -45,7 +45,7 @@ plot package to display it:
 
 Which will produce two plots side-by-side:
 
-![](/img/a034/grade-elevation-separate.svg)
+![Grade and Elevation as Separate Plots](/img/a034/grade-elevation-separate.svg)
 
 How can we combine these two plots into a single one?  After all, both the
 elevation and grade data samples are from the same hiking activity and they
@@ -74,7 +74,7 @@ elevation data range, but only about 4% of the grade data range, so neither
 plots will occupy the entire Y range and the grade plot, using only 4% of the
 plot area, will be practically useless.
 
-![](/img/a034/grade-elevation-combined.svg)
+![Combined Grade and Elevation Plot, Wrong Scale](/img/a034/grade-elevation-combined.svg)
 
 ## Dual Axis Plot
 
@@ -163,7 +163,7 @@ swapped.
 
 ... and the result is more pleasing:
 
-![](/img/a034/grade-elevation-1.svg)
+![Combined Grade and Elevation Plot, no Axis Ticks for Elevation](/img/a034/grade-elevation-1.svg)
 
 ## Drawing Labels for Both Data Series 
 
@@ -233,7 +233,7 @@ grade data and the right one to the elevation data:
 
 which produces the following plot:
 
-![](/img/a034/grade-elevation.svg)
+![Combined Elevation and Grade Plot](/img/a034/grade-elevation.svg)
 
 ## Final thoughts
 

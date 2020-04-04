@@ -20,7 +20,7 @@ zone boundary definitions contain many thousands of points, with the top 20
 timezones containing in excess of 50'000 points, we'll need to be mindful of
 the performance of our lookup function.
 
-![](/img/a027/timezone-map-2.png)
+![World Timezones](/img/a027/timezone-map-2.png)
 
 The first implementation uses the GeoJSON object directly and, while the
 implementation is straightforward and passes a comprehensive test suite, it is

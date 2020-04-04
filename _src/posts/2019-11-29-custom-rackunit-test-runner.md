@@ -25,7 +25,7 @@ is available [here][ctr], and the tests in the same location make use of all
 of its features.  For an example of publishing test results to Azure Devops,
 see the [azure-common.yml][az-common] file.
 
-![](/img/a033/azure-test-report.png)
+![Racket Reports in Azure Pipelines](/img/a033/azure-test-report.png)
 
 ## Rackunit Overview
 
@@ -126,7 +126,7 @@ of test execution along with detailed information about each test case:
 (test/gui a-test-suite #:wait? #t)
 ```
 
-![](/img/a033/rackunit-gui-runner.png)
+![DrRacket GUI Test Runner](/img/a033/rackunit-gui-runner.png)
 
 ### What about "raco test" and the `test` submodules?
 

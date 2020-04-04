@@ -17,7 +17,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="@|uri-prefix|/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet"> 
     <!-- Feeds -->
@@ -99,14 +98,14 @@
             <div id="sidebar-content" class="col-md-3">
               <!-- will be filled in dynamically by custom.js -->
             </div>})
+        @;{Post pages print their own fine-print}
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+      @(unless (equal? page-kind "post")
+        @list{
+          <div class="fine-print">© Alex Harsányi, licensed under
+            <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+            , and there's a <a href="/Cookies.html">cookie policy</a>.
+          </div>})
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

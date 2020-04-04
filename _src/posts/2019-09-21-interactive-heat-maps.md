@@ -24,7 +24,7 @@ than 500 lines of Racket code, but it required several changes to the
 underlying libraries used by ActivityLog2, which are described in the
 following sections.
 
-![](/img/a031/heatmaps.png)
+![Interatctive HeatMaps in ActivityLog2](/img/a031/heatmaps.png)
 
 ### Trend Charts
 
@@ -111,7 +111,7 @@ case the user zooms or moves the map away from the displayed activities.  I
 also wanted to add a "show map" check box to be able to hide the map itself in
 case the display is too cluttered:
 
-![](/img/a031/map-control.png)
+![The MapControl snip overlayed over the map](/img/a031/map-control.png)
 
 The trend chart's canvas allows inserting "floating snips", which are simply
 snips that are not resized to fill the background, so the map control can be
@@ -122,7 +122,7 @@ controls cannot be written, in fact I wrote an `embedded-snip-button%` class
 for use in the [workout editor][we], this is a simple button which can be
 placed into individual snips and react to click events:
 
-![](/img/a031/wkedit-demo.gif)
+![Snips in Workout Editor](/img/a031/wkedit-demo.gif)
 
 The `embedded-snip-button%` was basic and specific to the task: it was my
 first experiment with providing snip controls.  With some more experience with
@@ -134,7 +134,7 @@ code for the demo available [here][escd].  Since this is a `snip%` it can be
 inserted in the Racket REPL just like a plot or a map snip, it is however
 intended to be used inside a `pasteboard%` as part of a GUI application.
 
-![](/img/a031/esc-control-demo.gif)
+![Snip Controls Demo](/img/a031/esc-control-demo.gif)
 
 These controls will not win any design awards, but they are functional and I
 could implement the map control snip using them.  What is currently missing is

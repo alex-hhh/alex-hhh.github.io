@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -99,8 +98,8 @@
 
 <p>The user visible changes are very modest and almost unnoticeable: all the timestamps display the time where an activity took place, rather than the local time where the activity is viewed. In the screen-shot below, the start time for the skiing run is shown as 9:48am, even though it would have been 5:48am in Western Australia where I live. The only &ldquo;hint&rdquo; is a time zone abbreviation in the session inspector:</p>
 
-<div class="figure"><img src="/img/a032/local-time.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a032/local-time.png" alt="Local Time Displayed for a Session in ActivityLog2" />
+ <p class="caption">Local Time Displayed for a Session in ActivityLog2</p></div>
 
 <p>All the other places where timestamps are shown, such as the activity list or the lap viewer will display the time relative to the destination location and in addition to that, the user can edit the time zone for an activity, although for activities with GPS data this is automatically detected on import.</p>
 
@@ -322,20 +321,20 @@
 
 <p>The application already had a mechanism of running a batch task against the database, together with a progress bar and a mechanism to cancel the jobs, so it was easy to add this upgrade code to the application GUI:</p>
 
-<div class="figure"><img src="/img/a032/update-time-zones.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a032/update-time-zones.png" alt="Updating Time Zones for Existing Activities" />
+ <p class="caption">Updating Time Zones for Existing Activities</p></div>
 
 <h2 id="allowing-the-user-to-edit-the-time-zone">Allowing the User to Edit the Time Zone</h2>
 
 <p>Automatic time zone detection is convenient, but it is not always possible, as not all activities have GPS information. The two major types of such activities (that I have anyway) are Lap Swimming sessions and bike sessions done on an internal trainer. This means that the application must allow the user to edit the time zone for an activity. There are two places where this can be done: the first one is the session inspector headline which allows switching to &ldquo;Edit&rdquo; mode, to allow the user to quickly adjust the title, sport and now time zone:</p>
 
-<div class="figure"><img src="/img/a032/edit-headline.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a032/edit-headline.png" alt="Edit Timezone in the Session Headline" />
+ <p class="caption">Edit Timezone in the Session Headline</p></div>
 
 <p>The second place is the dialog where the full activity details can be edited. As a side note, the activity editor was one of the first things I wrote for ActivityLog2, doing it while still learning Racket, and the code base was &ldquo;less than ideal&rdquo;, I would probably approach the task differently if I had to do it again, but my opportunities to do things a second time are limited&hellip;</p>
 
-<div class="figure"><img src="/img/a032/activity-edit.png" alt="" />
- <p class="caption"></p></div>
+<div class="figure"><img src="/img/a032/activity-edit.png" alt="Edit Timezone in the Session Editor" />
+ <p class="caption">Edit Timezone in the Session Editor</p></div>
 
 <h2 id="package-dependency-management">Package Dependency Management</h2>
 
@@ -403,6 +402,10 @@ raco pkg config --set catalogs <span class="sb">`</span>cat ./catalog-locations.
 
 <p>This was a large task to implement: it took me two years since I recorded this as an <a href="https://github.com/alex-hhh/ActivityLog2/issues/11">issue</a>, the commit is <a href="https://github.com/alex-hhh/ActivityLog2/commit/250bb47d2959a07abd74b475f6b240c69e4fd8cb">over 1500 lines of code</a>, the resulting binary application size increased by about 25Mb, and I quite possibly introduced some bugs along the way. As I look back, I question if it was worth it. Well, as far as usefulness goes, the answer is probably no, since I only have a few activities which were recorded out of my regular time zone, I could have lived without this feature. On the other hand, I did learn a wide variety of things, from working with git submodules, setting up custom package catalogs, and implementing efficient lookup algorithms for geographic location lookup, and I think this aspect made the task worth it.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -449,14 +452,9 @@ raco pkg config --set catalogs <span class="sb">`</span>cat ./catalog-locations.
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->

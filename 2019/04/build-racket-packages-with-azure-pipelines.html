@@ -15,7 +15,6 @@
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
-    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
     <link rel="stylesheet" type="text/css" href="/css/custom.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
     <!-- Feeds -->
@@ -283,6 +282,10 @@ curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
 
 <p>There are several other Azure Pipelines features which are useful in building more complex applications &mdash; for such an example, see the build pipeline for the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/azure-pipelines.yml">ActivityLog2 project</a>. This is a pipeline which can build a Racket application on both Windows and Linux (and there is an <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/install-racket.ps1">install-racket.ps1</a> which downloads installs Racket on Windows), download test databases from an external server, build an application with embedded API keys, which are stored as secret variables and publish the resulting installer as a build artifact. For more details about this process, see that builds <a href="https://github.com/alex-hhh/ActivityLog2/tree/master/etc/scripts">README.md</a> file.</p>
   <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
     <div class="row justify-content-center">
       <nav aria-label="Page Navigation">
         <ul class="pagination">
@@ -329,14 +332,9 @@ curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
         <div id="sidebar-content" class="col-md-3">
           <!-- will be filled in dynamically by custom.js -->
         </div>
+
       </div>
-      <footer>
-        <hr />
-        <div class="fine-print">© Alex Harsányi, licensed under
-          <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-          , and there's a <a href="/Cookies.html">cookie policy</a>.
-        </div>
-      </footer>
+
     </div>
     <!-- </body> JS -->
   <!-- NOTE: jQuery must be loaded first -->
