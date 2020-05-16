@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/activitylog2.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/activitylog2.html" />
  <id>urn:https-alex-hhh-github-io:-tags-activitylog2-html</id>
- <updated>2019-10-26T03:18:30Z</updated>
+ <updated>2020-05-15T09:38:15Z</updated>
+ <entry>
+  <title type="text">Threshold Analisys in ActivityLog2</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2020/05/threshold-analisys-in-activitylog2.html?utm_source=activitylog2&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2020-05-threshold-analisys-in-activitylog2-html</id>
+  <published>2020-05-15T09:38:15Z</published>
+  <updated>2020-05-15T09:38:15Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;A dashboard for &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; which allows determining threshold power, pace and heart rate for a running or cycling activity, and can set sport zones based on these values. To make things a bit more interesting, the dashboard also allows inspecting the activity interactively to see where the &amp;ldquo;best&amp;rdquo; segments are.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/05/threshold-analisys-in-activitylog2.html?utm_source=activitylog2&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Timezone Aware Local Time</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2019/10/local-time.html?utm_source=activitylog2&amp;utm_medium=Atom" />

@@ -435,7 +435,7 @@ user error
     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">on-test-case-completed</span> <span class="n">result</span><span class="p">)</span>
       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">))</span>
       <span class="c1">;; Report the result to raco test</span>
-      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
     <span class="p">))</span>
 </pre></div>
 </td></tr></tbody></table>
@@ -520,7 +520,7 @@ $ echo $?
       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">))</span>
       <span class="c1">;; Maybe display failure information</span>
       <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
-      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
     <span class="p">))</span>
 </pre></div>
 </td></tr></tbody></table>
@@ -674,7 +674,7 @@ user error
       <span class="c1">;; Display the result of running this test</span>
       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"~a (~a ms)~%"</span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">duration</span> <span class="kd">#:precision</span> <span class="mi">2</span><span class="p">))</span>
       <span class="p">(</span><span class="n">maybe-display-result</span> <span class="n">result</span><span class="p">)</span>
-      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
+      <span class="p">(</span><span class="n">test-log!</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="n">test-result-tag</span> <span class="n">result</span><span class="p">)</span> <span class="o">'</span><span class="ss">ok</span><span class="p">)))</span>
   <span class="p">))</span>
 </pre></div>
 </td></tr></tbody></table>

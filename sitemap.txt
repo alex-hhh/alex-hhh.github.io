@@ -34,5 +34,6 @@ https://alex-hhh.github.io/2019/11/custom-rackunit-test-runner.html
 https://alex-hhh.github.io/2020/02/dual-axis-plots.html
 https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html
 https://alex-hhh.github.io/2020/03/a-game-of-tetris.html
+https://alex-hhh.github.io/2020/05/threshold-analisys-in-activitylog2.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Threshold Analisys in ActivityLog2</title>
+    <meta name="description" content="A dashboard for ActivityLog2 which allows determining threshold power, pace and heart rate for a running or cycling activity, and can set sport zones based on these values. To make things a bit more interesting, the dashboard also allows inspecting the ac...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="activitylog2">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2020/05/threshold-analisys-in-activitylog2.html">
+    <link rel="next" href="/2020/03/a-game-of-tetris-2.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Threshold Analisys in ActivityLog2</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-05-15" pubdate="true">2020-05-15</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a></span></p>
+  </header>
+
+<p>A dashboard for <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> which allows determining threshold power, pace and heart rate for a running or cycling activity, and can set sport zones based on these values. To make things a bit more interesting, the dashboard also allows inspecting the activity interactively to see where the &ldquo;best&rdquo; segments are.</p>
+<!-- more-->
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/i-Ap_EDzwso" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<p>This functionality was inspired by a <a href="https://www.trainingpeaks.com/blog/joe-friel-s-quick-guide-to-setting-zones/">blog post</a> by Joe Friel, which explains how to determine power, pace and heart rate zones. The basic idea is that you go out for a bike ride or run, go ride or run hard for about 20 &ndash; 30 minutes and use the average power, pace and heart rate for that segment to determine a &ldquo;threshold&rdquo; value. Zones can be set as percentages of these thresholds. Note that this is really a rough summary of the process, you should read the original <a href="https://www.trainingpeaks.com/blog/joe-friel-s-quick-guide-to-setting-zones/">blog post</a> for the exact test procedure.</p>
+
+<p>The method requires you to go out and ride your bike or run, there is no way around that, but <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> can help with the data analysis: it can automatically determine the best segment in an activity and determine the threshold and zones from this:</p>
+
+<ul>
+ <li>
+  <p>for cycling, the threshold value is usually called FTP (Functional Threshold  Power) and <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> can determine that value from any 20-minute  FTP test.</p></li>
+ <li>
+  <p>for running, the threshold value is usually called Threshold Pace and can be  determined from any running activity with a hard 30-minute interval in it.</p></li></ul>
+
+<p>In both cases, the corresponding threshold heart rate can be determined from the same activity, based on the highest heart rate maintained for 20 minutes.</p>
+
+<h2 id="exploring-the-activity">Exploring the Activity</h2>
+
+<div class="figure"><img src="/img/a037/fthr.png" alt="FTHR Analisys" />
+ <p class="caption">FTHR Analisys</p></div>
+
+<p>To make the dialog box more interactive, you can also explore the activity, to see where the highest power, pace and heart rate threshold were.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2020/03/a-game-of-tetris-2.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; A Game of Tetris (user interface)</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

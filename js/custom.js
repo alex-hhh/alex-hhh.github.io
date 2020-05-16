@@ -20,11 +20,9 @@ function tocInit()
      * headings here, so we can restore them when in full mode. 
      */
     var headings = [];
-    
-    let toc = document.createElement("UL"); // the main <ul> of the toc.
-    document.body.appendChild(toc);
 
     var applyStyling = (type) => 'toc_' + type.toLowerCase();
+    let toc = document.createElement("UL"); // the main <ul> of the toc.
 
     // loop through the headings
     document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(element => {
@@ -35,6 +33,12 @@ function tocInit()
         toc.appendChild(node);
         headings.push(element.textContent);
     });
+
+    if (headings.length < 3) {
+        return;                        // don't put a TOC on trivial documents
+    }
+    
+    document.body.appendChild(toc);
 
     tocCloseMenu(toc, headings);        // start closed
     
