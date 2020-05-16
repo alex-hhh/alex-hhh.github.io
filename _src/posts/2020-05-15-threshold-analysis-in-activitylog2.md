@@ -1,4 +1,4 @@
-    Title: Threshold Analisys in ActivityLog2
+    Title: Threshold Analysis in ActivityLog2
     Date: 2020-05-15T17:38:15
     Thumbnail: /img/a037/thumb.png
     Tags: activitylog2
@@ -40,7 +40,7 @@ the same activity, based on the highest heart rate maintained for 20 minutes.
 
 ## Exploring the Activity
 
-![FTHR Analisys](/img/a037/fthr.png)
+![FTHR Analysis](/img/a037/fthr.png)
 
 To make the dialog box more interactive, you can also explore the activity, to
 see where the highest power, pace and heart rate threshold were.
