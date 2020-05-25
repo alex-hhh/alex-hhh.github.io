@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Dependency Management in Racket Applications</title>
+    <meta name="description" content=".. in which we look at how to manage the versions of packages used by a Racket application, and ensure that the correct package versions are used when building the application....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2020/05/dependency-management-in-racket-applications.html">
+    <link rel="next" href="/2020/05/threshold-analysis-in-activitylog2.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Dependency Management in Racket Applications</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-05-23" pubdate="true">2020-05-23</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>.. in which we look at how to manage the versions of packages used by a Racket application, and ensure that the correct package versions are used when building the application.</p>
+<!-- more-->
+
+<p>A package can be installed using the &ldquo;raco pkg install&rdquo; command, and this will consult a &ldquo;package catalog&rdquo; (by default &ldquo;pkgs.racket-lagng.org&rdquo;), to determine the download location for the package. &ldquo;raco pkg install&rdquo; will always install the latest package version available in the catalog and there are no ways to specify that an application depends on a specific version of the package.</p>
+
+<p>In an ideal world, this is not a problem: packages should be well tested, contain no bugs and their API always backwards compatible. This means that each time you run &ldquo;raco pkg install&rdquo; you&rsquo;ll get a package that was at least a good as last time you run the command, or possibly a better version. However, things are never that simple.</p>
+
+<h2 id="what-problem-are-we-trying-to-solve">What problem are we trying to solve?</h2>
+
+<p>In one of the first packages that I started using in <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a>, I discovered a bug, which made the package unusable for me. I was even able to provide a fix for this bug, but the package author was busy, and about two months passed before the fix was actually merged in the official package. Even though I had a fix for the bug, my only option was to wait until an updated package was released. Unfortunately, this was not the only incident, and I found defects in other packages as well.</p>
+
+<p>From my own experience, I realized that I could not rely on the package catalog to ensure that I always have working packages to depend on. I also understand that package authors are busy, and what might be an important bug for me might not be for them. However, if my Racket application was to use other peoples packages, I had to be able to better manage these dependencies. In particular, I wanted to be able to do the following:</p>
+
+<ul>
+ <li>
+  <p>If I find a bug in a package, and have a fix for it, I should be able to  setup an alternate install location for the package, containing the bug fix,  and keep using that location until the author releases an updated version.</p></li>
+ <li>
+  <p>If I find a bug, but don&rsquo;t have a fix, I should be able to install a  previous version of the package, without the bug, and keep using that  version until an updated version is released.</p></li>
+ <li>
+  <p>I want to ensure that the continuous integration build uses the same package  versions that were used during development. Running a build on an older  branch will use the package versions which were used on that branch.</p></li>
+ <li>
+  <p>Finally, I want to be able to upgrade packages at my own pace: every time  packages are upgraded, the application needs to be tested and any  incompatibilities fixed. I wanted to avoid the situation where I have to  stop working on a feature, because the build on the continuous integration  server fails when a later version of a package was installed.</p></li></ul>
+
+<h2 id="version-management-using-git-sub-modules">Version Management using GIT Sub-Modules</h2>
+
+<p>Since I was already using GIT, I decided to start using <a href="https://git-scm.com/book/en/v2/Git-Tools-Submodules">git sub-modules</a> to track the versions of the packages. Each package that my application depends on is a GIT sub-module in a &ldquo;pkgs&rdquo; sub-folder, and will be installed from this folder instead of the Racket package catalog.</p>
+
+<div class="figure"><img src="/img/a038/sub-modules.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Git can be used to track versions at the commit level, and a submodule will only be updated when explicitly asked to. This has several advantages:</p>
+
+<ul>
+ <li>
+  <p>sub-module versions are tied to the git commit for the main application:  when I push a commit to the Continuous Integration sever, I know the exact  package versions it will be using for a build. When I checkout an older  version of the application, I know that it will have corresponding  sub-module versions which were working with my application at that time.</p></li>
+ <li>
+  <p>sub-modules are only updated with explicit git commands, so, as a developer  I am in control when and how I update sub-modules to newer versions.</p></li>
+ <li>
+  <p>sub-modules have a remote repository from which the versions are retrieved.  By default, this is the same repository which is used for the official  version of the package, however, if I fix a bug in my own fork of a package,  I can point the sub-module to use my own fork until the main package is  fixed.</p></li></ul>
+
+<p>Sub-modules, introduce some complexity into the application development work-flow, for example, submodules need to be initialized after cloning the application and need to be updated explicitly after switching to an older commit or pulling in some changes. However, at least in my case, I found that the benefits of using sub-modules outweigh the additional complexity they introduce.</p>
+
+<h2 id="package-installation">Package Installation</h2>
+
+<p>Packages can be installed form a local folder, so the &ldquo;packages-as-submodules&rdquo; can be installed directly from their folder inside the application repository. For example, if the source for the <code>data-frame</code> package is checked out in a folder named &ldquo;data-frame&rdquo;, it can be installed using:</p>
+
+<pre><code>raco pkg install ./data-frame</code></pre>
+
+<p>The above command will install a package in-place, meaning that I can update the source files inside the package directly, and they will be automatically used by the application.</p>
+
+<p>Installing packages form a local folder has some limitations, however: most packages depend on other packages, and these dependencies will be installed from the normal racket catalog by default. Once we start tracking versions, it makes sense to track these dependent packages as well, since these too can have bugs.</p>
+
+<p>To address this problem, the dependencies of a package can also be added as git submodules and installed from a local folder. This means, however, that we need to keep track of package dependencies ourselves, and this can be a lot of work. Package dependencies are already recorded in the &ldquo;info.rkt&rdquo; file for each package, so commands like &ldquo;raco pkg&rdquo; can find and install them. This information can be used with the packages-as-submodules method if we set up a package catalog.</p>
+
+<h3 id="package-catalogs-overview">Package Catalogs Overview</h3>
+
+<p>When the user wants to install a package using &ldquo;raco pkg install&rdquo;, the following locations will be consulted to find the package, each such location is called a &ldquo;package catalog&rdquo;:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>$&gt; raco pkg config catalogs
+https://download.racket-lang.org/releases/7.7/catalog/
+https://pkgs.racket-lang.org
+https://planet-compats.racket-lang.org
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>First in that list is the catalog for the current Racket release, and it contains all the packages that ship with a full Racket distribution. Next in the list is the &ldquo;package server&rdquo;, <code>pkgs.racket-lang.org</code>, where everyone can submit and register their own packages.</p>
+
+<p>New catalogs can be added to this list and existing ones removed &mdash; this allows controlling where &ldquo;raco pkg install&rdquo; looks for packages.</p>
+
+<h3 id="directory-as-a-catalog">Directory as a Catalog</h3>
+
+<p>We can set up the &ldquo;pkgs&rdquo; directory, which contains the packages-as-submodules folder, as a catalog by using the <a href="https://docs.racket-lang.org/pkg/dirs-catalog.html">dirs-catalog</a> module. This module can be run directly from the command line and allows indexing the packages in a directory to create a catalog:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>$&gt; <span class="nb">cd</span> pkgs
+$&gt; racket -l- pkg/dirs-catalog --link catalog .
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>When the previous command is run in a directory, it will scan the packages in the directory and create an index in the &ldquo;catalog&rdquo; sub-folder. This catalog can be referred to using the &ldquo;file://&rdquo; URL naming scheme. In my case this would be:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>$&gt; <span class="nb">echo</span> file://<span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/catalog
+file://C:/Users/alexh/Projects/ActivityLog2/pkgs/catalog
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="package-catalog-setup">Package Catalog Setup</h3>
+
+<p>With the local package catalog set up, we can now append its location to the list of package catalogs in the first position:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1"># Add our catalog first</span>
+$&gt; <span class="nb">echo</span> file://<span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/catalog &gt; catalog-locations.txt
+<span class="c1"># Append the existing catalogs</span>
+$&gt; raco pkg config catalogs &gt;&gt; catalog-locations.txt
+<span class="c1"># Set the new catalog locations</span>
+$&gt; raco pkg config --set catalogs <span class="sb">`</span>cat catalog-locations.txt<span class="sb">`</span>
+<span class="c1"># Let&#39;s see the updated list</span>
+$&gt; raco pkg config catalogs
+file://C:/Users/alexh/Projects/ActivityLog2/pkgs/catalog
+https://download.racket-lang.org/releases/7.7/catalog/
+https://pkgs.racket-lang.org
+https://planet-compats.racket-lang.org
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The directory containing our packages-as-submodules is configured to be the first one for looking up packages, so any &ldquo;raco pkg install&rdquo; command will now search for packages (including packages installed as dependencies) into our package directory first.</p>
+
+<h2 id="some-other-details">Some Other Details</h2>
+
+<p>The previous section showed how to setup the package catalog using individual commands, but <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> contains a shell script, <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/etc/scripts/setup-catalog.sh">setup-catalog.sh</a>, which completes all these steps in one go, so package indexing and catalog setup is done just by running this script.</p>
+
+<p>There are a few extra bits, which makes this mechanism of managing dependencies more convenient.</p>
+
+<h3 id="isolation-mode">Isolation Mode</h3>
+
+<p>When dependencies are resolved, all package catalogs are consulted starting from the first one. If one of the tracked packages adds a new dependency, the dependency will not be found in our catalog, but it will be found and installed using the standard Racket package catalog, introducing an untracked dependency.</p>
+
+<p>New dependencies can be hard to notice, especially when packages are installed using the "&mdash;auto" flag which installs dependencies automatically, and there is a risk that the application will start to depend silently on untracked packages.</p>
+
+<p>To avoid this situation, the Continuous Integration build sets up the sub-modules directory as the <strong>only</strong> catalog available for package installation. This means that the CI server will fail to install a package whose dependency is not present as a git submodule, ensuring that we catch this situation and correct it.</p>
+
+<h3 id="installing-the-dependencies-on-one-go">Installing the dependencies on one go</h3>
+
+<p>An application does not have an &ldquo;info.rkt&rdquo; file, and as such it cannot list dependencies (an application can however be installed as a package). To simplify dependency tracking, I created a simple &ldquo;dummy&rdquo; package which lists all dependencies in its info file. The package contains one single info.rkt file:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">info</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">collection</span> <span class="s2">"al2-dependencies"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">deps</span> <span class="o">'</span><span class="p">(</span><span class="s2">"tzinfo"</span>
+               <span class="s2">"tzgeolookup"</span>
+               <span class="s2">"data-frame"</span>
+               <span class="s2">"plot-container"</span>
+               <span class="s2">"gui-widget-mixins"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">build-deps</span> <span class="o">'</span><span class="p">())</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">scribblings</span> <span class="o">'</span><span class="p">())</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pkg-desc</span> <span class="s2">"Meta package to install all ActivityLog2 dependencies"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/runtime.html#(def._((quote._~23~25kernel)._version))" style="color: inherit">version</a></span> <span class="s2">"0.0"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">pkg-authors</span> <span class="o">'</span><span class="p">(</span><span class="ss">aharsanyi</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This &ldquo;al2-dependencies&rdquo; package is present in the &ldquo;pkgs&rdquo; folder, but not as a sub-module, and it is also not published on the racket package catalog, since it provides no useful features except for recording dependencies of the application itself. However, it is indexed and can be installed, and in turn it will install all dependencies using the command:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>raco pkg install --batch --auto al2-dependencies
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="reporting-missing-packages">Reporting missing packages</h3>
+
+<p>For a long time, <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> did not depend on any other packages except ones that come with the normal Racket distribution. The application could simply be run by opening the &ldquo;run.rkt&rdquo; file and running the application. Now that the application depends on other packages, it will report missing modules if packages are not installed, but unfortunately, the error messages are not always clear.</p>
+
+<p>To improve the situation, I wrote a <code>check-missing-modules</code> macro to verify that required modules are installed and report a more &ldquo;to the point&rdquo; message to the user:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin-for-syntax))" style="color: inherit">begin-for-syntax</a></span>
+
+  <span class="c1">;; Return #t if the module identified by SYM can be loaded using a require</span>
+  <span class="c1">;; statement, #f otherwise</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">check-module</span> <span class="n">sym</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/exns.html#(form._((lib._racket/private/more-scheme..rkt)._with-handlers))" style="color: inherit">with-handlers</a></span>
+      <span class="p">(((</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="no">#t</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="no">#f</span><span class="p">)))</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Module_Names_and_Loading.html#(def._((quote._~23~25kernel)._current-module-name-resolver))" style="color: inherit">current-module-name-resolver</a></span><span class="p">)</span> <span class="n">sym</span> <span class="no">#f</span> <span class="no">#f</span> <span class="no">#f</span><span class="p">)</span> <span class="no">#t</span><span class="p">)))</span>
+
+  <span class="c1">;; Check for any modules in MODULES which are missing and report them using</span>
+  <span class="c1">;; the error function</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">check-missing</span> <span class="n">modules</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">missing</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">m</span> <span class="n">modules</span><span class="p">]</span> <span class="kd">#:unless</span> <span class="p">(</span><span class="n">check-module</span> <span class="n">m</span><span class="p">))</span> <span class="n">m</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">missing</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"You must install these packages: <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span>
+<span class="s2">*** HINT: see docs/README.md <a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a> more details"</span> <span class="n">missing</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define-syntax))" style="color: inherit">define-syntax</a></span> <span class="p">(</span><span class="n">check-missing-modules</span> <span class="n">stx</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._syntax-case))" style="color: inherit">syntax-case</a></span> <span class="n">stx</span> <span class="p">()</span>
+    <span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span> <span class="n">mod</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">modsyms</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stxops.html#(def._((quote._~23~25kernel)._syntax-~3edatum))" style="color: inherit">syntax-&gt;datum</a></span> <span class="o">#'</span><span class="p">(</span><span class="n">mod</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))])</span>
+       <span class="o">#`</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/quote.html#(form._((quote._~23~25kernel)._quote))" style="color: inherit">quote</a></span> <span class="o">#,</span><span class="p">(</span><span class="ss">check-missing</span> <span class="ss">modsyms</span><span class="p">)))]))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The start files &ldquo;run.rkt&rdquo; and &ldquo;build.rkt&rdquo; contain the following line, listing the required packages:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="n">check-missing-modules</span> <span class="n">tzinfo</span> <span class="n">tzgeolookup</span> <span class="n">data-frame</span> <span class="n">plot-container</span> <span class="n">gui-widget-mixins</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And, if the user forgets, for example, to install the &ldquo;data-frame&rdquo; package, and tries to run the application, it will get the following error message:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>$&gt; racket run.rkt 
+You must install these packages: <span class="o">(</span>data-frame<span class="o">)</span>
+*** HINT: see docs/README.md <span class="k">for</span> more details
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Instead of the more obscure:</p>
+
+<div class="brush: sh">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span>racket run.rkt 
+standard-module-name-resolver: collection not found
+  <span class="k">for</span> module path: data-frame/private/bsearch
+  collection: <span class="s2">"data-frame/private"</span>
+  in collection directories:
+   C:<span class="se">\U</span>sers<span class="se">\a</span>lexh<span class="se">\A</span>ppData<span class="se">\R</span>oaming<span class="se">\R</span>acket<span class="se">\7</span>.7<span class="se">\c</span>ollects
+   C:<span class="se">\P</span>rogram Files<span class="se">\R</span>acket<span class="se">\c</span>ollects
+   ... <span class="o">[</span><span class="m">173</span> additional linked and package directories<span class="o">]</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="limitations">Limitations</h3>
+
+<p>Packages installed in Racket are global and available to every racket program &mdash; the user level scope is really installing packages for the current user, but they are still available to all Racket programs for that user. This means that the packages installed from the packages-as-submodules folder will be available outside the <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> application and that no other package versions can be installed for other applications. Working with two applications using the method presented here would require installing and un-installing packages.</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>I have been using this method for about 6 months now, and it has worked reasonably well. The method was mentioned in another <a href="/2019/10/local-time.html">blog post</a>, which was when I started using it, but this blog post expands a bit both on the reasoning behind the method as well as the actual details.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2020/05/threshold-analysis-in-activitylog2.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Threshold Analysis in ActivityLog2</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

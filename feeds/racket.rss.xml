@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 27 Mar 2020 23:08:35 UT</lastBuildDate>
-  <pubDate>Fri, 27 Mar 2020 23:08:35 UT</pubDate>
+  <lastBuildDate>Fri, 22 May 2020 23:40:59 UT</lastBuildDate>
+  <pubDate>Fri, 22 May 2020 23:40:59 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Dependency Management in Racket Applications</title>
+   <link>https://alex-hhh.github.io/2020/05/dependency-management-in-racket-applications.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-05-dependency-management-in-racket-applications-html</guid>
+   <pubDate>Fri, 22 May 2020 23:40:59 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;.. in which we look at how to manage the versions of packages used by a Racket application, and ensure that the correct package versions are used when building the application.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/05/dependency-management-in-racket-applications.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>A Game of Tetris (user interface)</title>
    <link>https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html?utm_source=racket&amp;utm_medium=RSS</link>
