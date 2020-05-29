@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 22 May 2020 23:40:59 UT</lastBuildDate>
-  <pubDate>Fri, 22 May 2020 23:40:59 UT</pubDate>
+  <lastBuildDate>Fri, 29 May 2020 22:58:08 UT</lastBuildDate>
+  <pubDate>Fri, 29 May 2020 22:58:08 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Markdown View using the Racket editor%</title>
+   <link>https://alex-hhh.github.io/2020/05/markdown-view.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-05-markdown-view-html</guid>
+   <pubDate>Fri, 29 May 2020 22:58:08 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket &lt;a href="https://docs.racket-lang.org/gui/text_.html"&gt;text%&lt;/a&gt; editor class can be used to display multi line text with formatting, such as fonts and colors; it is however, somewhat difficult to set it up and use its formatting capabilities. This blog post shows how to build a text view which allows inserting markdown text and the result will be formatted, with headers, links and images.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/05/markdown-view.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Dependency Management in Racket Applications</title>
    <link>https://alex-hhh.github.io/2020/05/dependency-management-in-racket-applications.html?utm_source=racket&amp;utm_medium=RSS</link>
