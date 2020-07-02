@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2020-05-29T22:58:08Z</updated>
+ <updated>2020-06-21T02:33:23Z</updated>
+ <entry>
+  <title type="text">Ishido</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2020-06-ishido-html</id>
+  <published>2020-06-21T02:33:23Z</published>
+  <updated>2020-06-21T02:33:23Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Markdown View using the Racket editor%</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/05/markdown-view.html?utm_source=all&amp;utm_medium=Atom" />
