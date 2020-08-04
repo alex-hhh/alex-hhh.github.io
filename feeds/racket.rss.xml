@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sun, 21 Jun 2020 02:33:23 UT</lastBuildDate>
-  <pubDate>Sun, 21 Jun 2020 02:33:23 UT</pubDate>
+  <lastBuildDate>Sat, 01 Aug 2020 00:24:12 UT</lastBuildDate>
+  <pubDate>Sat, 01 Aug 2020 00:24:12 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Automating Tests for the Plot Package</title>
+   <link>https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-08-automating-tests-for-the-plot-package-html</guid>
+   <pubDate>Sat, 01 Aug 2020 00:24:12 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;A few weeks ago I accepted to become maintainer of the plot package and one of my first objectives was to setup an automated build and test runs using Github Actions. The plot tests were changed to verify automatically that they pass (previously they had to be visually inspected for correctness), and the technique may be useful in writing tests for other graphical packages and applications.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Ishido</title>
    <link>https://alex-hhh.github.io/2020/06/ishido.html?utm_source=racket&amp;utm_medium=RSS</link>

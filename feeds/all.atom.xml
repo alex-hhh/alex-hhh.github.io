@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2020-06-21T02:33:23Z</updated>
+ <updated>2020-08-01T00:24:12Z</updated>
+ <entry>
+  <title type="text">Automating Tests for the Plot Package</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2020-08-automating-tests-for-the-plot-package-html</id>
+  <published>2020-08-01T00:24:12Z</published>
+  <updated>2020-08-01T00:24:12Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;A few weeks ago I accepted to become maintainer of the plot package and one of my first objectives was to setup an automated build and test runs using Github Actions. The plot tests were changed to verify automatically that they pass (previously they had to be visually inspected for correctness), and the technique may be useful in writing tests for other graphical packages and applications.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Ishido</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=all&amp;utm_medium=Atom" />

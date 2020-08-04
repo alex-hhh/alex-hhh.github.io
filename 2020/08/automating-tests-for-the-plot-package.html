@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Automating Tests for the Plot Package</title>
+    <meta name="description" content="A few weeks ago I accepted to become maintainer of the plot package and one of my first objectives was to setup an automated build and test runs using Github Actions. The plot tests were changed to verify automatically that they pass (previously they had ...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html">
+    <link rel="next" href="/2020/06/ishido.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script type="text/javascript">
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-110325732-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Automating Tests for the Plot Package</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-08-01" pubdate="true">2020-08-01</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>A few weeks ago I accepted to become maintainer of the plot package and one of my first objectives was to setup an automated build and test runs using Github Actions. The plot tests were changed to verify automatically that they pass (previously they had to be visually inspected for correctness), and the technique may be useful in writing tests for other graphical packages and applications.</p>
+<!-- more-->
+
+<p>During this conversion process, I discovered that the plot package has an extensive test suite generating many interesting plots. Here are a few of my favorites:</p>
+
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="2000"><!-- Indicators--> 
+ <ol class="carousel-indicators">
+  <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+  <li data-target="#myCarousel" data-slide-to="1"></li>
+  <li data-target="#myCarousel" data-slide-to="2"></li>
+  <li data-target="#myCarousel" data-slide-to="3"></li>
+  <li data-target="#myCarousel" data-slide-to="4"></li>
+  <li data-target="#myCarousel" data-slide-to="5"></li>
+  <li data-target="#myCarousel" data-slide-to="6"></li>
+  <li data-target="#myCarousel" data-slide-to="7"></li>
+  <li data-target="#myCarousel" data-slide-to="8"></li>
+  <li data-target="#myCarousel" data-slide-to="9"></li></ol> <!-- Wrapper for slides--> 
+ <div class="carousel-inner">
+  <div class="carousel-item active"><img class="rounded" src="/img/a041/is-2.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/is-5.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p2d-58.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p2d-59.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p2d-60.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p2d-63.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p3d-23.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/p3d-7.png" alt="" /></div> 
+  <div class="carousel-item"><img class="rounded" src="/img/a041/pb-13.png" alt="" /></div></div> <!-- Left and right controls--> <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span> <span class="sr-only">Previous</span></a> <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span> <span class="sr-only">Next</span></a></div>
+
+<h2 id="github-actions">Github Actions</h2>
+
+<p>The tests in the <code>plot-tests</code> package were designed for interactive use. They would output plots in the DrRacket REPL and the user could visually inspect them to see if they render correctly. This approach may work for a small number of plots to verify, but there are 508 such tests, and many of them test subtle things, such as whether the tick marks on the axis labels are drawn correctly or whether some points at extreme positions are rendered correctly.</p>
+
+<p>Given the number of tests, it is no longer practical to just run them interactively. The <a href="http://drdr.racket-lang.org">DrDr</a> server builds and runs these tests, but since there is no one to inspect the results, all this does is verify that tests run without raising exceptions.</p>
+
+<p>DrDr will also build and test an entire Racket distribution, so for it to build and test a change to the plot package, the change has to be merged to the main project branch. This is a problem, as I would prefer to know that a pull request builds and the test pass before merging it in.</p>
+
+<p>DrDr was designed and built long before Github Actions (and Github itself) existed, but today, GitHub offers mechanisms to automatically test code before it is merged in &mdash; several Racket packages already made use of this feature, so all I had to do was to copy and use their setup in the plot package. Thanks to <a href="https://defn.io/">Bogdan</a> for his <a href="https://github.com/bogdanp/setup-racket">setup-racket</a> Action which makes it easy to use Racket for the builds.</p>
+
+<h2 id="testing-plot-renderers">Testing Plot Renderers</h2>
+
+<p>The plot library is interactive: you can construct visual plots directly in the REPL. For example, if you type <code>(plot (function sin -3 3 #:label "sin(x)"))</code> in DrRacket, it will output a plot of the sine function:</p>
+
+<div class="figure"><img src="/img/a041/interactive-plot.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This plot can be visually inspected for correctness, but it is impractical to do this for many plots, and the tests for the plot package contain 508 such plots at the time of this writing. It would be nice to be able to automate the process, so both the plot command and its output are recorded, than checked automatically as part of a test suite.</p>
+
+<p>The simplest idea is to use <a href="https://docs.racket-lang.org/plot/plotting.html?q=plot-file#%28def._%28%28lib._plot%2Fmain..rkt%29._plot-file%29%29">plot-file</a> to generate a plot image which is saved to file and have the tests re-generate the image and compare it against the saved &ldquo;sample&rdquo; image. If the images are not the same, the test fails. This strategy has some complications of its own: first, drawing images will not produce absolutely identical pictures, as details such as anti-aliasing depend on the actual machine on which the image is generated. Second, the plot library uses fonts to draw axes, tick values and plot labels, and these fonts are platform specific, so the plot images produced on different systems will actually be different.</p>
+
+<h3 id="recording-draw-steps">Recording Draw Steps</h3>
+
+<p>Instead of generating a PNG (or SVG) image for the plot, we can just generate the draw steps required for drawing the plot. After all, the plot library is just a high level DSL, which translates a high-level &ldquo;program&rdquo;, such as <code>(function sin -3 3 #:label "sin(x)")</code> into a sequence of draw calls on a device context interface, <a href="https://docs.racket-lang.org/draw/dc___.html"><code>dc&lt;%&gt;</code></a>. There are several classes which implement this interface, for example, a canvas for drawing on a GUI or a bitmap for drawing to a bitmap image.</p>
+
+<p>One of these <a href="https://docs.racket-lang.org/draw/dc___.html"><code>dc&lt;%&gt;</code></a> implementations is <a href="https://docs.racket-lang.org/draw/record-dc_.html">record-dc%</a>, and this implementation does not draw anything, instead, as the name implies, it just records the draw steps, and these can be retrieved using <code>get-recorded-datum</code>. For example, to find out what the draw steps are for plotting the sine function we can use the following snippet:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">)))</span>
+<span class="p">(</span><span class="n">plot/dc</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-3</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"sin(x)"</span><span class="p">)</span> <span class="n">dc</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">800</span> <span class="mi">600</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-recorded-datum</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Note how we used <code>plot/dc</code> for plotting which plots directly to a device context <code>dc&lt;%&gt;</code> &mdash; all other plot functions are implemented in terms of this one (i.e. <code>plot-file</code> will create a bitmap, than use <code>plot/dc</code> on the device context of the bitmap).</p>
+
+<p><code>draw-steps</code> is a list of draw commands, and it looks something like the example below. There are 337 actual commands for drawing the plot, and most of them have been omitted. While the draw commands are a bit obscure, it is still possible to identify where different elements of the plot are drawn:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">((</span><span class="n">do-set-pen!</span> <span class="p">((</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mf">1.0</span><span class="p">)</span> <span class="mi">1</span> <span class="n">solid</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span> <span class="no">#f</span><span class="p">))</span>
+ <span class="p">(</span><span class="n">do-set-brush!</span> <span class="p">((</span><span class="mi">255</span> <span class="mi">255</span> <span class="mi">255</span> <span class="mf">1.0</span><span class="p">)</span> <span class="n">solid</span> <span class="no">#f</span> <span class="no">#f</span> <span class="no">#f</span><span class="p">))</span>
+ <span class="p">(</span><span class="n">set-font</span> <span class="p">(</span><span class="mi">12</span> <span class="no">#f</span> <span class="n">default</span> <span class="n">normal</span> <span class="n">normal</span> <span class="no">#f</span> <span class="n">default</span> <span class="no">#f</span> <span class="n">aligned</span><span class="p">))</span>
+ <span class="p">(</span><span class="n">set-smoothing</span> <span class="n">unsmoothed</span><span class="p">)</span>
+ <span class="p">(</span><span class="n">set-text-mode</span> <span class="n">transparent</span><span class="p">)</span>
+ <span class="c1">;; ... lots of other draw calls ommited</span>
+
+ <span class="c1">;; ... this is where we draw the axis labels...</span>
+ <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"x axis"</span> <span class="mf">52.5</span> <span class="mf">82.22216796875</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"y axis"</span> <span class="mf">-0.22216796875</span> <span class="mf">46.5</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mf">1.5707963267948966</span><span class="p">)</span>
+ <span class="c1">;; ... this is where we draw the actual plot</span>
+ <span class="p">(</span><span class="n">draw-lines</span> <span class="p">((</span><span class="mf">94.0</span> <span class="o">.</span> <span class="mf">25.61311515106986</span><span class="p">)</span> <span class="p">(</span><span class="mf">93.90180360721442</span> <span class="o">.</span> <span class="mf">25.327677256040936</span><span class="p">)</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+ <span class="c1">;; ... and this is where we draw the legend entry</span>
+ <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"sin(x)"</span> <span class="mf">56.0</span> <span class="mf">15.333984375</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="comparing-draw-steps">Comparing Draw Steps</h3>
+
+<p>Of course, we are not really interested in analyzing these draw steps in detail. Instead, we can write them to a file and when the tests runs, it reads the saved draw steps and compares them against a freshly generated set.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="c1">;; Saving the draw steps</span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"draw-steps.rktd"</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span> <span class="n">draw-steps</span> <span class="n">out</span><span class="p">)))</span>
+
+<span class="c1">;; reading saved draw steps</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="s2">"draw-steps.rktd"</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Comparing draw steps is simply a matter of traversing a tree structure and checking if things are <code>equal?</code>, with the additional &ldquo;variation&rdquo; that numbers are checked if they are very close to each other instead of being equal, since most of them are floating point numbers:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="n">set1</span> <span class="n">set2</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span> <span class="n">set2</span><span class="p">))</span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">set2</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">set2</span><span class="p">))))</span>
+        <span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span> <span class="n">set2</span><span class="p">))</span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">set1</span> <span class="n">set2</span><span class="p">))</span> <span class="mf">1e-4</span><span class="p">))</span>
+        <span class="p">(</span><span class="no">#t</span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">set1</span> <span class="n">set2</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="device-independent-draw-steps">Device Independent Draw Steps</h3>
+
+<p>Unfortunately, the draw steps produced by <code>record-dc%</code> are still platform dependent: the plot library queries the device context for font and text dimensions and aligns elements in the plot based on this informations. Since fonts have slightly different dimensions, all draw coordinates will be slightly different on different platforms. Since we use these draw steps for testing purpose only, we can use fake values for all font metrics. There are only three methods that need to be overridden to ensure consistent &ldquo;font sizes&rdquo; on all platforms:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">mock-record-dc%</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">record-dc%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-text-extent</span> <span class="n">text</span> <span class="p">(</span><span class="n">font</span> <span class="no">#f</span><span class="p">)</span> <span class="p">(</span><span class="n">combine?</span> <span class="no">#f</span><span class="p">)</span> <span class="p">(</span><span class="n">offset</span> <span class="mi">0</span><span class="p">))</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">10</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-length))" style="color: inherit">string-length</a></span> <span class="n">text</span><span class="p">))</span> <span class="mi">10</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-char-width</span><span class="p">)</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-char-height</span><span class="p">)</span> <span class="mi">10</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>We can use <code>mock-record-dc%</code> instead of <code>record-dc%</code> to generate platform independent draw steps which means that tests build using them will run and pass on any platform:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">)))</span>
+<span class="p">(</span><span class="n">plot/dc</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-3</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"sin(x)"</span><span class="p">)</span> <span class="n">dc</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">800</span> <span class="mi">600</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-recorded-datum</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<h3 id="some-other-details">Some Other Details</h3>
+
+<p>There are a few more details which need to be considered when constructing the helper functions for the plot tests. The full implementation is in the <a href="https://github.com/racket/plot/blob/master/plot-test/plot/tests/helpers.rkt">helpers</a> file inside the <code>plot-test</code> package, and provides the following features:</p>
+
+<ul>
+ <li>
+  <p>draw step files are compressed using gzip (and decompressed when reading  them in). A simple example such as the sine function above will generate a  small file, but complex plots have lots of draw steps and the draw-step  files for them were 5&ndash;10 Mb in size</p></li>
+ <li>
+  <p>there are helper functions for generating and comparing 2d and 3d plots.  They differ only in the use of <code>plot/dc</code> or <code>plot3d/dc</code> functions but they  also accept the same parameters (e.g. plot title, width and height) as the  actual plot functions, so plot tests can be written simply by substituting  one of the plot functions with the test ones.</p></li>
+ <li>
+  <p>when a test fails, the helper functions will generate a new set of draw step  files, and a new sample image which can be compared against the saved one.  Github Actions is also set up to upload these new files as a &ldquo;build  artifact&rdquo; to be inspected when a test fails.</p></li></ul>
+
+<p>Converting the existing files to use the new mechanism was an interesting exercise in itself (remember that there are 508 such plots), but that involved using Emacs macros, which don&rsquo;t fall under the Racket topic&hellip; If you want to look at the results, they are part of two pull requests: <a href="https://github.com/racket/plot/pull/62">plot/#62</a> and <a href="https://github.com/racket/plot/pull/63">plot/#63</a>.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2020/06/ishido.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Ishido</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>
