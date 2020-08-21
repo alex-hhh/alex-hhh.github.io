@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html">
     <link rel="next" href="/2020/06/ishido.html">
-
+    <link rel="prev" href="/2020/08/barometric-altitude-measurement.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -307,7 +307,7 @@
 3</pre></div></td>
     <td class="code">
      <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">)))</span>
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">]))</span>
 <span class="p">(</span><span class="n">plot/dc</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-3</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"sin(x)"</span><span class="p">)</span> <span class="n">dc</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">800</span> <span class="mi">600</span><span class="p">)</span>
 <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-recorded-datum</span><span class="p">))</span>
 </pre></div>
@@ -341,7 +341,12 @@
               <span aria-hidden="true">&larr; Ishido</span>
             </a>
           </li>
-
+          <li class="page-item">
+            <a class="page-link" href="/2020/08/barometric-altitude-measurement.html"
+               aria-label="Next">
+              <span aria-hidden="true">Barometric Altitude Measurement &rarr;</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>

@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Sat, 01 Aug 2020 00:24:12 UT</lastBuildDate>
-  <pubDate>Sat, 01 Aug 2020 00:24:12 UT</pubDate>
+  <lastBuildDate>Sat, 15 Aug 2020 01:27:34 UT</lastBuildDate>
+  <pubDate>Sat, 15 Aug 2020 01:27:34 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Barometric Altitude Measurement</title>
+   <link>https://alex-hhh.github.io/2020/08/barometric-altitude-measurement.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-08-barometric-altitude-measurement-html</guid>
+   <pubDate>Sat, 15 Aug 2020 01:27:34 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;While analyzing the data from my latest indoor trainer ride, I noticed that my FR&amp;ndash;920 records altitude while running in &amp;ldquo;Indoor Trainer&amp;rdquo; mode. This means that I have a lot of altitude measurements at what is effectively the same elevation, so I had a look at how good altitude measurement really is.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/08/barometric-altitude-measurement.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Automating Tests for the Plot Package</title>
    <link>https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=all&amp;utm_medium=RSS</link>
