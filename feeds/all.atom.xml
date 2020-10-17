@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2020-08-15T01:27:34Z</updated>
+ <updated>2020-10-09T23:15:58Z</updated>
+ <entry>
+  <title type="text">Rendering the World Map Using the Racket Plot Package</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2020-10-world-map-using-plot-html</id>
+  <published>2020-10-09T23:15:58Z</published>
+  <updated>2020-10-09T23:15:58Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;As part of writing the &lt;a href="https://pkgs.racket-lang.org/package/geoid"&gt;geoid&lt;/a&gt; package, I needed to visualize the geographic projections used by the package and it turns out that the 3D plotting facilities in the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;racket plot package&lt;/a&gt; can be easily used for this task. The geoid package and the projection used there is somewhat complex, and, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Barometric Altitude Measurement</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/08/barometric-altitude-measurement.html?utm_source=all&amp;utm_medium=Atom" />

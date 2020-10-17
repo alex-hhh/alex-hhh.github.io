@@ -23,14 +23,12 @@
     <link rel="alternate" type="application/rss+xml"
           href="/feeds/all.rss.xml" title="RSS Feed">
     <!-- JS -->
-    <script type="text/javascript">
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-110325732-1', 'auto');
-      ga('send', 'pageview');
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
     </script>
   </head>
   <body>
@@ -90,6 +88,26 @@
 
 
           <div class"index-entry">
+  <div>
+    <h2 class="index-entry"><a href='/2020/10/world-map-using-plot.html' title='Rendering the World Map Using the Racket Plot Package'>Rendering the World Map Using the Racket Plot Package</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2020-10-10" pubdate="true">2020-10-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </div>
+  <div class="container">
+            <div class="row">
+              <div id="content" class="col-md-3 center-block zoom-on-hover">
+                <a href='/2020/10/world-map-using-plot.html'><img class="rounded" src='/img/a043/thumb.png'/></a>
+              </div>
+              <div id="content" class="col-md-9">
+
+  <p>As part of writing the <a href="https://pkgs.racket-lang.org/package/geoid">geoid</a> package, I needed to visualize the geographic projections used by the package and it turns out that the 3D plotting facilities in the <a href="https://docs.racket-lang.org/plot/index.html">racket plot package</a> can be easily used for this task. The geoid package and the projection used there is somewhat complex, and, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.</p>
+                <div><a href='/2020/10/world-map-using-plot.html'>&hellip; more &hellip;</a></div>
+              </div>
+            </div>
+  </div>
+  <hr>
+</div>
+<div class"index-entry">
   <div>
     <h2 class="index-entry"><a href='/2020/08/barometric-altitude-measurement.html' title='Barometric Altitude Measurement'>Barometric Altitude Measurement</a></h2>
     <p class='date-and-tags'>
@@ -209,26 +227,6 @@
   </div>
   <hr>
 </div>
-<div class"index-entry">
-  <div>
-    <h2 class="index-entry"><a href='/2020/03/a-game-of-tetris-2.html' title='A Game of Tetris (user interface)'>A Game of Tetris (user interface)</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2020-03-28" pubdate="true">2020-03-28</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
-  </div>
-  <div class="container">
-            <div class="row">
-              <div id="content" class="col-md-3 center-block zoom-on-hover">
-                <a href='/2020/03/a-game-of-tetris-2.html'><img class="rounded" src='/img/a036/thumb.png'/></a>
-              </div>
-              <div id="content" class="col-md-9">
-
-  <p>The <a href="/2020/03/a-game-of-tetris.html">previous</a> blog post introduced the Tetris game mechanics and made the game playable. In this blog post we&rsquo;ll look at how to build an actual GUI application around the game mechanics: we&rsquo;ll keep score, increase difficulty, peek at the next block and more. As we do that, we&rsquo;ll explore some more interesting things you can do with the Racket pict library, and look at some of the GUI facilities available in Racket.</p>
-                <div><a href='/2020/03/a-game-of-tetris-2.html'>&hellip; more &hellip;</a></div>
-              </div>
-            </div>
-  </div>
-  <hr>
-</div>
 <footer>
  <ul class="pagination">
   <li class="page-item disabled"><a class="page-link" href="#">
@@ -239,6 +237,7 @@
   <li class="page-item"><a class="page-link" href="/index-4.html">4</a></li>
   <li class="page-item"><a class="page-link" href="/index-5.html">5</a></li>
   <li class="page-item"><a class="page-link" href="/index-6.html">6</a></li>
+  <li class="page-item"><a class="page-link" href="/index-7.html">7</a></li>
   <li class="page-item"><a class="page-link" href="/index-2.html">
     <quote>&rarr;</quote></a></li></ul></footer>
         </div>

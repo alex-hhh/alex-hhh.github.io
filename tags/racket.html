@@ -23,14 +23,12 @@
     <link rel="alternate" type="application/rss+xml"
           href="/feeds/racket.rss.xml" title="RSS Feed">
     <!-- JS -->
-    <script type="text/javascript">
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-110325732-1', 'auto');
-      ga('send', 'pageview');
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
     </script>
   </head>
   <body>
@@ -87,6 +85,26 @@
           <h1>Posts tagged <em>racket</em></h1>
 
           <div class"index-entry">
+  <div>
+    <h2 class="index-entry"><a href='/2020/10/world-map-using-plot.html' title='Rendering the World Map Using the Racket Plot Package'>Rendering the World Map Using the Racket Plot Package</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2020-10-10" pubdate="true">2020-10-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </div>
+  <div class="container">
+            <div class="row">
+              <div id="content" class="col-md-3 center-block zoom-on-hover">
+                <a href='/2020/10/world-map-using-plot.html'><img class="rounded" src='/img/a043/thumb.png'/></a>
+              </div>
+              <div id="content" class="col-md-9">
+
+  <p>As part of writing the <a href="https://pkgs.racket-lang.org/package/geoid">geoid</a> package, I needed to visualize the geographic projections used by the package and it turns out that the 3D plotting facilities in the <a href="https://docs.racket-lang.org/plot/index.html">racket plot package</a> can be easily used for this task. The geoid package and the projection used there is somewhat complex, and, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.</p>
+                <div><a href='/2020/10/world-map-using-plot.html'>&hellip; more &hellip;</a></div>
+              </div>
+            </div>
+  </div>
+  <hr>
+</div>
+<div class"index-entry">
   <div>
     <h2 class="index-entry"><a href='/2020/08/automating-tests-for-the-plot-package.html' title='Automating Tests for the Plot Package'>Automating Tests for the Plot Package</a></h2>
     <p class='date-and-tags'>
@@ -201,26 +219,6 @@
 
   <p>.. in which we implement a Tetris game step-by-step in <a href="https://www.racket-lang.org">Racket</a>, exploring pict graphics, contracts and unit tests.</p>
                 <div><a href='/2020/03/a-game-of-tetris.html'>&hellip; more &hellip;</a></div>
-              </div>
-            </div>
-  </div>
-  <hr>
-</div>
-<div class"index-entry">
-  <div>
-    <h2 class="index-entry"><a href='/2020/02/dual-axis-plots.html' title='Dual Axis Plots'>Dual Axis Plots</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2020-02-08" pubdate="true">2020-02-08</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
-  </div>
-  <div class="container">
-            <div class="row">
-              <div id="content" class="col-md-3 center-block zoom-on-hover">
-                <a href='/2020/02/dual-axis-plots.html'><img class="rounded" src='/img/a034/thumb.png'/></a>
-              </div>
-              <div id="content" class="col-md-9">
-
-  <p>&hellip; in which we explore how to show on the same plot two data series that have different data ranges. The <a href="https://docs.racket-lang.org/plot/index.html">Racket Plot</a> package does not support this functionality directly, but with the help of some data transformation, we can still achieve good results.</p>
-                <div><a href='/2020/02/dual-axis-plots.html'>&hellip; more &hellip;</a></div>
               </div>
             </div>
   </div>
