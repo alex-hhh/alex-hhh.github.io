@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 09 Oct 2020 23:15:58 UT</lastBuildDate>
-  <pubDate>Fri, 09 Oct 2020 23:15:58 UT</pubDate>
+  <lastBuildDate>Sat, 28 Nov 2020 02:10:03 UT</lastBuildDate>
+  <pubDate>Sat, 28 Nov 2020 02:10:03 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Space Invaders</title>
+   <link>https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-11-space-invaders-html</guid>
+   <pubDate>Sat, 28 Nov 2020 02:10:03 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a classic game using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and exploring classes and objects.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Rendering the World Map Using the Racket Plot Package</title>
    <link>https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=racket&amp;utm_medium=RSS</link>
@@ -14,7 +22,7 @@
    <pubDate>Fri, 09 Oct 2020 23:15:58 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;As part of writing the &lt;a href="https://pkgs.racket-lang.org/package/geoid"&gt;geoid&lt;/a&gt; package, I needed to visualize the geographic projections used by the package and it turns out that the 3D plotting facilities in the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;racket plot package&lt;/a&gt; can be easily used for this task. The geoid package and the projection used there is somewhat complex, and, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+&lt;p&gt;As part of writing the &lt;a href="https://pkgs.racket-lang.org/package/geoid"&gt;geoid&lt;/a&gt; package, I needed to visualize some geographic projections and I discovered that the 3D plotting facilities in the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;racket plot package&lt;/a&gt; can be easily used for this task. The geoid package and the projection it uses is somewhat complex, so, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Automating Tests for the Plot Package</title>
    <link>https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html?utm_source=racket&amp;utm_medium=RSS</link>
@@ -30,7 +38,7 @@
    <pubDate>Sun, 21 Jun 2020 02:33:23 UT</pubDate>
    <author>Alex Harsányi</author>
    <description>
-&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Markdown View using the Racket editor%</title>
    <link>https://alex-hhh.github.io/2020/05/markdown-view.html?utm_source=racket&amp;utm_medium=RSS</link>

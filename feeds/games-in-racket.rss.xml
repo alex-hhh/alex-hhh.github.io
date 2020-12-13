@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>The Blog of Alex Harsányi: Posts tagged 'games in racket'</title>
+  <description>The Blog of Alex Harsányi: Posts tagged 'games in racket'</description>
+  <link>https://alex-hhh.github.io/tags/games-in-racket.html</link>
+  <lastBuildDate>Sat, 28 Nov 2020 02:10:03 UT</lastBuildDate>
+  <pubDate>Sat, 28 Nov 2020 02:10:03 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>Space Invaders</title>
+   <link>https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-11-space-invaders-html</guid>
+   <pubDate>Sat, 28 Nov 2020 02:10:03 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a classic game using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and exploring classes and objects.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Ishido</title>
+   <link>https://alex-hhh.github.io/2020/06/ishido.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-06-ishido-html</guid>
+   <pubDate>Sun, 21 Jun 2020 02:33:23 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Game of Tetris (user interface)</title>
+   <link>https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-03-a-game-of-tetris-2-html</guid>
+   <pubDate>Fri, 27 Mar 2020 23:08:35 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;a href="/2020/03/a-game-of-tetris.html"&gt;previous&lt;/a&gt; blog post introduced the Tetris game mechanics and made the game playable. In this blog post we&amp;rsquo;ll look at how to build an actual GUI application around the game mechanics: we&amp;rsquo;ll keep score, increase difficulty, peek at the next block and more. As we do that, we&amp;rsquo;ll explore some more interesting things you can do with the Racket pict library, and look at some of the GUI facilities available in Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/03/a-game-of-tetris-2.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>A Game of Tetris (gameplay)</title>
+   <link>https://alex-hhh.github.io/2020/03/a-game-of-tetris.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2020-03-a-game-of-tetris-html</guid>
+   <pubDate>Thu, 05 Mar 2020 08:24:02 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;.. in which we implement a Tetris game step-by-step in &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt;, exploring pict graphics, contracts and unit tests.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/03/a-game-of-tetris.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 3)</title>
+   <link>https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-3-html</guid>
+   <pubDate>Mon, 29 Oct 2018 10:34:41 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The &lt;code&gt;pasteboard%&lt;/code&gt;object is an editor of &lt;code&gt;snip%&lt;/code&gt; objects and it implements some features that make sense for an editor: for example, you can select multiple snips and drag them around with the mouse, and you can move selected snips using the keyboard, you can also add any kind of snip, not just chess pieces to the pasteboard. Since none of these features are useful or desirable for a chess board game we will look at how to disable them.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-3.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard (part 2)</title>
+   <link>https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-part-2-html</guid>
+   <pubDate>Fri, 19 Oct 2018 13:15:34 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;This is a continuation of the &lt;a href="/2018/10/chess-game-using-racket-s-pasteboard.html"&gt;previous blog post&lt;/a&gt;, where the racket &lt;code&gt;pasteboard%&lt;/code&gt; features are explored by implementing a Chess Game Board. In this blog post we look at how to restrict piece movements to chess board squares, permit only valid moves and implement turn based game play.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard-part-2.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
+  <item>
+   <title>Chess Game Using Racket's Pasteboard</title>
+   <link>https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=games-in-racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2018-10-chess-game-using-racket-s-pasteboard-html</guid>
+   <pubDate>Fri, 12 Oct 2018 11:35:13 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Racket GUI library provides an &amp;ldquo;editor toolkit&amp;rdquo; which can be used to implement programs that use an interactive graphical canvas where objects can be moved around with the mouse. This toolkit has &lt;a href="http://docs.racket-lang.org/gui/editor-overview.html"&gt;good reference documentation&lt;/a&gt;, however this documentation can be somewhat overwhelming, and it is not always clear how to begin writing such interactive application, or how to achieve some basic functionality, so I wrote a tutorial on how to implement a chess board game in Racket using the &lt;code&gt;pasteboard%&lt;/code&gt; and &lt;code&gt;snip%&lt;/code&gt; classes which are part of the GUI library.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2018/10/chess-game-using-racket-s-pasteboard.html?utm_source=games-in-racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item></channel></rss>

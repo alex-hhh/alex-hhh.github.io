@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2020-10-09T23:15:58Z</updated>
+ <updated>2020-11-28T02:10:03Z</updated>
+ <entry>
+  <title type="text">Space Invaders</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2020-11-space-invaders-html</id>
+  <published>2020-11-28T02:10:03Z</published>
+  <updated>2020-11-28T02:10:03Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a classic game using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and exploring classes and objects.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Rendering the World Map Using the Racket Plot Package</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=all&amp;utm_medium=Atom" />
@@ -14,7 +24,7 @@
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;As part of writing the &lt;a href="https://pkgs.racket-lang.org/package/geoid"&gt;geoid&lt;/a&gt; package, I needed to visualize the geographic projections used by the package and it turns out that the 3D plotting facilities in the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;racket plot package&lt;/a&gt; can be easily used for this task. The geoid package and the projection used there is somewhat complex, and, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;As part of writing the &lt;a href="https://pkgs.racket-lang.org/package/geoid"&gt;geoid&lt;/a&gt; package, I needed to visualize some geographic projections and I discovered that the 3D plotting facilities in the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;racket plot package&lt;/a&gt; can be easily used for this task. The geoid package and the projection it uses is somewhat complex, so, to keep things simple, this blog post covers the display of the country outlines on a globe loading the data from the GeoJSON file and using only basic plotting facilities.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/10/world-map-using-plot.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Barometric Altitude Measurement</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/08/barometric-altitude-measurement.html?utm_source=all&amp;utm_medium=Atom" />
@@ -44,7 +54,7 @@
   <author>
    <name>Alex Harsányi</name></author>
   <content type="html">
-&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
+&lt;p&gt;&amp;hellip; in which we attempt to recreate a game from the nineties using the &lt;a href="https://www.racket-lang.org"&gt;Racket&lt;/a&gt; graphical facilities and we manage to do it in less than 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2020/06/ishido.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Markdown View using the Racket editor%</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/05/markdown-view.html?utm_source=all&amp;utm_medium=Atom" />
