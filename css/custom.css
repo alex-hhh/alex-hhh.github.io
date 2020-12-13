@@ -89,6 +89,10 @@ code {
     display: none;
 }
 
+article {
+    margin-left: 1rem;
+}
+
 /* Make sure that images within blog articles never take more width than the
    article width; `height: auto` ensures the height is also resized
    proportionally.
