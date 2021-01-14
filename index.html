@@ -6,7 +6,7 @@
     <title>The Blog of Alex Harsányi</title>
     <meta name="description" content="The Blog of Alex Harsányi">
     <meta name="author"      content="Alex Harsányi">
-    <meta name="keywords"    content="arduino, all, activitylog2, data visualization, racket, games in racket, training data analysis, bike trainer">
+    <meta name="keywords"    content="arduino, all, bike trainer, training data analysis, games in racket, data visualization, activitylog2, racket">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/index.html">
@@ -88,6 +88,26 @@
 
 
           <div class"index-entry">
+  <div>
+    <h2 class="index-entry"><a href='/2021/01/plot-animations.html' title='Plot Animations'>Plot Animations</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2021-01-10" pubdate="true">2021-01-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </div>
+  <div class="container">
+            <div class="row">
+              <div id="content" class="col-md-3 center-block zoom-on-hover">
+                <a href='/2021/01/plot-animations.html'><img class="rounded" src='/img/a045/thumb.png'/></a>
+              </div>
+              <div id="content" class="col-md-9">
+
+  <p>There is no specific animation function in the Racket <a href="https://docs.racket-lang.org/plot/index.html">plot</a> package, but animations can be build by repeatedly plotting individual frames onto a canvas or image using <code>plot/dc</code>. The technique requires drawing the entire plot every frame, which will be inefficient for complex plots. In this blog post we explore how to construct plot animations using the <code>set-overlay-renderers</code> method of a plot snip, which is a more efficient method when plots are embedded in GUI applications.</p>
+                <div><a href='/2021/01/plot-animations.html'>&hellip; more &hellip;</a></div>
+              </div>
+            </div>
+  </div>
+  <hr>
+</div>
+<div class"index-entry">
   <div>
     <h2 class="index-entry"><a href='/2020/11/space-invaders.html' title='Space Invaders'>Space Invaders</a></h2>
     <p class='date-and-tags'>
@@ -202,26 +222,6 @@
 
   <p>The Racket <a href="https://docs.racket-lang.org/gui/text_.html">text%</a> editor class can be used to display multi line text with formatting, such as fonts and colors; it is however, somewhat difficult to set it up and use its formatting capabilities. This blog post shows how to build a text view which allows inserting markdown text and the result will be formatted, with headers, links and images.</p>
                 <div><a href='/2020/05/markdown-view.html'>&hellip; more &hellip;</a></div>
-              </div>
-            </div>
-  </div>
-  <hr>
-</div>
-<div class"index-entry">
-  <div>
-    <h2 class="index-entry"><a href='/2020/05/dependency-management-in-racket-applications.html' title='Dependency Management in Racket Applications'>Dependency Management in Racket Applications</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2020-05-23" pubdate="true">2020-05-23</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
-  </div>
-  <div class="container">
-            <div class="row">
-              <div id="content" class="col-md-3 center-block zoom-on-hover">
-                <a href='/2020/05/dependency-management-in-racket-applications.html'><img class="rounded" src='/img/a038/thumb.png'/></a>
-              </div>
-              <div id="content" class="col-md-9">
-
-  <p>.. in which we look at how to manage the versions of packages used by a Racket application, and ensure that the correct package versions are used when building the application.</p>
-                <div><a href='/2020/05/dependency-management-in-racket-applications.html'>&hellip; more &hellip;</a></div>
               </div>
             </div>
   </div>

@@ -42,5 +42,6 @@ https://alex-hhh.github.io/2020/08/automating-tests-for-the-plot-package.html
 https://alex-hhh.github.io/2020/08/barometric-altitude-measurement.html
 https://alex-hhh.github.io/2020/10/world-map-using-plot.html
 https://alex-hhh.github.io/2020/11/space-invaders.html
+https://alex-hhh.github.io/2021/01/plot-animations.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html

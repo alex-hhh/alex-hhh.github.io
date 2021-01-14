@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2020-11-28T02:10:03Z</updated>
+ <updated>2021-01-10T06:42:44Z</updated>
+ <entry>
+  <title type="text">Plot Animations</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2021/01/plot-animations.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2021-01-plot-animations-html</id>
+  <published>2021-01-10T06:42:44Z</published>
+  <updated>2021-01-10T06:42:44Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;There is no specific animation function in the Racket &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;plot&lt;/a&gt; package, but animations can be build by repeatedly plotting individual frames onto a canvas or image using &lt;code&gt;plot/dc&lt;/code&gt;. The technique requires drawing the entire plot every frame, which will be inefficient for complex plots. In this blog post we explore how to construct plot animations using the &lt;code&gt;set-overlay-renderers&lt;/code&gt; method of a plot snip, which is a more efficient method when plots are embedded in GUI applications.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/01/plot-animations.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Space Invaders</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2020/11/space-invaders.html?utm_source=all&amp;utm_medium=Atom" />

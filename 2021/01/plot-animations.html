@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Plot Animations</title>
+    <meta name="description" content="There is no specific animation function in the Racket plot package, but animations can be build by repeatedly plotting individual frames onto a canvas or image using `plot/dc`. The technique requires drawing the entire plot every frame, which will be inef...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket, data visualization">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2021/01/plot-animations.html">
+    <link rel="next" href="/2020/11/space-invaders.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Plot Animations</h1>
+    <p class='date-and-tags'>
+<time datetime="2021-01-10" pubdate="true">2021-01-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </header>
+
+<p>There is no specific animation function in the Racket <a href="https://docs.racket-lang.org/plot/index.html">plot</a> package, but animations can be build by repeatedly plotting individual frames onto a canvas or image using <code>plot/dc</code>. The technique requires drawing the entire plot every frame, which will be inefficient for complex plots. In this blog post we explore how to construct plot animations using the <code>set-overlay-renderers</code> method of a plot snip, which is a more efficient method when plots are embedded in GUI applications.</p>
+<!-- more-->
+
+<p>To illustrate the technique, we&rsquo;ll build an animation which shows how the <a href="https://en.wikipedia.org/wiki/Sine">Sine</a> function is generated when a point moves along the unit circle. The sine function generated is generating by taking the Y coordinate of the point and dragging if out over time:</p>
+
+<div class="figure"><img src="/img/a045/sine-animation.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>Let&rsquo;s start by plotting a single frame of the animation, the generated sine function at a fixed moment in time. Here is the Racket program which builds the single plot frame:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">plot</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">a</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">10</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span> <span class="mi">3</span><span class="p">)))</span> <span class="c1">; angle at which we draw the line and sine function</span>
+
+<span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+       <span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">polar</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">))</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))))</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))))</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))))</span>
+       <span class="p">(</span><span class="n">polar-label</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="n">a</span> <span class="s2">""</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">point-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))</span> <span class="s2">""</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">function</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">a</span> <span class="n">x</span><span class="p">)))</span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))</span>
+      <span class="kd">#:height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="mi">2</span><span class="p">))</span>
+      <span class="kd">#:width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a045/plot-1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Plots are generated using the <code>plot</code> function, which creates the plot image from a list of &ldquo;renderers&rdquo;, each renderer representing one element of the plot. The animated plot will need to be drawn at various angles as the &ldquo;dot&rdquo; travels around the unit circle, so it is a good idea to separate the angle <code>a</code> from the rest of the plot, even if it is a constant in this example. Here is an explanation of each renderer used in the image above:</p>
+
+<ul>
+ <li><code>(axes)</code> will draw the X, Y plot axes which intersect at origin</li>
+ <li><code>(polar (lambda (theta) 1))</code> will draw the unit circle at origin &mdash; the  <code>polar</code> renderer will plot in polar coordinates, taking a function which  converts an angle (theta) into a distance from origin, for a circle, this is  simply 1.</li>
+ <li>the next three <code>lines</code> renderers will draw the radius at the current angle,  <code>a</code>, and the projections onto the X and Y axes.</li>
+ <li><code>polar-label</code> will place a label in polar coordinates on the unit circle at  the angle <code>a</code> &mdash; the renderer will draw a dot by default plus a text value.  Since we are using an empty string for the label, only the dot will be  visible, marking the position on the unit circle.</li>
+ <li><code>point-label</code> will place a label at a specified position &mdash; this time on the  Y axis, just as with <code>polar-label</code>, we use an empty label, so only a dot  will be displayed.</li>
+ <li><code>(function (lambda (x) (sin (+ a x))) 0 (* 2 pi))</code> will draw the sine  function. The <code>function</code> renderer will plot the supplied function between  two values (0 and 2Π in our case), and the argument to the sine function is  offset by the angle <code>a</code> to make sure the sine function has the same value at  origin as the projection from the unit circle</li></ul>
+
+<p>If you are not familiar with the plot package, it would be a good idea to experiment with changing the angle <code>a</code> to various values and re-plot the image to see how the plot changes with the angle. You can also experiment with commenting out different renderers are and see what their contribution is to the overall plot.</p>
+
+<p>The previous plot uses the same color and line widths for all plot elements, making it difficult to tell them apart. However, each renderer has keyword arguments which control the drawing parameters, such as colors and line widths. The documentation for the <a href="https://docs.racket-lang.org/plot/renderer2d.html">renderers</a> shows the full list, but these are the most common arguments:</p>
+
+<ul>
+ <li><code>#:color</code> determines the color of the renderer. This can be a RGB triplet,  but it can also be a string, naming a color from <a href="https://docs.racket-lang.org/draw/color-database___.html">the color  database</a></li>
+ <li><code>#:style</code> determines the line style, such as dashed, solid, or even  transparent</li>
+ <li><code>#:width</code> specifies the width of the line</li>
+ <li><code>#:point-size</code> and <code>#:point-color</code> represent the size and color of the dots  for labels.</li></ul>
+
+<p>This is the same <code>plot</code> call, but this time each renderer has been styled to use different color, sizes and line styles:</p>
+
+<div class="figure"><img src="/img/a045/plot-2.png" alt="" />
+ <p class="caption"></p></div>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">plot</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">a</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">10</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span> <span class="mi">3</span><span class="p">)))</span> <span class="c1">; angle at which we draw the line and sine function</span>
+
+<span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+       <span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">polar</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="kd">#:color</span> <span class="s2">"firebrick"</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">short-dash</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">)))</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">long-dash</span> <span class="kd">#:color</span> <span class="s2">"gray"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">)))</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">long-dash</span> <span class="kd">#:color</span> <span class="s2">"gray"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">)))</span><span class="kd">#:color</span> <span class="s2">"steelblue"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">polar-label</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="n">a</span> <span class="s2">""</span> <span class="kd">#:point-size</span> <span class="mi">10</span> <span class="kd">#:point-color</span> <span class="s2">"firebrick"</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">point-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))</span> <span class="s2">""</span> <span class="kd">#:point-size</span> <span class="mi">5</span> <span class="kd">#:point-color</span> <span class="s2">"firebrick"</span><span class="p">)</span>
+       <span class="p">(</span><span class="n">function</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">a</span> <span class="n">x</span><span class="p">)))</span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">3</span><span class="p">))</span>
+      <span class="kd">#:height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="mi">2</span><span class="p">))</span>
+      <span class="kd">#:width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>There are several ways to generate plot animations, for example, you can generate individual images for each angle value <code>a</code>, save them to a file and use external tools to create a &ldquo;movie&rdquo;. Racket even has a library for writing <a href="https://docs.racket-lang.org/mrlib/GIF_and_Animated_GIF_Writing.html">animated GIF files</a>. Here we&rsquo;ll focus on writing plot animations which can be embedded in GUI applications.</p>
+
+<p>The call to <code>plot</code> (and <code>plot-snip</code>) produces a <code>snip%</code> object, which is an interactive object that knows how to display itself and interact with the mouse &mdash; DrRacket REPL recognizes these objects and draws them in the REPL. The snip returned by the plot functions is a [2d-plot-snip%][2d-plot-snip] which provides two extra methods: <code>set-mouse-event-callback</code> and <code>set-overlay-renderers</code>. Together these methods can be used to implement <a href="/2018/03/interactive-overlays-with-the-racket-plot-package-update.html">interactive plots</a>, but they can also be used separately.</p>
+
+<p>The <code>set-overlay-renderers</code> method can be used to add new renderers to an existing plot and this can be used to implement animations: we can create a plot containing the &ldquo;fixed&rdquo; parts such as the axes and the unit circle and use <code>set-overlay-renderers</code> to construct the remaining elements periodically as the angle <code>a</code> increases:</p>
+
+<div class="figure"><img src="/img/a045/plot-3.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Unfortunately, manipulating snips this way cannot be done when the snips are displayed in the REPL. This is because the REPL itself will create a copy of the snip and display the copy. The user program has no access to this copy so it cannot update it. However, we can add snips to GUI applications using the <a href="https://pkgs.racket-lang.org/package/plot-container">plot-container</a> package and this will allow us to keep a reference to the plot snip and update it as needed. <code>plot-container</code> is not part of the standard Racket installation and will need to be installed using a raco command: <code>raco pkg install plot-container</code>.</p>
+
+<p>Here is a simple GUI application with a single toplevel window that shows the plot snip. The program still has access to the plot snip itself as the <code>snip</code> global variable:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket/gui</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">plot</span> <span class="n">plot-container</span><span class="p">)</span>
+
+<span class="p">(</span><span class="n">plot-x-label</span> <span class="no">#f</span><span class="p">)</span>
+<span class="p">(</span><span class="n">plot-y-label</span> <span class="no">#f</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">toplevel</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">frame%</span> <span class="p">[</span><span class="n">label</span> <span class="s2">"Sine Function Animation"</span><span class="p">]</span>
+                      <span class="p">[</span><span class="n">height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="mf">2.6</span><span class="p">))]</span>
+                      <span class="p">[</span><span class="n">width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-round))" style="color: inherit">exact-round</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">100</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">))))]))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">container</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">plot-container%</span> <span class="p">[</span><span class="n">parent</span> <span class="n">toplevel</span><span class="p">]))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">snip</span> <span class="p">(</span><span class="n">plot-snip</span>
+              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+               <span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+               <span class="p">(</span><span class="n">polar</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="kd">#:color</span> <span class="s2">"firebrick"</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">short-dash</span><span class="p">))</span>
+              <span class="kd">#:x-min</span> <span class="mi">-1</span> <span class="kd">#:x-max</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)</span> <span class="kd">#:y-min</span> <span class="mf">-1.1</span> <span class="kd">#:y-max</span> <span class="mf">1.1</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">container</span> <span class="n">set-snip</span> <span class="n">snip</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">toplevel</span> <span class="n">show</span> <span class="no">#t</span><span class="p">)</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Running this program will create the empty looking plot in a separate window:</p>
+
+<div class="figure"><img src="/img/a045/plot-4.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The actual renderers for the sine function can be produced by a separate function, which takes an angle as a parameter and returns the renderers. Note that this function does not call any of the <code>plot</code> functions but simply returns these renderers, these renderers can be passed to <code>set-overlay-renderers</code> to update the plot:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">origin</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-sine-renderers</span> <span class="n">a</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">sin-a</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="n">a</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cos-a</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="n">a</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">point-on-circle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">cos-a</span> <span class="n">sin-a</span><span class="p">))</span>
+  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
+   <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="n">sin-a</span><span class="p">)</span> <span class="n">point-on-circle</span><span class="p">)</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">short-dash</span> <span class="kd">#:color</span> <span class="s2">"gray"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+   <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">cos-a</span> <span class="mi">0</span><span class="p">)</span> <span class="n">point-on-circle</span><span class="p">)</span> <span class="kd">#:style</span> <span class="o">'</span><span class="ss">short-dash</span> <span class="kd">#:color</span> <span class="s2">"gray"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+   <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">origin</span> <span class="n">point-on-circle</span><span class="p">)</span> <span class="kd">#:color</span> <span class="s2">"steelblue"</span> <span class="kd">#:width</span> <span class="mi">2</span><span class="p">)</span>
+   <span class="p">(</span><span class="n">polar-label</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="n">a</span> <span class="s2">""</span> <span class="kd">#:point-size</span> <span class="mi">10</span> <span class="kd">#:point-color</span> <span class="s2">"firebrick"</span><span class="p">)</span>
+   <span class="p">(</span><span class="n">point-label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mi">0</span> <span class="n">sin-a</span><span class="p">)</span> <span class="s2">""</span> <span class="kd">#:point-size</span> <span class="mi">5</span> <span class="kd">#:point-color</span> <span class="s2">"firebrick"</span><span class="p">)</span>
+   <span class="p">(</span><span class="n">function</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">a</span> <span class="n">x</span><span class="p">)))</span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">3</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>In the DrRacket REPL we can call <code>set-overlay-renderers</code> with different arguments to <code>make-sine-renderers</code> to see how it all fits together, for example:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">set-overlay-renderers</span> <span class="p">(</span><span class="n">make-sine-renderers</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a045/iplot.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>What remains is to create a function which produces sine function renderers at regular intervals and passes them to the plot snip for rendering. This can be a simple loop with a <code>sleep</code> call, but this will not produce good results for two reasons: first, the canvas redraw time cannot be controlled, so a call to <code>set-overlay-renderers</code> will simply queue a redraw request which will happen later and second, the mechanism we chose will produce a lot of garbage: each time we call <code>make-sine-renderers</code> the function will allocate data for the renderers, these will be displayed once, than never used again &mdash; as memory accumulates, Racket will stop the running program to reclaim the memory.</p>
+
+<p>We cannot perfectly address these issue, but we can alleviate it: we&rsquo;ll keep track of the animation time and run the garbage collector at regular intervals, hoping that its impact on performance will be smaller.</p>
+
+<p>Instead of animating based on angle, we will animate based on time and we&rsquo;ll use an angular velocity to calculate the angle corresponding to a timestamp: <code>make-animation-frame</code> produces the renderers at a time <code>t</code> and it does so simply by calculating the angle and calling <code>make-sine-renderers</code>:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">angular-velocity</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mf">0.1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))</span> <span class="c1">;; 2 PI is 1 rotation / second</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-animation-frame</span> <span class="n">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">make-sine-renderers</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">t</span> <span class="n">angular-velocity</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The <code>do-animation</code> function is responsible for keeping track of the animation time, periodically calling <code>make-animation-frame</code> and updating the plot snip with the new renderers followed by a minor garbage collection. To ensure that each frame starts at a reasonably precise interval, the function keeps track of the duration of the redraw and garbage collection which is subtracted from the amount of time the function sleeps before starting a new iteration:</p>
+
+<pre><code>(define (do-animation fn #:frame-rate [frame-rate 60])
+  (define frame-time (/ 1 frame-rate))
+  (define start-timestamp (current-inexact-milliseconds))
+  (let loop ([timestamp (current-inexact-milliseconds)])
+    (send snip set-overlay-renderers (fn (/ (- timestamp start-timestamp) 1000.0)))
+    (collect-garbage 'minor)
+    (define remaining (- frame-time (- (current-inexact-milliseconds) timestamp)))
+    (sleep/yield (max 0 remaining))
+    (loop (current-inexact-milliseconds))))</code></pre>
+
+<p>Calling <code>(do-animation make-animation-frame)</code> produces a smooth looking animation:</p>
+
+<div class="figure"><img src="/img/a045/sine-animation.gif" alt="" />
+ <p class="caption"></p></div>
+
+<p>Originally, <code>set-overlay-renderers</code> was indented to be used to add plot annotations, such as hover labels, in response to mouse events, however, the method can be used separately. Since, the &ldquo;fixed&rdquo; plot part will be rendered to a bitmap only once, and only the additional renderers will have to be recalculated and plotted, this can be more efficient than creating animations which render the entire plot area every frame.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2020/11/space-invaders.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Space Invaders</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>
