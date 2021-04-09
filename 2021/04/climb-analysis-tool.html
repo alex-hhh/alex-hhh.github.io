@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Climb Analysis Tool</title>
+    <meta name="description" content="As part of preparing for a bicycle race in my local city I wanted to look at the climbs of the bike route and evaluate their difficulty. Since all the (free) online tools only provided basic analysis tools, I decided to write my own....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket, activitylog2, data visualization">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2021/04/climb-analysis-tool.html">
+    <link rel="next" href="/2021/01/plot-animations.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Climb Analysis Tool</h1>
+    <p class='date-and-tags'>
+<time datetime="2021-04-08" pubdate="true">2021-04-08</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/activitylog2.html">activitylog2</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </header>
+
+<p>As part of preparing for a bicycle race in my local city I wanted to look at the climbs of the bike route and evaluate their difficulty. Since all the (free) online tools only provided basic analysis tools, I decided to write my own.</p>
+<!-- more-->
+
+<p>The result is a small <a href="https://www.racket-lang.org">Racket</a> application, which can load <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPX files</a> (these can be readily exported from Garmin Connect or Strava), and detect and highlight the climbs on the route. The application is interactive, allowing to control various parameters for detecting the climbs as well as providing additional information when the mouse hovers over the plot.</p>
+
+<div class="figure"><img src="/img/a046/cat-screenshot.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>If you want to use the application or simply look at the source code, it is available on GitHub as the <a href="https://github.com/alex-hhh/AL2-Climb-Analysis">AL2-Climb-Analysis</a> project.</p>
+
+<h2 id="the-implementation">The Implementation</h2>
+
+<p>The construction of the initial version of this application was presented at <a href="https://racketfest.com/">RacketFest 2021</a>, and if you have 30 minutes to spare, you can watch the video here:</p>
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/3TWoYTQ9xSY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="allowfullscreen"></iframe></div>
+
+<p>The final version of the application is however a bit more complex than shown in this video. It now has a proper GUI where the user can load a file interactively and the various parameters for climb detection can be adjusted interactively. In addition to this, I also added a list view showing information about each climb. Another feature, which might not be obvious at first, is that the application remembers all its settings and GUI layout between runs: for example, if you adjust the size, or re-order the columns of the list view, they will remain the same even when the application runs again.</p>
+
+<p>The application packs a lot of features, and it is still well under 1000 lines of Racket code (and this includes lots of comments). Even if you are not interested in analyzing climb data from bike routes, this application is a good example of building a data visualization application in Racket.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2021/01/plot-animations.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Plot Animations</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

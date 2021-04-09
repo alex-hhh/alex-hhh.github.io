@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2021/01/plot-animations.html">
     <link rel="next" href="/2020/11/space-invaders.html">
-
+    <link rel="prev" href="/2021/04/climb-analysis-tool.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -368,15 +368,35 @@
 
 <p>The <code>do-animation</code> function is responsible for keeping track of the animation time, periodically calling <code>make-animation-frame</code> and updating the plot snip with the new renderers followed by a minor garbage collection. To ensure that each frame starts at a reasonably precise interval, the function keeps track of the duration of the redraw and garbage collection which is subtracted from the amount of time the function sleeps before starting a new iteration:</p>
 
-<pre><code>(define (do-animation fn #:frame-rate [frame-rate 60])
-  (define frame-time (/ 1 frame-rate))
-  (define start-timestamp (current-inexact-milliseconds))
-  (let loop ([timestamp (current-inexact-milliseconds)])
-    (send snip set-overlay-renderers (fn (/ (- timestamp start-timestamp) 1000.0)))
-    (collect-garbage 'minor)
-    (define remaining (- frame-time (- (current-inexact-milliseconds) timestamp)))
-    (sleep/yield (max 0 remaining))
-    (loop (current-inexact-milliseconds))))</code></pre>
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">do-animation</span> <span class="n">fn</span> <span class="kd">#:frame-rate</span> <span class="p">[</span><span class="n">frame-rate</span> <span class="mi">60</span><span class="p">])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">frame-time</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="mi">1</span> <span class="n">frame-rate</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">start-timestamp</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">([</span><span class="n">timestamp</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">)])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">snip</span> <span class="n">set-overlay-renderers</span> <span class="p">(</span><span class="n">fn</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">timestamp</span> <span class="n">start-timestamp</span><span class="p">)</span> <span class="mf">1000.0</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/garbagecollection.html#(def._((quote._~23~25kernel)._collect-garbage))" style="color: inherit">collect-garbage</a></span> <span class="o">'</span><span class="ss">incremental</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">remaining</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">frame-time</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">)</span> <span class="n">timestamp</span><span class="p">)))</span>
+    <span class="p">(</span><span class="n">sleep/yield</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="mi">0</span> <span class="n">remaining</span><span class="p">))</span>
+    <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-inexact-milliseconds))" style="color: inherit">current-inexact-milliseconds</a></span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
 
 <p>Calling <code>(do-animation make-animation-frame)</code> produces a smooth looking animation:</p>
 
@@ -398,7 +418,12 @@
               <span aria-hidden="true">&larr; Space Invaders</span>
             </a>
           </li>
-
+          <li class="page-item">
+            <a class="page-link" href="/2021/04/climb-analysis-tool.html"
+               aria-label="Next">
+              <span aria-hidden="true">Climb Analysis Tool &rarr;</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
