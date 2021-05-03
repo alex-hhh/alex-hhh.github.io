@@ -139,6 +139,10 @@ blockquote {
     padding: 0.5em 10px;
 }
 
+.thumbnail {
+    max-width: 200px;
+}
+
 .zoom-on-hover {
     overflow: visible;
 }

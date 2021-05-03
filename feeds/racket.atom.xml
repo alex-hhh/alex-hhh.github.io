@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2021-04-08T10:55:00Z</updated>
+ <updated>2021-04-24T07:56:37Z</updated>
+ <entry>
+  <title type="text">Box and Whiskers Plot</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2021/04/box-and-whiskers-plot.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2021-04-box-and-whiskers-plot-html</id>
+  <published>2021-04-24T07:56:37Z</published>
+  <updated>2021-04-24T07:56:37Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;The &lt;a href="https://en.wikipedia.org/wiki/Box_plot"&gt;Box and Whiskers&lt;/a&gt; plot is a method for depicting groups of numerical data through their quartiles and it is a popular way to depict statistical information about data sets, yet the &lt;a href="https://docs.racket-lang.org/plot/index.html"&gt;Racket plot&lt;/a&gt; package does not support such a plot type. In this blog post we&amp;rsquo;ll explore how to add this plot type to the plot package without having to modify the package itself, and we&amp;rsquo;ll look at some useful techniques of extending the plot package.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/04/box-and-whiskers-plot.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Climb Analysis Tool</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2021/04/climb-analysis-tool.html?utm_source=racket&amp;utm_medium=Atom" />
