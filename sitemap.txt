@@ -45,5 +45,6 @@ https://alex-hhh.github.io/2020/11/space-invaders.html
 https://alex-hhh.github.io/2021/01/plot-animations.html
 https://alex-hhh.github.io/2021/04/box-and-whiskers-plot.html
 https://alex-hhh.github.io/2021/04/climb-analysis-tool.html
+https://alex-hhh.github.io/2021/07/shaded-area-plot.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Shaded Area Plot</title>
+    <meta name="description" content="in which we explore using interval renderers and color maps to create a plot where the area under the line is shaded based on data from a second data series....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket, data visualization">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2021/07/shaded-area-plot.html">
+    <link rel="next" href="/2021/04/box-and-whiskers-plot.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Shaded Area Plot</h1>
+    <p class='date-and-tags'>
+<time datetime="2021-07-03" pubdate="true">2021-07-03</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </header>
+
+<p>&hellip; in which we explore using interval renderers and color maps to create a plot where the area under the line is shaded based on data from a second data series.</p>
+<!-- more-->
+
+<p>The example we&rsquo;ll use is the elevation profile for a short hike, where the area under the line is shaded based on the grade or slope of the track: steeper uphill sections are colored using a darker red, while steeper downhill sections are colored darker blue. This shading makes it easier to identify the difficult sections of the track, making the visualization more useful than just showing only the elevation profile. For an alternative way of presenting the same information, the elevation and grade data series could be <a href="/2020/02/dual-axis-plots.html">plotted on the same plot</a>. Here is what the final plot looks like:</p>
+
+<div class="figure"><img src="/img/a048/shaded-area.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>Building the above plot requires putting together a few features of the <a href="https://docs.racket-lang.org/plot/index.html">Racket Plot</a> package: color maps, interval renderers, building custom legend pictures and the new plot metrics interface for positioning the legend. We&rsquo;ll start with the color maps.</p>
+
+<h2 id="color-maps">Color-maps</h2>
+
+<p>All plot renderers have a <code>#:color</code> parameter which specifies the color used to draw the data. The color parameter can be either <a href="https://docs.racket-lang.org/draw/color-database___.html">a named color</a>, or a RGB triplet. The most common uses of the <code>#:color</code> parameter are for a named color or a RGB triplet:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-5</span> <span class="mi">5</span> <span class="kd">#:color</span> <span class="s2">"red"</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="mi">-5</span> <span class="mi">5</span> <span class="kd">#:color</span> <span class="o">'</span><span class="p">(</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">255</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a048/plot1.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>However, the color parameter can also be an integer, and in this case, it is an index into a color map. Color maps are collections of colors which allows separating the actual colors of the plot from the renderer themselves. For example, we can write our plot using colors 0 and 1 and their meaning will be defined by the current color map:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">tab10</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-5</span> <span class="mi">5</span> <span class="kd">#:color</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span> <span class="mi">-5</span> <span class="mi">5</span> <span class="kd">#:color</span> <span class="mi">1</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a048/plot2.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The colors can be changed by specifying a different color map to <a href="https://docs.racket-lang.org/plot/params.html#%28def._%28%28lib._plot%2Fmain..rkt%29._plot-pen-color-map%29%29">plot-pen-color-map</a>, or <a href="https://docs.racket-lang.org/plot/params.html#%28def._%28%28lib._plot%2Fmain..rkt%29._plot-brush-color-map%29%29">plot-brush-color-map</a>. The plot package has several color maps built in (see the documentation for <a href="https://docs.racket-lang.org/plot/params.html#%28def._%28%28lib._plot%2Fmain..rkt%29._plot-pen-color-map%29%29">plot-pen-color-map</a>) and additional color maps can be defined by the user.</p>
+
+<p>The built-in color maps specify colors that are designed to look distinct from each other so data series using colors from a color map stand out on a plot. The <a href="https://docs.racket-lang.org/colormaps/index.html">colormaps</a> package defines additional color maps and some of these can be used to represent various &ldquo;intensities&rdquo; in the data series. For example to view the <em>cb-rdylgn&ndash;11</em> diverging color map, you can type <code>(pp-color-map 'cb-rdylgn-11)</code> in the DrRacket REPL:</p>
+
+<div class="figure"><img src="/img/a048/rdylgn11.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>In a similar way, you can use <code>(pp-color-map 'cb-ylgnbu-9)</code> to view the <em>cb-ylgnbu&ndash;9</em> color map, which contains sequential colors:</p>
+
+<div class="figure"><img src="/img/a048/ylgnbu9.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The <code>pp-color-map</code> function, from the <code>colormaps/utils</code> package can be used to display a color map, along with the color indexes for each color, the documentation for the colormaps already displays this information, but the function can be useful when designing your own color maps.</p>
+
+<h2 id="from-grade-to-color-index">From Grade to Color Index</h2>
+
+<p>To use the color maps to shade the plot based on the grade, we need a function to convert grade values into color map indexes, since colors in a color map can be selected using an integer between 0 and <code>color-map-size</code>, but grade values can be any real number, positive or negative.</p>
+
+<p>The mapping between values from the data series and the color code is application specific. For grade values, one approach is to use a divergent color map which has a &ldquo;positive&rdquo; set of colors and a &ldquo;negative&rdquo; set of colors and map ranges of grade values to each color. Since the color maps contain a relatively small number of values, we can choose exponential ranges to cover larger grade ranges for bigger colors. Here is how it would look for the <code>'cd-rdbu-10</code> color map:</p>
+
+<div class="figure"><img src="/img/a048/cd-rdbu-10-mapping.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>Of course, any mapping needs to take into consideration that some color map have an odd number of colors, so the &ldquo;middle&rdquo; range needs to be mapped from &ndash;1% to 1% for such color maps. Here is an example mapping for the <code>'cd-rdbu-11</code> color map, which contains 11 colors:</p>
+
+<div class="figure"><img src="/img/a048/cd-rdbu-11-mapping.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The <code>make-grade-color-indexer</code> function produces a function which converts a grade value into a color map index, and can do it for color maps with any number of colors &mdash; this makes it easy to experiment with different color maps, since these have a different number of colors. The function is also able to generate &ldquo;inverse&rdquo; mappings, controlled by the <code>invert?</code> parameter &mdash; this maps the grade values in reverse. The <code>invert?</code> feature is not strictly needed, but I wanted to use a red - blue divergent color map, but use the red values for positive grades (which are harder to climb).</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-grade-color-indexer</span> <span class="n">color-count</span> <span class="kd">#:invert?</span> <span class="p">(</span><span class="n">invert?</span> <span class="no">#f</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">offset</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-floor))" style="color: inherit">exact-floor</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">color-count</span> <span class="mi">2</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">grade</span><span class="p">)</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index0</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">invert?</span> <span class="mi">-1</span> <span class="mi">1</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._sgn))" style="color: inherit">sgn</a></span> <span class="n">grade</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-floor))" style="color: inherit">exact-floor</a></span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">absolute-grade</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="n">grade</span><span class="p">)])</span>
+            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">absolute-grade</span> <span class="mf">1.0</span><span class="p">)</span> <span class="mi">0</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._log))" style="color: inherit">log</a></span> <span class="n">absolute-grade</span> <span class="mi">2</span><span class="p">)))))))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index1</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._odd~3f))" style="color: inherit">odd?</a></span> <span class="n">color-count</span><span class="p">)</span>
+          <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">offset</span> <span class="n">index0</span><span class="p">)</span>
+          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">grade</span> <span class="mi">0</span><span class="p">)</span>
+              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">offset</span> <span class="n">index0</span><span class="p">)</span>
+              <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">offset</span> <span class="mi">-1</span> <span class="n">index0</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._inexact-~3eexact))" style="color: inherit">inexact-&gt;exact</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sub1))" style="color: inherit">sub1</a></span> <span class="n">color-count</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="mi">0</span> <span class="n">index1</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Here is what an inverted mapping looks like for the <code>'cb-rdbu-11</code> color map:</p>
+
+<div class="figure"><img src="/img/a048/cd-rdbu-11-mapping-inverted.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>And to use the function, we can &ldquo;instantiate&rdquo; it like so:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">grade-&gt;color-index</span>
+  <span class="p">(</span><span class="n">make-grade-color-indexer</span> <span class="p">(</span><span class="n">color-map-size</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">)</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>While it is a good idea to write some unit tests for the function, here we&rsquo;ll just try it out in the REPL to check if it produces the expected results for a few cases:</p>
+
+<pre><code>&gt; (grade-&gt;color-index 2.4)
+3
+&gt; (grade-&gt;color-index -1.3)
+6
+&gt; (grade-&gt;color-index 0.5)
+5
+&gt; </code></pre>
+
+<h2 id="the-shaded-area-plot">The Shaded Area Plot</h2>
+
+<p>The idea behind the plot is to use the <a href="https://docs.racket-lang.org/plot/renderer2d.html#(def._((lib._plot%2Fmain..rkt)._lines-interval))">lines-interval</a> renderer to plot adjacent segments which have the same color according to our <code>grade-&gt;color-index</code> function. The lines interval renderer will show three elements:</p>
+
+<ul>
+ <li>
+  <p>one line (as defined by a sequence of points) at the top &mdash; the renderer  allows controlling the with and color of this line</p></li>
+ <li>
+  <p>a second line (again, defined by a sequence of points) at the bottom &mdash; the  renderer allows controlling the width and color of this line separately</p></li>
+ <li>
+  <p>the area between the lines is colored according to a third color which can  be specified to the renderer.</p></li></ul>
+
+<p>The renderer will not &ldquo;close&rdquo; the interval, that is, it will not draw vertical lines at the start and end of the interval &mdash; this feature is useful as it will make it easy to stitch together several of these renderers and the result will be a continuous plot with different colors for the area under the plot.</p>
+
+<p>Since the <code>lines-interval</code> renderer accepts a lot of parameters and only the sequence of points at the top and the shading color changes, we can write a small helper function, <code>make-renderer</code> which just accepts the arguments we need and uses our defaults for all the others. In particular, the line at the top will be green and the line at the bottom will be transparent. Also the renderer does not need two lines of equal points, so the line at the bottom is defined by just two points at the start and end of the interval:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-renderer</span> <span class="n">points</span> <span class="n">color</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">start</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._first))" style="color: inherit">first</a></span> <span class="n">points</span><span class="p">)</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">end</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._last))" style="color: inherit">last</a></span> <span class="n">points</span><span class="p">)</span> <span class="mi">0</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">lines-interval</span>
+     <span class="n">points</span>
+     <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">start</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">end</span> <span class="mi">0</span><span class="p">))</span>
+     <span class="kd">#:line1-color</span> <span class="s2">"darkgreen"</span>
+     <span class="kd">#:line1-width</span> <span class="mi">4</span>
+     <span class="kd">#:line2-style</span> <span class="o">'</span><span class="ss">transparent</span>
+     <span class="kd">#:color</span> <span class="n">color</span>
+     <span class="kd">#:alpha</span> <span class="mf">0.8</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Before we go further, let&rsquo;s load some sample data from a CSV file using the <a href="https://docs.racket-lang.org/data-frame/index.html">data-frame</a> package. You can download the <a href="https://drive.google.com/file/d/1nEHwwX9yEKGjAvLCrgOEBtQ5GytWmCrT/view?usp=sharing">sample CSV file</a> used for this plot, if you want to experiment with it. The file contains three columns, &ldquo;distance&rdquo;, &ldquo;alt&rdquo; (for altitude) and &ldquo;grade&rdquo;:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">data-frame</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/csv</span> <span class="s2">"./track-data-3037.csv"</span><span class="p">))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The plot itself is created by the <code>make-grade-color-indexer</code> function, which iterates over the data points in the data frame and constructs interval renderers for sequences of points which have the same color, as determined by our function which converts grade values to color indexes. This iteration can be expressed using <code>for/fold</code> construct:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-grade-color-renderers</span> <span class="n">df</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">renderers</span> <span class="o">'</span><span class="p">()]</span>    <span class="c1">; renderers we&#39;ve constructed so far</span>
+             <span class="p">[</span><span class="n">current-span</span> <span class="o">'</span><span class="p">()]</span> <span class="c1">; current list of points with the same color</span>
+             <span class="p">[</span><span class="n">current-color</span> <span class="no">#f</span><span class="p">]</span> <span class="c1">; current color for shaded area</span>
+             <span class="kd">#:result</span>
+             <span class="c1">;; Add the last span to the renderer list (if it exists) and</span>
+             <span class="c1">;; return only the renderers</span>
+             <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">current-color</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span> <span class="n">current-span</span><span class="p">)</span> <span class="mi">0</span><span class="p">))</span>
+                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">make-renderer</span> <span class="n">current-span</span> <span class="n">current-color</span><span class="p">)</span> <span class="n">renderers</span><span class="p">)</span>
+                 <span class="n">renderers</span><span class="p">))</span>
+
+            <span class="c1">;; Iterate over the distance, altitude and grade series in the</span>
+            <span class="c1">;; data frame</span>
+            <span class="p">([(</span><span class="n">dst</span> <span class="n">alt</span> <span class="n">grade</span><span class="p">)</span> <span class="p">(</span><span class="n">in-data-frame</span> <span class="n">df</span> <span class="s2">"distance"</span> <span class="s2">"alt"</span> <span class="s2">"grade"</span><span class="p">)]</span>
+             <span class="kd">#:when</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">dst</span> <span class="n">alt</span> <span class="n">grade</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">color</span> <span class="p">(</span><span class="n">grade-&gt;color-index</span> <span class="n">grade</span><span class="p">))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">this-point</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">dst</span> <span class="n">alt</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">color</span> <span class="n">current-color</span><span class="p">)</span>
+        <span class="c1">;; This point belongs to the same span</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="n">renderers</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">this-point</span> <span class="n">current-span</span><span class="p">)</span> <span class="n">color</span><span class="p">)</span>
+        <span class="c1">;; This point is part of a new color span, make a renderer from</span>
+        <span class="c1">;; `current-span` and start a fresh span</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span>
+         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">current-color</span>
+             <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">span</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">this-point</span> <span class="n">current-span</span><span class="p">)])</span>
+               <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">make-renderer</span> <span class="n">span</span> <span class="n">current-color</span><span class="p">)</span> <span class="n">renderers</span><span class="p">))</span>
+             <span class="n">renderers</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">this-point</span><span class="p">)</span>     <span class="c1">; start a fresh span</span>
+         <span class="n">color</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>To try it out, we can simply pass the result of <code>make-grade-color-renderers</code> to <code>plot</code>. The call can be parameterized with the color maps to use &mdash; one for the pen (used to draw lines and points) and one for the brush, used to draw the shaded area. Here we use the same color map for both, but they can be set to different color maps as well:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4
+5</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Elevation (m)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-brush-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="n">make-grade-color-renderers</span> <span class="n">df</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a048/shaded-area-no-legend.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The plot, as shown above, provides no indication on what the colors mean. On an interactive plot, we could add a hover callback to display the elevation and grade information about the current position, as the user moves the mouse over the plot. However, this is not an option for plots which are saved to bitmap files or added to other documents. In the next section we&rsquo;ll look at how to construct a plot legend which shows what grade values correspond to each color.</p>
+
+<h2 id="custom-legend">Custom Legend</h2>
+
+<p>The plot package can display a legend entry for each individual renderer, but in our case, the plot is constructed from many such renderers (one for each segment with similar grade), so we cannot use the plot legend mechanism directly and we need to construct the legend ourselves.</p>
+
+<p>The final Racket code that constructs the legend is somewhat complicated as it has several user options to control the layout, and dealing with these options obscures the simple idea behind it. Here we&rsquo;ll look at how to construct the plot legend using a horizontal layout, the full legend construction function is shown at the end of the section.</p>
+
+<p>We will construct the legend as a <code>pict</code> using the <a href="https://docs.racket-lang.org/pict/index.html">Racket pict</a> library &mdash; the pictures produced by this library are versatile: they can be displayed directly in the DrRacket REPL, combined with other pictures, such as <code>plot-pict</code>, saved to bitmaps or displayed in GUI applications.</p>
+
+<p>Each individual color in a color map can be obtained using <code>-&gt;pen-color</code> helper function from the plot package and the <code>color-map-&gt;list-of-colors</code> function creates a list of all of them. From there, we can use the <code>filled-rectangle</code> pict constructor to make small squares of each color:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">colormaps</span> <span class="n">plot</span> <span class="n">plot/utils</span> <span class="n">pict</span> <span class="n">racket/draw</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">color-map-&gt;list-of-colors</span> <span class="n">cm</span><span class="p">)</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-pen-color-map</span> <span class="n">cm</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">c</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="p">(</span><span class="n">color-map-size</span> <span class="n">cm</span><span class="p">))])</span>
+      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">r</span> <span class="n">g</span> <span class="n">b</span><span class="p">)</span> <span class="p">(</span><span class="n">-&gt;pen-color</span> <span class="n">c</span><span class="p">))</span>
+      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/objcreation.html#(def._((lib._racket/private/class-internal..rkt)._make-object))" style="color: inherit">make-object</a></span> <span class="n">color%</span> <span class="n">r</span> <span class="n">g</span> <span class="n">b</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">color-picts</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">c</span> <span class="p">(</span><span class="n">color-map-&gt;list-of-colors</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">filled-rectangle</span> <span class="mi">30</span> <span class="mi">30</span> <span class="kd">#:draw-border?</span> <span class="no">#f</span> <span class="kd">#:color</span> <span class="n">c</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>In the DrRacket REPL, the list of squares will be displayed directly &mdash; this makes it easy to experiment with their shapes and sizes:</p>
+
+<div class="figure"><img src="/img/a048/color-map-legend1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>In a similar way, we can generate the labels for the legend, this time using a <code>text</code> pict constructor and superimposing it over a <code>rectangle</code>. This makes it easier to control the size of the labels &mdash; the rectangle is visible in this example, but the <code>ghost</code> pict constructor can be used to just reserve the space for it but not display it.</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">labels</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">label-count</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sub1))" style="color: inherit">sub1</a></span> <span class="p">(</span><span class="n">color-map-size</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">))]</span>
+         <span class="p">[</span><span class="n">half-label-count</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-floor))" style="color: inherit">exact-floor</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">label-count</span> <span class="mi">2</span><span class="p">))]</span>
+         <span class="p">[</span><span class="n">half-labels</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._build-list))" style="color: inherit">build-list</a></span> <span class="n">half-label-count</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span> <span class="n">n</span> <span class="mi">2</span><span class="p">)))]</span>
+         <span class="p">[</span><span class="n">negated</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span><span class="p">))</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._reverse))" style="color: inherit">reverse</a></span> <span class="n">half-labels</span><span class="p">))])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._even~3f))" style="color: inherit">even?</a></span> <span class="n">label-count</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._append))" style="color: inherit">append</a></span> <span class="n">negated</span> <span class="n">half-labels</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._append))" style="color: inherit">append</a></span> <span class="n">negated</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="mi">0</span><span class="p">)</span> <span class="n">half-labels</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">label-picts</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">l</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">labels</span><span class="p">)])</span>
+    <span class="p">(</span><span class="n">cc-superimpose</span>
+     <span class="p">(</span><span class="n">rectangle</span> <span class="mi">30</span> <span class="mi">30</span><span class="p">)</span>
+     <span class="p">(</span><span class="n">text</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"~a%"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-floor))" style="color: inherit">exact-floor</a></span> <span class="n">l</span><span class="p">))</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span> <span class="p">(</span><span class="n">plot-font-size</span><span class="p">)))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>Here is an example of the labels, one with the guiding rectangle displayed and another with the rectangle ghosted out:</p>
+
+<div class="figure"><img src="/img/a048/color-map-legend2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Finally, we can stitch the color and label rectangles together using <code>hc-append</code> and the two rows using <code>vl-append</code>. To position the labels between the color rectangles (since the colors represent ranges of grades), we can insert a rectangle half the width at the beginning of the list of labels:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="n">vl-append</span>
+ <span class="mi">1</span>
+ <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/procedures.html#(def._((lib._racket/private/base..rkt)._apply))" style="color: inherit">apply</a></span> <span class="n">hc-append</span> <span class="mi">1</span> <span class="n">color-picts</span><span class="p">)</span>
+ <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/procedures.html#(def._((lib._racket/private/base..rkt)._apply))" style="color: inherit">apply</a></span> <span class="n">hc-append</span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">rectangle</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="mi">30</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">30</span><span class="p">)</span> <span class="n">label-picts</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>And here is how this looks in the DrRacket REPL. In the final legend picture, all the rectangles around the labels would be ghosted out:</p>
+
+<div class="figure"><img src="/img/a048/color-map-legend3.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>To be useful, the code that creates the legend entry needs to be more flexible: allowing both a horizontal and a vertical layout, inverting the color map entries (since we allowed for inverting them in the <code>make-grade-color-indexer</code>), as well as creating legend entries of different lengths or heights. All this is just simple calculations, making them somewhat boring. You can find the implementation for the <code>make-grade-color-legend</code> in this <a href="https://gist.github.com/alex-hhh/b224d2fc87b3bc094e0869a94dbbd76f">GitHub Gist</a>, if you are interested. Here is how it looks:</p>
+
+<div class="figure"><img src="/img/a048/color-map-legend4.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="legend-placing">Legend Placing</h2>
+
+<p>There are several ways to place the legend next to the plot, but perhaps the simplest one is to obtain the plot as a picture, using <code>plot-pict</code> and place the legend next to it using <code>hc-append</code>. This, however, does not produce a nice looking result:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">result-bad-legend</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Elevation (m)"</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">]</span>
+                 <span class="p">[</span><span class="n">plot-brush-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">])</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">plot</span> <span class="p">(</span><span class="n">plot-pict</span> <span class="p">(</span><span class="n">make-grade-color-renderers</span> <span class="n">df</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">legend</span> 
+      <span class="p">(</span><span class="n">make-grade-color-legend</span>
+        <span class="p">(</span><span class="n">plot-pen-color-map</span><span class="p">)</span> <span class="kd">#:orientation</span> <span class="o">'</span><span class="ss">vertical</span> <span class="kd">#:length</span> <span class="p">(</span><span class="n">plot-height</span><span class="p">)</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">hc-append</span> <span class="mi">20</span> <span class="n">plot</span> <span class="n">legend</span><span class="p">))))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>This is because we used the entire height of the plot for the height of the legend, which does not align nicely with the plot area:</p>
+
+<div class="figure"><img src="/img/a048/shaded-area-bad-legend.svg" alt="" />
+ <p class="caption"></p></div>
+
+<p>We could manually try a few legend heights and insert a ghost rectangle at the top, to push the legend down a bit and such a trial and error method would work of a one-off plot. The plot package however has a new feature to help with situations like these: plot metrics.</p>
+
+<p>Plot metrics <a href="https://github.com/racket/plot/pull/90">were added</a> earlier this year to the plot package to allow the user to obtain information about elements in the plot and can be used to decorate the plots with additional graphics elements. Here we will use these features for a more modest task: determine the height of the plot area, so we can create a legend with this height.</p>
+
+<p>The <code>plot-pict-bounds</code> function can be used to determine the plot area for a plot returned by <code>plot-pict</code>, it returns the range for the X and Y axis of the plot itself. For example, we can determine the minimum and maximum values for the two axes of our plot as follows:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre>1
+2
+3
+4</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">plot</span> <span class="p">(</span><span class="n">plot-pict</span> <span class="p">(</span><span class="n">make-grade-color-renderers</span> <span class="n">df</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmin</span> <span class="n">xmax</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">ymin</span> <span class="n">ymax</span><span class="p">))</span> <span class="p">(</span><span class="n">plot-pict-bounds</span> <span class="n">plot</span><span class="p">))</span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"xmin ~a, xmax ~a, ymin ~a, ymax ~a~%"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">xmin</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">xmax</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">ymin</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">ymax</span><span class="p">))</span>
+<span class="n">==&gt;</span> <span class="s2">"xmin 0.00069, xmax 3.99003, ymin 0, ymax 214.818"</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The height of the plot would be <code>ymax - ymin</code>, or 214.818, but this value is in &ldquo;plot units&rdquo;, which in our case is meters, since the Y axis represents elevation. To determine the height in drawing units (that is, pixels), we will need to convert these values into device context, or DC coordinates.</p>
+
+<p>The <code>plot-pict-plot-&gt;dc</code> function returns a function which can be used to convert points from <strong>plot coordinates</strong> to <strong>device context coordinates</strong>. The plot coordinates are what the <code>plot-pict-bounds</code> function returned, while the device context coordinates. It is used like so:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="n">plot-pict-plot-&gt;dc</span> <span class="n">plot</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc-ymin</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span> <span class="p">([(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">_x</span> <span class="n">ymin</span><span class="p">)</span> <span class="p">(</span><span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmin</span> <span class="n">ymin</span><span class="p">))])</span>
+    <span class="n">ymin</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc-ymax</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span> <span class="p">([(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">_x</span> <span class="n">ymax</span><span class="p">)</span> <span class="p">(</span><span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmax</span> <span class="n">ymax</span><span class="p">))])</span>
+    <span class="n">ymax</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-ymax</span> <span class="n">dc-ymin</span><span class="p">)))</span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"dc-ymin ~a, dc-ymax ~a, height ~a~%"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">dc-ymin</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">dc-ymax</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7er))" style="color: inherit">~r</a></span> <span class="n">height</span><span class="p">))</span>
+<span class="n">==&gt;</span> <span class="s2">"dc-ymin 248, dc-ymax 5, height 243"</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<p>The calculated height, 243 in this case, is the height in pixels of the plot area. Note that the <code>dc-ymin</code> and <code>dc-ymax</code> values appear reversed, but this is actually correct, since the device coordinates grow downwards (the Y = 0 value is at the top of the picture), while the plot coordinates grow upwards (the Y = 0 value is at the bottom of the picture).</p>
+
+<p>To put everything together, we need to:</p>
+
+<ul>
+ <li>generate the plot,</li>
+ <li>use the plot metrics interface to calculate the height of the plot area,</li>
+ <li>generate the legend with the appropriate height</li>
+ <li>create a small spacer pict to &ldquo;push down&rdquo; the legend to where the plot area  starts.</li>
+ <li>stitch the plot and legend using <code>ht-append</code> and <code>vl-append</code></li></ul>
+
+<p>Below is the code to generate the final plot. Note that this version makes the spacer red, so it is visible, to better understand its purpose. In the real plot, this pict would be wrapped inside a <code>ghost</code> to make it invisible:</p>
+
+<div class="brush: racket">
+ <table class="sourcetable">
+  <tbody>
+   <tr>
+    <td class="linenos">
+     <div class="linenodiv">
+      <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td>
+    <td class="code">
+     <div class="source">
+      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-x-label</span> <span class="s2">"Distance (km)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-y-label</span> <span class="s2">"Elevation (m)"</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">]</span>
+               <span class="p">[</span><span class="n">plot-brush-color-map</span> <span class="o">'</span><span class="ss">cb-rdbu-11</span><span class="p">])</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">plot</span> <span class="p">(</span><span class="n">plot-pict</span> <span class="p">(</span><span class="n">make-grade-color-renderers</span> <span class="n">df</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmin</span> <span class="n">xmax</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">ymin</span> <span class="n">ymax</span><span class="p">))</span> <span class="p">(</span><span class="n">plot-pict-bounds</span> <span class="n">plot</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="n">plot-pict-plot-&gt;dc</span> <span class="n">plot</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc-ymin</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span> <span class="p">([(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">_x</span> <span class="n">ymin</span><span class="p">)</span> <span class="p">(</span><span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmin</span> <span class="n">ymin</span><span class="p">))])</span>
+      <span class="n">ymin</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc-ymax</span>
+    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span> <span class="p">([(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">_x</span> <span class="n">ymax</span><span class="p">)</span> <span class="p">(</span><span class="n">plot-&gt;dc</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">xmax</span> <span class="n">ymax</span><span class="p">))])</span>
+      <span class="n">ymax</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">height</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">dc-ymax</span> <span class="n">dc-ymin</span><span class="p">)))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">legend</span>
+    <span class="p">(</span><span class="n">make-grade-color-legend</span>
+      <span class="p">(</span><span class="n">plot-pen-color-map</span><span class="p">)</span> <span class="kd">#:orientation</span> <span class="o">'</span><span class="ss">vertical</span> <span class="kd">#:length</span> <span class="n">height</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">))</span>
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">spacer</span> <span class="p">(</span><span class="n">colorize</span> <span class="p">(</span><span class="n">rectangle</span> <span class="mi">30</span> <span class="n">dc-ymax</span><span class="p">)</span> <span class="s2">"red"</span><span class="p">))</span>
+  <span class="p">(</span><span class="n">ht-append</span> <span class="mi">20</span> <span class="n">plot</span> <span class="p">(</span><span class="n">vl-append</span> <span class="mi">0</span> <span class="n">spacer</span> <span class="n">legend</span><span class="p">)))</span>
+</pre></div>
+</td></tr></tbody></table>
+</div>
+
+<div class="figure"><img src="/img/a048/shaded-area-red-spacer.svg" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>The <a href="https://docs.racket-lang.org/pict/index.html">Racket Pict</a> package complements the plot package quite nicely and can be used to create additional elements for data visualization, in this case the plot legend. Also, while the plot package does not provide a function for every possible plot type, it is still possible to construct complex plots by combining existing plot features as well as additional Racket libraries.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2021/04/box-and-whiskers-plot.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Box and Whiskers Plot</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

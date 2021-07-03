@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'data visualization'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'data visualization'</description>
   <link>https://alex-hhh.github.io/tags/data-visualization.html</link>
-  <lastBuildDate>Sat, 24 Apr 2021 07:56:37 UT</lastBuildDate>
-  <pubDate>Sat, 24 Apr 2021 07:56:37 UT</pubDate>
+  <lastBuildDate>Sat, 03 Jul 2021 11:21:45 UT</lastBuildDate>
+  <pubDate>Sat, 03 Jul 2021 11:21:45 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Shaded Area Plot</title>
+   <link>https://alex-hhh.github.io/2021/07/shaded-area-plot.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2021-07-shaded-area-plot-html</guid>
+   <pubDate>Sat, 03 Jul 2021 11:21:45 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we explore using interval renderers and color maps to create a plot where the area under the line is shaded based on data from a second data series.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/07/shaded-area-plot.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Box and Whiskers Plot</title>
    <link>https://alex-hhh.github.io/2021/04/box-and-whiskers-plot.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
