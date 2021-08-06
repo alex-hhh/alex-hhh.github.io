@@ -4,9 +4,19 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Sat, 03 Jul 2021 11:21:45 UT</lastBuildDate>
-  <pubDate>Sat, 03 Jul 2021 11:21:45 UT</pubDate>
+  <lastBuildDate>Thu, 05 Aug 2021 12:26:00 UT</lastBuildDate>
+  <pubDate>Thu, 05 Aug 2021 12:26:00 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Who Owns the Fish?</title>
+   <link>https://alex-hhh.github.io/2021/08/fish-puzzle.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2021-08-fish-puzzle-html</guid>
+   <pubDate>Thu, 05 Aug 2021 12:26:00 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; that is the question. To find the answer will use a logic programming DSL embedded in Racket, named &lt;em&gt;miniKanren&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;By the way, if you are in a hurry: the German owns the Fish. Twice.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/08/fish-puzzle.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Shaded Area Plot</title>
    <link>https://alex-hhh.github.io/2021/07/shaded-area-plot.html?utm_source=all&amp;utm_medium=RSS</link>
