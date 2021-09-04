@@ -4,7 +4,19 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2021-08-05T12:26:00Z</updated>
+ <updated>2021-09-03T01:17:48Z</updated>
+ <entry>
+  <title type="text">Screenshots</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2021/09/screenshots.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2021-09-screenshots-html</id>
+  <published>2021-09-03T01:17:48Z</published>
+  <updated>2021-09-03T01:17:48Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;Can you write GUI applications in &lt;a href="https://racket-lang.org/"&gt;Racket&lt;/a&gt;? Different versions of this question shows up periodically on various Racket forums, and, of course, Racket does have a &lt;a href="https://docs.racket-lang.org/gui/index.html"&gt;GUI Library&lt;/a&gt;. However, usually the person asking the question implies a bit more, and it is not always clear what this &amp;ldquo;a bit more&amp;rdquo; is&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Rather than attempting to answer the question myself, I decided to just put together some screenshots of &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;an application&lt;/a&gt; I wrote using Racket.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/09/screenshots.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Who Owns the Fish?</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2021/08/fish-puzzle.html?utm_source=racket&amp;utm_medium=Atom" />
