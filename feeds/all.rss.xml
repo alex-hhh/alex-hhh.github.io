@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Fri, 03 Sep 2021 01:17:48 UT</lastBuildDate>
-  <pubDate>Fri, 03 Sep 2021 01:17:48 UT</pubDate>
+  <lastBuildDate>Wed, 06 Oct 2021 23:58:25 UT</lastBuildDate>
+  <pubDate>Wed, 06 Oct 2021 23:58:25 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Asteroids (Game Engine)</title>
+   <link>https://alex-hhh.github.io/2021/10/asteroids-part-1.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2021-10-asteroids-part-1-html</guid>
+   <pubDate>Wed, 06 Oct 2021 23:58:25 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we look how we can implement the classic &lt;a href="https://en.wikipedia.org/wiki/Asteroids_%28video_game%29"&gt;Asteroids game&lt;/a&gt; game using only the &lt;a href="https://www.racket-lang.org/"&gt;Racket&lt;/a&gt; language and its graphics facilities. We&amp;rsquo;ll implement a basic game engine, a basic physics engine and the game itself, and manage to do it in about 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/10/asteroids-part-1.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Screenshots</title>
    <link>https://alex-hhh.github.io/2021/09/screenshots.html?utm_source=all&amp;utm_medium=RSS</link>

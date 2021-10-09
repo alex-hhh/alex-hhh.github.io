@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/all.atom.xml" />
  <link href="https://alex-hhh.github.io/index.html" />
  <id>urn:https-alex-hhh-github-io:-index-html</id>
- <updated>2021-09-03T01:17:48Z</updated>
+ <updated>2021-10-06T23:58:25Z</updated>
+ <entry>
+  <title type="text">Asteroids (Game Engine)</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2021/10/asteroids-part-1.html?utm_source=all&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2021-10-asteroids-part-1-html</id>
+  <published>2021-10-06T23:58:25Z</published>
+  <updated>2021-10-06T23:58:25Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;&amp;hellip; in which we look how we can implement the classic &lt;a href="https://en.wikipedia.org/wiki/Asteroids_%28video_game%29"&gt;Asteroids game&lt;/a&gt; game using only the &lt;a href="https://www.racket-lang.org/"&gt;Racket&lt;/a&gt; language and its graphics facilities. We&amp;rsquo;ll implement a basic game engine, a basic physics engine and the game itself, and manage to do it in about 1000 lines of code.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/10/asteroids-part-1.html?utm_source=all&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Screenshots</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2021/09/screenshots.html?utm_source=all&amp;utm_medium=Atom" />
