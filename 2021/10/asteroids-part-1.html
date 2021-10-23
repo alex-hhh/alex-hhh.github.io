@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2021/10/asteroids-part-1.html">
     <link rel="next" href="/2021/09/screenshots.html">
-
+    <link rel="prev" href="/2021/10/asteroids-part-2.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -664,7 +664,7 @@
     <span class="p">(</span><span class="m">-4/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-5/5</span> <span class="m">-1/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-3/5</span> <span class="m">-1/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-5/5</span> <span class="m">2/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-3/5</span> <span class="m">3/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-2/5</span> <span class="m">5/5</span><span class="p">)</span> <span class="p">(</span><span class="m">0/5</span> <span class="m">5/5</span><span class="p">))))</span>
 <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">asteroid-path-2</span>
   <span class="p">(</span><span class="n">points-&gt;dc-path</span>
-   <span class="o">'</span><span class="p">((</span><span class="mi">0</span> <span class="m">-6/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-2/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-5/5</span> <span class="m">-1/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">2/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">3/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-3/5</span> <span class="m">3/5</span><span class="p">)</span> 
+   <span class="o">'</span><span class="p">((</span><span class="mi">0</span> <span class="m">-6/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-2/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-5/5</span> <span class="m">-1/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">2/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-4/5</span> <span class="m">3/5</span><span class="p">)</span> <span class="p">(</span><span class="m">-3/5</span> <span class="m">3/5</span><span class="p">)</span>
      <span class="p">(</span><span class="m">-1/5</span> <span class="m">5/5</span><span class="p">)</span> <span class="p">(</span><span class="m">4/5</span> <span class="m">3/5</span><span class="p">)</span> <span class="p">(</span><span class="m">4/5</span> <span class="m">1/5</span><span class="p">)</span> <span class="p">(</span><span class="m">5/5</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="m">4/5</span> <span class="m">-3/5</span><span class="p">)</span> <span class="p">(</span><span class="m">2/5</span> <span class="m">-4/5</span><span class="p">)</span> <span class="p">(</span><span class="mi">0</span> <span class="m">-6/5</span><span class="p">))))</span>
 <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">asteroid-path-3</span>
   <span class="p">(</span><span class="n">points-&gt;dc-path</span>
@@ -1113,7 +1113,7 @@
       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-collision-handlers</span> <span class="o">'</span><span class="p">())</span>
 
 <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">add-collision-handler</span> <span class="n">object-a</span> <span class="n">object-b</span> <span class="n">handler</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">the-collision-handlers</span> 
+  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">the-collision-handlers</span>
     <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">object-a</span> <span class="n">object-b</span> <span class="n">handler</span><span class="p">)</span> <span class="n">the-collision-handlers</span><span class="p">)))</span>
 </pre></div>
 </td></tr></tbody></table>
@@ -1378,7 +1378,12 @@
               <span aria-hidden="true">&larr; Screenshots</span>
             </a>
           </li>
-
+          <li class="page-item">
+            <a class="page-link" href="/2021/10/asteroids-part-2.html"
+               aria-label="Next">
+              <span aria-hidden="true">Asteroids (Gameplay) &rarr;</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>

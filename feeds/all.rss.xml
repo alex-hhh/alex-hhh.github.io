@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Wed, 06 Oct 2021 23:58:25 UT</lastBuildDate>
-  <pubDate>Wed, 06 Oct 2021 23:58:25 UT</pubDate>
+  <lastBuildDate>Sat, 16 Oct 2021 05:36:30 UT</lastBuildDate>
+  <pubDate>Sat, 16 Oct 2021 05:36:30 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Asteroids (Gameplay)</title>
+   <link>https://alex-hhh.github.io/2021/10/asteroids-part-2.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2021-10-asteroids-part-2-html</guid>
+   <pubDate>Sat, 16 Oct 2021 05:36:30 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; having spent most of the &lt;a href="/2021/10/asteroids-part-1.html"&gt;first blog post&lt;/a&gt; on writing a small game engine to be able to handle the Asteroids game, in this post we&amp;rsquo;ll look at how to implement the actors to actually make the game playable.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2021/10/asteroids-part-2.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Asteroids (Game Engine)</title>
    <link>https://alex-hhh.github.io/2021/10/asteroids-part-1.html?utm_source=all&amp;utm_medium=RSS</link>
