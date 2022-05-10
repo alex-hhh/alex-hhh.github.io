@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Heat Maps Revisited</title>
+    <meta name="description" content="The Heat Map visualization in ActivityLog2 has been updated to handle large amounts of data, making it possible to show all 11 years worth of GPS points that I have, and still being able to show an interactive map, where the user can zoom and move the map...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="activitylog2, racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2022/05/heat-maps-revisited.html">
+    <link rel="next" href="/2021/10/asteroids-part-2.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Heat Maps Revisited</h1>
+    <p class='date-and-tags'>
+<time datetime="2022-05-10" pubdate="true">2022-05-10</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a>, <a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>The Heat Map visualization in <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> has been updated to handle large amounts of data, making it possible to show all 11 years worth of GPS points that I have, and still being able to show an interactive map, where the user can zoom and move the map while data is loading.</p>
+<!-- more-->
+
+<p>Here is an example showing 2.1 million GPS waypoints, all 11 years of cycling activities I have in my own database:</p>
+
+<div style="text-align:center">
+ <iframe width="700" height="396" src="https://www.youtube.com/embed/dH6jjDQzICI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen="allowfullscreen"></iframe></div>
+
+<hr />
+
+<p>From a users perspective, the visualization has slightly changed, with dots being shown instead of lines, but the interface has remained the same, and the benefit is that larger data sets can now be displayed without performance degradation, making the visualization more useful.</p>
+
+<p>Behind the surface there have been quite a few changes in the way that data is structured, so that data can be efficiently read form disk, aggregated, and displayed on the map.</p>
+
+<p>The basic &ldquo;building block&rdquo; for the heat map implementation is the <code>geoid</code>, as implemented in the <a href="hhttps://github.com/alex-hhh/geoid/wiki">geoid</a> library. This allows encoding each location, a position identified by latitude and longitude, as a 64 bit integer. The geoids are also ordered and, while the ordering has no geographical meaning, it allows fast and efficient lookups of locations in a SQL database, which ActivityLog2 uses. All waypoints in the database have their position encoded as a geoid and indexed is created for fast retrieval of waypoint data form the database.</p>
+
+<p>Geoids can be defined at different levels of detail, allowing for a 64 bit integer to represent areas of different sizes on the Earths surface. Since they are integers, operations such as scaling up and checking if a geoid is inside another are very fast, making them suitable for implementing &ldquo;point cloud&rdquo; type data structures. The map-widget implements a new <a href="https://github.com/alex-hhh/map-widget/blob/master/private/point-cloud.rkt">point cloud</a> type visualization which relies on geoids to group locations quickly and scale them up at different levels of detail. It even works in a separate thread, allowing the user to stream data in and update the UI while the data is loading.</p>
+
+<div class="figure"><img src="/img/a053/heatmaps.png" alt="Interatctive HeatMaps in ActivityLog2" />
+ <p class="caption">Interatctive HeatMaps in ActivityLog2</p></div>
+
+<p>The heat maps were originally introduced <a href="/2019/09/interactive-heat-maps.html">back in 2019</a>, and I ended that blog post with the following note, with regards to performance for large datasets:</p>
+
+<blockquote>
+ <p>For now, this is good enough for my uses, but something that might require improvements in the future.</p></blockquote>
+
+<p>Well, it only took 3 years for the improvements to arrive&hellip;</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2021/10/asteroids-part-2.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Asteroids (Gameplay)</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

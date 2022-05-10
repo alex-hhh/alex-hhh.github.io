@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/racket.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/racket.html" />
  <id>urn:https-alex-hhh-github-io:-tags-racket-html</id>
- <updated>2021-10-16T05:36:30Z</updated>
+ <updated>2022-05-10T11:05:04Z</updated>
+ <entry>
+  <title type="text">Heat Maps Revisited</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2022/05/heat-maps-revisited.html?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2022-05-heat-maps-revisited-html</id>
+  <published>2022-05-10T11:05:04Z</published>
+  <updated>2022-05-10T11:05:04Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;The Heat Map visualization in &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; has been updated to handle large amounts of data, making it possible to show all 11 years worth of GPS points that I have, and still being able to show an interactive map, where the user can zoom and move the map while data is loading.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2022/05/heat-maps-revisited.html?utm_source=racket&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Asteroids (Gameplay)</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2021/10/asteroids-part-2.html?utm_source=racket&amp;utm_medium=Atom" />

@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Sat, 16 Oct 2021 05:36:30 UT</lastBuildDate>
-  <pubDate>Sat, 16 Oct 2021 05:36:30 UT</pubDate>
+  <lastBuildDate>Tue, 10 May 2022 11:05:04 UT</lastBuildDate>
+  <pubDate>Tue, 10 May 2022 11:05:04 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Heat Maps Revisited</title>
+   <link>https://alex-hhh.github.io/2022/05/heat-maps-revisited.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2022-05-heat-maps-revisited-html</guid>
+   <pubDate>Tue, 10 May 2022 11:05:04 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;The Heat Map visualization in &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt; has been updated to handle large amounts of data, making it possible to show all 11 years worth of GPS points that I have, and still being able to show an interactive map, where the user can zoom and move the map while data is loading.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2022/05/heat-maps-revisited.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Asteroids (Gameplay)</title>
    <link>https://alex-hhh.github.io/2021/10/asteroids-part-2.html?utm_source=racket&amp;utm_medium=RSS</link>
