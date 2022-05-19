@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <link rel="canonical" href="https://alex-hhh.github.io/2022/05/heat-maps-revisited.html">
     <link rel="next" href="/2021/10/asteroids-part-2.html">
-
+    <link rel="prev" href="/2022/05/pi-fit-sync.html">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/pygments.css">
@@ -105,7 +105,7 @@
 
 <p>Behind the surface there have been quite a few changes in the way that data is structured, so that data can be efficiently read form disk, aggregated, and displayed on the map.</p>
 
-<p>The basic &ldquo;building block&rdquo; for the heat map implementation is the <code>geoid</code>, as implemented in the <a href="hhttps://github.com/alex-hhh/geoid/wiki">geoid</a> library. This allows encoding each location, a position identified by latitude and longitude, as a 64 bit integer. The geoids are also ordered and, while the ordering has no geographical meaning, it allows fast and efficient lookups of locations in a SQL database, which ActivityLog2 uses. All waypoints in the database have their position encoded as a geoid and indexed is created for fast retrieval of waypoint data form the database.</p>
+<p>The basic &ldquo;building block&rdquo; for the heat map implementation is the <code>geoid</code>, as implemented in the <a href="https://github.com/alex-hhh/geoid/wiki">geoid</a> library. This allows encoding each location, a position identified by latitude and longitude, as a 64 bit integer. The geoids are also ordered and, while the ordering has no geographical meaning, it allows fast and efficient lookups of locations in a SQL database, which ActivityLog2 uses. All waypoints in the database have their position encoded as a geoid and indexed is created for fast retrieval of waypoint data form the database.</p>
 
 <p>Geoids can be defined at different levels of detail, allowing for a 64 bit integer to represent areas of different sizes on the Earths surface. Since they are integers, operations such as scaling up and checking if a geoid is inside another are very fast, making them suitable for implementing &ldquo;point cloud&rdquo; type data structures. The map-widget implements a new <a href="https://github.com/alex-hhh/map-widget/blob/master/private/point-cloud.rkt">point cloud</a> type visualization which relies on geoids to group locations quickly and scale them up at different levels of detail. It even works in a separate thread, allowing the user to stream data in and update the UI while the data is loading.</p>
 
@@ -132,7 +132,12 @@
               <span aria-hidden="true">&larr; Asteroids (Gameplay)</span>
             </a>
           </li>
-
+          <li class="page-item">
+            <a class="page-link" href="/2022/05/pi-fit-sync.html"
+               aria-label="Next">
+              <span aria-hidden="true">Synchronizing FIT files using a Raspberry Pi &rarr;</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>

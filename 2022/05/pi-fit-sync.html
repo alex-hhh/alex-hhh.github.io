@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Synchronizing FIT files using a Raspberry Pi</title>
+    <meta name="description" content="I wrote the ActivityLog2 as an application to analyze training data on the local computer, to avoid using a cloud service, and I also wanted a convenient way to download data off my Garmin watch without having to hook up USB cables to my laptop. The resul...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="activitylog2">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2022/05/pi-fit-sync.html">
+    <link rel="next" href="/2022/05/heat-maps-revisited.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Synchronizing FIT files using a Raspberry Pi</h1>
+    <p class='date-and-tags'>
+<time datetime="2022-05-15" pubdate="true">2022-05-15</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a></span></p>
+  </header>
+
+<p>I wrote the <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> as an application to analyze training data on the local computer, to avoid using a cloud service, and I also wanted a convenient way to download data off my Garmin watch without having to hook up USB cables to my laptop. The result is the <a href="https://github.com/alex-hhh/PiFitSync">PiFitSync</a> project which I had running for several years now, evolving to download data from three generations of Garmin devices.</p>
+<!-- more-->
+
+<p>These days, all Garmin devices (and any other fitness device) will connect to the users phone and automatically upload the data to a clould service, where the user can analyze it. This process is convenient and happens automatically, with no user intervention. This is an opaque process &mdash; data goes from the device directly to the cloud provider, and usually there is little documentation on how things work, which prevents creation of alternative data download applications.</p>
+
+<p>Garmin devices also allow the user to download the data directly off the device via USB: connecting the device to a computer with a USB cable will show all files on the device in the file explorer and the user can copy the files to the local computer. This is useful for applications such as <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> and <a href="http://www.goldencheetah.org/">GoldenCheetah</a> as they keep the training data on the users computer only.</p>
+
+<p>However, the above process is inconvenient, since the user has to connect the device to the laptop using a USB cable. As an alternative, I decided to use a <a href="https://www.raspberrypi.org/">Raspberry Pi</a> to download the data while recharging the device: the Pi is connected to the home network and the data is accessible over Wifi as a network drive, making it easy to import the data. This works as follows:</p>
+
+<ul>
+ <li>The Raspberry Pi is connected to the local home network, accessible over the  local WiFi connection.</li>
+ <li>The USB charging cradle for the Garmin Watch is connected to the Raspberry  Pi</li>
+ <li>When a Garmin Device is connected to the cradle for charging, all the FIT  files are copied off the device onto a local folder.</li>
+ <li>The downloaded FIT files are available over a network share from laptop and  can be imported into ActivityLog2 or GoldenCheetah.</li></ul>
+
+<div class="figure"><img src="/img/a054/fr945.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="under-the-hood">Under the Hood</h2>
+
+<p>The <a href="https://github.com/alex-hhh/PiFitSync">PiFitSync</a> project contains all the files for setting up the download application, and as I updated it for the latest generation of Garmin Watches, I looked back on the different strategies I used to implement the download mechanism.</p>
+
+<h3 id="a-basic-daemon-service">A Basic Daemon Service</h3>
+
+<p>The first Garmin device I owned was a FR310 XT, this was before Bluetooth connectivity was common on computers, so the device used to sync using the ANT+ protocol, the same one that the device is used to communicate with sensors, such as Heart Rate monitors or Speed sensors on a bike. This required an ANT+ dongle, which is plugged into a USB port on the computer. The sync protocol was documented by Garmin (it was called ANT-FS) and I could easily write an application, <code>fit-sync-ant</code>, to download the files from my FR310. I even dusted off my <a href="http://www.apuebook.com/">APUE book</a> and made the application a Linux daemon process.</p>
+
+<p>Organizing for the service to be started on linux meant writing a service file and registering it with <code>systemd</code>:</p>
+
+<pre><code>[Unit]
+Description=Download FIT files from Garmin devices (ANT-FS version)
+After=fit-sync-setup.service
+
+[Service]
+Type=forking
+PIDFile=/run/fit-sync/fit-sync-ant.pid
+ExecStart=/usr/local/bin/fit-sync-ant -d
+Restart=no
+WorkingDirectory=/
+User=ubuntu
+Group=ubuntu
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+
+<p>Since the service would run as a normal user instead of <code>root</code>, it would not be able to write to the <code>/run/</code> folder to write its PID file, as daemon processes are supposed to do. To fix this, I created another service to create a subfolder in <code>/run</code> with the appropiate permissions to write a PID file:</p>
+
+<pre><code>[Unit]
+Description=Setup PID folder for fit sync service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/install -o ubuntu -g root -m 755 -d /run/fit-sync
+Restart=no
+WorkingDirectory=/
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+
+<p>Finally, the USB device for the ANT stick does not have permission to be read by a non-root user. To adjust that, I had to add an UDEV rule to assign more liberal permissions, here are the rules for the two ANT sticks I used. Here, they are just made world writeable, but the UDEV rules can also be used to change ownership to the <code>ubuntu</code> user, or to an <code>ant</code> group:</p>
+
+<pre><code>SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="0fcf", ATTR{idProduct}=="1008", MODE="0666", SYMLINK+="ttyANT2"
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="0fcf", ATTR{idProduct}=="1009", MODE="0666", SYMLINK+="ttyANT3"</code></pre>
+
+<p>This setup worked for many years, the Rasppery PI downloading FIT files form the device and making them available over a network share.</p>
+
+<h3 id="copying-files-off-a-usb-drive">Copying files off a USB drive</h3>
+
+<p>The next Garmin device I got was the FR920, and by this time, Bluetooth was more common. The device no longer supported downloading files over the ANT+ protocol and used WiFi or Bluetooth instead. Unfortunately, none of these protocols were documented anymore, so it was no longer possible to write an independent downloader. However, when connected over USB (the device used USB for charging), the device showed up as a USB drive on the computer and the FIT files were readily available for copying from the device.</p>
+
+<p>Copying files could be done using the <code>cp -r</code> command, but for extra sophistication, I wrote a small utility, <code>fit-sync-usb</code> which would look inside the FIT files and sort them by type and device serial number &mdash; this allowed copying data from multiple devices into the same folder hierarchy, without mixing the files.</p>
+
+<p>The tricky part was setting up the Raspbery PI, such that the utility is invoked when the device is plugged in and this was more complex than the previous setup.</p>
+
+<p>First, UDEV rules can be used to detect that a disk device was attached. This shows up as a "/dev/sda" drive, but, in order to identify that it is indeed a Garmin device, the <code>blkid</code> utility is used to get information about the drive and look for its file system label (<code>ID_FS_LABEL</code>), which should be &ldquo;GARMIN&rdquo; for a garmin device. If the device is the one we are looking for, a &ldquo;mount&rdquo; command is used to actually mount the drive than the <code>fit-sync-usb</code> service is started to actually download the files:</p>
+
+<pre><code>KERNEL=="sd[a-z]", GOTO="start_automount"
+KERNEL=="sd[a-z][0-9]", GOTO="start_automount"
+GOTO="end_automount"
+
+LABEL="start_automount"
+IMPORT{program}="/sbin/blkid -o udev -p /dev/%k"
+ENV{ID_FS_LABEL}=="GARMIN", GOTO="garmin_automount"
+GOTO="end_automount"
+
+LABEL="garmin_automount"
+
+ACTION=="add", RUN+="/bin/mount -t vfat -osync,noexec,noatime,nodiratime,uid=ubuntu /dev/%k /media/garmin"
+ACTION=="add", RUN+="/bin/systemctl start fit-sync-usb.service"
+
+ACTION=="remove", RUN+="/bin/umount -l /media/garmin"
+
+GOTO="end_automount"
+
+LABEL="end_automount"</code></pre>
+
+<p>The actual downloading of the file needs to be done as a separate service, since the <code>udev</code> daemon will expect any programs it launched to finish quickly and it is able to track and kill even processes that fork and become daemons. The <code>fit-sync-usb</code> service is a simple service, with no restart, as the utility will simply exit once it finishes downloading the files.</p>
+
+<pre><code>[Unit]
+Description=Download FIT files from Garmin devices (USB version)
+After=fit-sync-setup.service
+
+[Service]
+Type=forking
+PIDFile=/run/fit-sync/fit-sync-usb.pid
+ExecStart=/usr/local/bin/fit-sync-usb -d /media/garmin/GARMIN
+Restart=no
+WorkingDirectory=/media/garmin
+User=ubuntu
+Group=ubuntu</code></pre>
+
+<p>Again, this setup worked well for several years, until I upgraded my Garmin Device to the newest generation one.</p>
+
+<h3 id="copying-files-off-a-mtp-device">Copying files off a MTP device</h3>
+
+<p>Recent generation Garmin devices, such as the FR945 will no longer show up as a USB drive, instead they are &ldquo;Media Transfer Protocol&rdquo; (MTP) devices. They can still be mounted as file systems (and <code>fit-sync-usb</code> used to transfer files), but this is done ouside of the Linux kernel, using a userspace program, <code>jmtpfs</code> and it requires using a set of UDEV rules, two services, and four shell scripts. This is considerably more complex than the previous &ldquo;USB drive&rdquo; approach.</p>
+
+<h4 id="udev-rules">UDEV Rules</h4>
+
+<p>The first subsystem that &ldquo;notices&rdquo; that the device was connected is UDEV and we need to add rules to trigger commands when MTP devices are added or removed. Here are the relevant to MTP device mounting/unmounting rules, they launch two scripts, <code>on-mtp-added</code> when a device is added and <code>on-mtp-removed</code> when the device is removed:</p>
+
+<pre><code>SUBSYSTEM=="usb", ACTION=="add", ATTR{interface}=="MTP", RUN+="/usr/local/libexec/fit-sync/on-mtp-added %p"
+SUBSYSTEM=="usb", ACTION=="remove", RUN+="/usr/local/libexec/fit-sync/on-mtp-removed %k"</code></pre>
+
+<h5 id="udev-rule-for-adding-the-device">UDEV Rule for adding the device</h5>
+
+<p>An udev rule is used to detect when a MTP device from the &ldquo;usb&rdquo; subsusystem is added, to call <code>on-mtp-added</code>:</p>
+
+<pre><code>SUBSYSTEM=="usb", ACTION=="add", ATTR{interface}=="MTP", RUN+="/usr/local/libexec/on-mtp-added %p"</code></pre>
+
+<p><code>on-mtp-added</code> receives the device path (<code>sys</code> has to be prepended to it), it will than:</p>
+
+<ul>
+ <li>
+  <p>determine the parent device (this is just the parent folder in the tree).  The UDEV rule matches against the MTP interface, but the actual device is  the parent &mdash; this parent device is simply the parent folder.</p></li>
+ <li>
+  <p>determine the vendor id and product id from the <code>idVendor</code> and <code>idProduct</code>  files in the parent device folder, and check them against the desired device  for a FR945 (script will exit if it does not)</p></li>
+ <li>
+  <p>determine the bus and device numbers (contents of the <code>busnum</code> and <code>devnum</code>  files) &mdash; this information is needed by the <code>jmtpfs</code> utility to mount the  correct MTP device. This information is saved into  <code>/var/run/fit-sync/mtp-device</code>, and will be used by the device mount script,  <code>mount-fr945</code></p></li>
+ <li>
+  <p>determine the kernel device name &mdash; this is the folder name of the parent  device. This will be saved in <code>/var/run/fit-sync/mtp-kname</code> and will be  used by <code>on-mtp-removed</code> script to determine if our device was removed and  the drive needs to be unmounted.</p></li>
+ <li>
+  <p>start the &ldquo;mount-fr945.service&rdquo; using <code>systemctl start mount-fr945.service</code>  &mdash; the <code>jmtpfs</code> utility needs to keep running while the drive is mounted and  udev scripts neeed to run in a short amount of time so we cannot launch  servers directly from here.</p></li>
+ <li>
+  <p>start the &ldquo;sync-fr945.service&rdquo; using <code>systemctl start sync-fr945.service</code> &mdash;  this will copy the FIT files into ~/FitSync to be shared over the network.  This service has a dependency listed on the <code>mount-fr945.service</code> so,  systemd will make sure the start is delayed until the file system is  mounted.</p></li></ul>
+
+<h5 id="udev-rules-for-removing-the-device">UDEV Rules for removing the device</h5>
+
+<p>There is no remove action against the MTP device directly, so we need to add a rule against any USB device and call <code>on-mtp-removed</code> script to figure out the rest:</p>
+
+<pre><code>SUBSYSTEM=="usb", ACTION=="remove", RUN+="/usr/local/libexec/on-mtp-removed %k"</code></pre>
+
+<p><code>on-mtp-removed</code> receives the kernel device name for the device that was removed, it will than:</p>
+
+<ul>
+ <li>
+  <p>verify that the kernel name is the same as the one saved in  <code>/var/run/fit-sync/mtp-kname</code></p></li>
+ <li>
+  <p>if it is, stop the &ldquo;mount-fr945.service&rdquo; using <code>systemctl stop
+  mount-fr945.service</code></p></li></ul>
+
+<h4 id="the-mtp-drive-mountingunmounting-service">The MTP Drive Mounting/Unmounting Service</h4>
+
+<p>Mounting (and unmounting) the MTP device is done using a systemd service. This is required, because the <code>jmtpfs</code> utility needs to be running while the MTP device is mounted, so it is really a service not a one-off program like the <code>mount</code> command. The contents of the service file are as follows:</p>
+
+<pre><code>[Unit]
+Description=Mount the fr945 MTP device
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/mount-fr945
+ExecStop=/usr/bin/fusermount -u /media/fr945
+Restart=no
+WorkingDirectory=/
+User=root
+Group=root</code></pre>
+
+<p>In particular, the service is setup as forking (this ensures the system is considered started only after the file system is mounted). Also, rather than calling <code>jmtpfs</code> directly, the <code>mount-fr945</code> shell script is used. This script will read the device from <code>/var/run/fit-sync/mtp-device</code> and ensures that the correct MTP device is mounted.</p>
+
+<p>The service is set up to call <code>fusermount</code> to unmount the drive when the service is deactivated.</p>
+
+<h4 id="the-sync-service">The sync service</h4>
+
+<p>The same <code>fit-sync-usb</code> utility is used to copy FIT files from the FR945 to the <code>~/FitSync</code> folder, which is shared over the network. This is done using another systemd service, <code>sync-fr945.service</code> which launches the service in the background:</p>
+
+<pre><code>[Unit]
+Description=Download FIT files from a FR945
+After=fit-sync-setup.service
+Requires=mount-fr945.service
+After=mount-fr945.service
+
+[Service]
+Type=forking
+PIDFile=/run/fit-sync/fit-sync-fr945.pid
+ExecStart=/usr/local/bin/fit-sync-usb -p /run/fit-sync/fit-sync-fr945.pid -d /media/fr945/Primary/GARMIN
+Restart=no
+WorkingDirectory=/media/fr945/Primary/GARMIN
+User=pi
+Group=pi</code></pre>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>The Garmin devices became more user friendly with newer models: for the first ones, one would need specialized hardware (an ANT+ dongle) and specialized software to download the data off them, with the more recent ones, the user can simply plug in the device and copy files using Finder or File Explorer, however it is interesting to see that this simplicity was achieved by increasing the underlying complexity of the system.</p>
+
+<p>In any case, the system is reliable and offers a convenient way to download data off the device without involving any cloud services.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2022/05/heat-maps-revisited.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Heat Maps Revisited</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>
