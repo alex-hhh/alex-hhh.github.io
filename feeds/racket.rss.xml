@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Tue, 10 May 2022 11:05:04 UT</lastBuildDate>
-  <pubDate>Tue, 10 May 2022 11:05:04 UT</pubDate>
+  <lastBuildDate>Fri, 05 Aug 2022 23:05:26 UT</lastBuildDate>
+  <pubDate>Fri, 05 Aug 2022 23:05:26 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Timezone Lookup Revisited</title>
+   <link>https://alex-hhh.github.io/2022/08/timezone-lookup-revisited.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2022-08-timezone-lookup-revisited-html</guid>
+   <pubDate>Fri, 05 Aug 2022 23:05:26 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we look at how to really speed up the lookup of geographic locations in a large number or regions covering the entire Earth surface. This is the problem that the &lt;a href="https://github.com/alex-hhh/tzgeolookup"&gt;tzgeolookup&lt;/a&gt; package has to solve: given a geographic location it needs to determine which one among the 425 time zones it belongs to, and it has to do it quickly.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2022/08/timezone-lookup-revisited.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Heat Maps Revisited</title>
    <link>https://alex-hhh.github.io/2022/05/heat-maps-revisited.html?utm_source=racket&amp;utm_medium=RSS</link>

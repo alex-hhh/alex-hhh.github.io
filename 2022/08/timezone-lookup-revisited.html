@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Timezone Lookup Revisited</title>
+    <meta name="description" content="in which we look at how to really speed up the lookup of geographic locations in a large number or regions covering the entire Earth surface. This is the problem that the tzgeolookup package has to solve: given a geographic location it needs to determine ...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2022/08/timezone-lookup-revisited.html">
+    <link rel="next" href="/2022/05/pi-fit-sync.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Timezone Lookup Revisited</h1>
+    <p class='date-and-tags'>
+<time datetime="2022-08-06" pubdate="true">2022-08-06</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>&hellip; in which we look at how to really speed up the lookup of geographic locations in a large number or regions covering the entire Earth surface. This is the problem that the <a href="https://github.com/alex-hhh/tzgeolookup">tzgeolookup</a> package has to solve: given a geographic location it needs to determine which one among the 425 time zones it belongs to, and it has to do it quickly.</p>
+<!-- more-->
+
+<p>I wrote about time zone lookup previously to cover <a href="/2019/05/timezone-visualization.html">visualization</a>, <a href="/2019/08/timezone-lookup.html">the lookup algorithm</a> and <a href="/2019/08/timezone-lookup-2.html">storing the lookup data on disk</a>. The original implementation used a &ldquo;point-in-polygon&rdquo; test, and would be able to do a lookup in about 15 &ndash; 20 milliseconds. This is not too bad, given that the implementation has to check if the given location is inside any of the 1420 polygons which define the 425 time zones. Since most of the time zone polygons have thousands of points (largest one has 152378, but on average there are about 4500 points), this check takes a lot of time. Some optimizations are possible, and they are the topics of the previous posts, but ultimately there is no way of avoiding angle calculations for thousands of data points. With all this optimizations, the original implementation could do a lookup in about 15 &ndash; 20 milliseconds, which was sufficient for my needs.</p>
+
+<p>What if you want to do lookups in 1 millisecond or less? This would be a tenfold (10x) improvement over the original implementation, and it cannot be done simply by optimizing the floating point calculations, instead it requires a completely different approach.</p>
+
+<p>I first read about Google&rsquo;s <a href="https://s2geometry.io/">S2 Geometry</a> library a few years ago and I was impressed by the possibility of building indexes for fast lookup of geographic data. This library allows associating a 64 bit integer with every region on Earth, with the smallest regions that can be indexed being less than 1 cm². Regions that are close to each other geographically have close integer IDs, which allows building indexes from sorted list of IDs.</p>
+
+<p>Here is an <a href="https://blog.christianperone.com/2015/08/googles-s2-geometry-on-the-sphere-cells-and-hilbert-curve/">overview of the S2 library</a> and what it can do, however, I decided to write my own implementation in Racket, the <a href="https://github.com/alex-hhh/geoid">geoid</a> package. Being a single-person effort, the &ldquo;geoid&rdquo; package lacks many of the features of the full S2 library, but I already used it in my <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> application for various geographic database queries, such as finding nearby routes for bike rides, elevation correction or building <a href="/2022/05/heat-maps-revisited.html">heatmaps</a>.</p>
+
+<p>The latest feature that I added to the &ldquo;geoid&rdquo; library is the ability to tile a region, that is determine the list of 64 bit IDs, which cover a region. Since any region can be expressed as a list of integers, determining if a point is inside a region, resolves to finding if an integer is inside a sorted list of other integers &mdash; an operation that modern computers can do very quickly. This property comes in handy for looking up the time zone for a specific location, since we can express the entire time zone coverage of Earth as a sorted list of 64 bit integers &mdash; this list contains about 5 million integers, but, since the list is sorted, searching through it requires only about 23 integer comparisons.</p>
+
+<h2 id="tiling-basics">Tiling Basics</h2>
+
+<p>Tiling, that is finding the geoids that cover a region, and the internal workings of the <a href="https://github.com/alex-hhh/geoid">geoid</a> library are too complex to cover in a short blog post, but here is an overview. Below is the tiling of all time zones for Australia, this is done with geoids that cover regions of own to a minimum of 36x36 km &mdash; the geoid library can go much smaller than that, but they become more difficult to see on the map.</p>
+
+<div class="figure"><img src="/img/a055/tiling-australia.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>For example, the New South Whales (NSW) region, the purple geoids in the map, is composed of 53 geoids, and, since geoids are ordered and most of them are consecutive, this list can be reduced to only 19 intervals, which are shown below. To find out if a location is inside NSW, we determine its 64 bit ID, than check if the number is inside any of these 19 regions:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">'</span><span class="p">((</span><span class="mi">7660763703645569025</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7661045178622279681</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7661185916110635009</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7662874765970898945</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7701155362803548161</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7703407162617233409</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7707910762244603905</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7719310498801385473</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7719591973778096129</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7720014186243162113</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7720154923731517441</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7720295661219872769</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7727332535637639169</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7727614010614349825</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7728176960567771137</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7728317698056126465</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7728599173032837121</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7729021385497903105</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7738591534706065409</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7738732272194420737</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7739435959636197377</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7744783984193699841</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7746332096565608449</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7752102333588176897</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7752243071076532225</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7759842895447719937</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7760124370424430593</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7760405845401141249</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7762516907726471169</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7763783545121669121</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7778560981398978561</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7778701718887333889</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7778842456375689217</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7779405406329110529</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7785034905863323649</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7785316380840034305</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="mi">7815152728371363841</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mi">7815434203348074497</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>For the timezone lookup, tiling for the time zone regions is done down to 70x70 meter geoids, which increases the precision of the lookup but the lists are larger, the package has an 8Mb database at this level of precision. A higher precision is possible, but results in bigger database size.</p>
+
+<h2 id="distributed-tiling">Distributed Tiling</h2>
+
+<p>The tiling for each region has to be pre-calculated from the <a href="https://github.com/evansiroky/timezone-boundary-builder">input data</a>, which is a set of regions defined by a list of coordinates. For small regions or coarse tiling, the duration of the tiling process is short, a few hundred milliseconds, but for detailed tiling of large regions such as time zones that cover the entire world, this can take a very long time. A Racket process running a single thread would take more than 100 hours to produce this data.</p>
+
+<p>The resulting data set can be saved to disk and does not have to be re-computed unless the input data changes, however, while developing the program I had to re-run the process many times so I had to find way to speed it up. The natural solution is to do things in parallel, since the tiling of a region is completely independent of all the others. Racket has <a href="https://docs.racket-lang.org/reference/places.html">places</a> to run multiple processor threads in parallel, but, on my modest 8 core laptop, running 8 tasks in parallel would still take a very long time, so, to further speed things up, the tiling process is designed around a <strong>coordinator</strong> process which manages the work and stores the data and <strong>workers</strong> which do the actual work in small chunks. A large number of workers can be distributed on multiple computers and each worker process starts a number of threads corresponding to the number of cores on each computer, thus parallelizing the work.</p>
+
+<p>This process could be distributed on several VMs from one of the Cloud providers out there, but renting VMs for CPU intensive work costs significant amount of money, so I just used the Raspberry PI on my local network to host the coordinator and I borrowed my children&rsquo;s laptops to help out with the tiling. Here is my home made &ldquo;computing cluster&rdquo;:</p>
+
+<div class="figure"><img src="/img/a055/cluster.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<p>The process of generating all the timezone regions at 70 meters of accuracy, still takes about 2 hours, but this is more manageable. Also, once the tiling data is generated, the process only has to be repeated when time zones changes, and this happens only a few times a year.</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>With geoids generated and stored in a SQLite database, the [tzgeolookup][tzgeolookup] package implementation for the <code>lookup-timezone</code> function is just over 200 lines of Racket code, most of it dealing with SQL database lookups and caching a few things in memory. The implementation is also about 10 times faster than the previous version, and this performance improvement could not have been achieved just by optimizing the existing code.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2022/05/pi-fit-sync.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Synchronizing FIT files using a Raspberry Pi</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

@@ -52,5 +52,6 @@ https://alex-hhh.github.io/2021/10/asteroids-part-1.html
 https://alex-hhh.github.io/2021/10/asteroids-part-2.html
 https://alex-hhh.github.io/2022/05/heat-maps-revisited.html
 https://alex-hhh.github.io/2022/05/pi-fit-sync.html
+https://alex-hhh.github.io/2022/08/timezone-lookup-revisited.html
 https://alex-hhh.github.io/About.html
 https://alex-hhh.github.io/Cookies.html
