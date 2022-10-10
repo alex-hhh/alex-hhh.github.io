@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>The Wolf, the Goat and the Cabbage</title>
+    <meta name="description" content="in which we revisit miniKanren and use it to solve a planning puzzle about ferrying some items safely across a river....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2022/09/wolf-goat-cabbage.html">
+    <link rel="next" href="/2022/08/timezone-lookup-revisited.html">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>The Wolf, the Goat and the Cabbage</h1>
+    <p class='date-and-tags'>
+<time datetime="2022-09-28" pubdate="true">2022-09-28</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
+  </header>
+
+<p>&hellip; in which we revisit <a href="http://minikanren.org/">miniKanren</a> and use it to solve a planning puzzle about ferrying some items safely across a river.</p>
+<!-- more-->
+
+<p><em>miniKanren</em> is a logic programing language embedded inside Racket, a "Domain Specific Language" or a DSL. There are lots of learning resources for <em>miniKanren</em> listed on its <a href="http://minikanren.org/">website</a>, but perhaps the most popular introduction to the language is <a href="https://mitpress.mit.edu/books/reasoned-schemer-second-edition">The Reasoned Schemer</a> book.</p>
+
+<p>In a <a href="/2021/08/fish-puzzle.html">previous blog post</a>, I explored using <em>miniKanren</em> to solve a constraint problem, where a solution has to be found based on some stated constraints, in this blog post we&rsquo;ll look at solving a planning problem, where a plan, which is a list of steps, has to be constructed to arrive at a desired state.</p>
+
+<h2 id="the-puzzle">The Puzzle</h2>
+
+<p>The puzzle that we&rsquo;ll solve is called <a href="https://en.wikipedia.org/wiki/Wolf,_goat_and_cabbage_problem">The Wolf, the Goat and The Cabbage</a> puzzle and it goes like this:</p>
+
+<blockquote>
+ <p>Once upon a time a farmer went to a market and purchased a wolf, a goat, and a cabbage. On his way home, the farmer came to the bank of a river and rented a boat. But crossing the river by boat, the farmer could carry only himself and a single one of his purchases: the wolf, the goat, or the cabbage.</p>
+ <p>If left unattended together, the wolf would eat the goat, or the goat would eat the cabbage.</p>
+ <p>The farmer&rsquo;s challenge was to carry himself and his purchases to the far bank of the river, leaving each purchase intact.</p></blockquote>
+
+<p>It might be useful to attempt to solve the puzzle using pencil and paper first, it is not too complicated and the solution is provided in the link above. In particular, there is one special insight that is required for <em>miniKanren</em> to be able to solve this problem.</p>
+
+<p>And here is a <a href="https://www.strava.com/activities/896715718">unrelated</a> picture of a goat:</p>
+
+<div class="figure"><img src="/img/a056/strava-goat-ride.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="the-language">The Language</h2>
+
+<p>The <em>miniKanren</em> implementation is quite small and the authors of "The Reasoned Schemer" explain its inner workings in one short chapter. There are many implementations you can use, available on the <em>miniKanren</em> <a href="http://minikanren.org/">website</a>, but the examples below are written using the language defined in the <strong>Second Edition</strong> of The Reasoned Schemer, which has <a href="https://groups.google.com/g/minikanren/c/fMKSBmOm_XM/m/V0K30F8lBwAJ">some differences</a> from the first edition.</p>
+
+<hr />
+
+<p>You can find the official second edition implementation <a href="https://github.com/TheReasonedSchemer2ndEd/CodeFromTheReasonedSchemer2ndEd/">here</a>, but for this blog post I wrote my own <em>miniKanren</em> implementation, which I used for solving the puzzle. Since this is my implementation, I took the liberty of renaming some operators, as I believe it makes them more readable, in particular, the book uses <code>conde</code>, here I use <code>cond/e</code>, the book uses <code>membero</code>, here I use <code>member/o</code>.</p>
+
+<p>You can find my version of <em>miniKanren</em> in this <a href="https://gist.github.com/alex-hhh/e7bbe951872e627d8802c334a701980c">GitHub Gist</a>, to start using it, simply copy the racket file in a local folder and start the programs with the lines below. Since we&rsquo;ll write some unit tests as well, we&rsquo;ll set up the test environment by preparing the <code>test</code> module:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="s2">"mk.rkt"</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>If you are completely new to <em>miniKanren</em>, I suggest to get and read the book, or at least having a look at the <a href="/2021/08/fish-puzzle.html">previous blog post</a> first.</p>
+
+<h2 id="the-solution">The Solution</h2>
+
+<p>We&rsquo;ll build the solution from the ground up, starting with basic <em>miniKanren</em> relations and working towards the more complex ones &mdash; I must confess that this is not how I actually solved the problem, but it does make it easier to explain. In addition to that, at every step, all introduced relations work and can be tested in a Racket REPL.</p>
+
+<h3 id="introducing-the-participants">Introducing the Participants</h3>
+
+<p>We&rsquo;ll start by writing the relation <code>participant/o</code>, which determines if a term is a participant in our puzzle. The participants are the &ldquo;Wolf&rdquo;, the &ldquo;Goat&rdquo; and the &ldquo;Cabbage&rdquo;, and the relation simply uses <code>member/o</code> to determine if the term <code>x</code> is in the list of valid participants:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>It is important to understand that <code>participant/o</code> is not just a function with inputs and outputs. Sure, it can check if a value is a participant or not:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; The &#39;Goat is a participant</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; The &#39;Rabbit is not a particiant, and run produces no results</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="o">'</span><span class="ss">Rabbit</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip; but the relation can also be used to determine who are the participants themselves:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The puzzle participants are not friends: they eat each other. This is encoded in the <code>eats/o</code> relation which defines who-eats-who. Being a relation, it can also answer the opposite question, &ldquo;Who is eaten by whom?&rdquo;, as well as to enumereate all the who-eats-who relationships.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">what</span><span class="w"> </span><span class="o">'</span><span class="ss">Cabbage</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="o">'</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">what</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here is how the relation works:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; What does the Goat eat?  What does the Wolf eat?</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="o">'</span><span class="ss">Wolf</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+
+<span class="c1">;; Who eats the Cabbage? Who eats the Goat?, Who eats the Wolf? (no one)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Cabbage</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h3 id="participant-groups">Participant Groups</h3>
+
+<p>We&rsquo;ll represent a group of participants on the river bank using a list, for example, the list <code>(Wolf Cabbage)</code> means that the Wolf and Cabbage are on a river bank and the empty list &rsquo;() means there are no participants on a river bank.</p>
+
+<p>Since there is one participant of each type in the puzzle, we need to enforce this restriction. For example, <code>(Wolf Cabbage)</code> is a group, but <code>(Wolf
+Cabbage Wolf)</code> is not, since there is only one Wolf in our puzzle.</p>
+
+<p>We&rsquo;ll implement a helper relation, <code>group-helper/o</code> which checks if <code>g</code> is a valid group, that is, a list of unique participants. It does that by checking that each item in the list is valid and tracking which participants have been seen so far. The <code>group/o</code> relation enforces that <code>g</code> is a valid group, or generates all valid groups. It simply starts <code>group-helper/o</code> with an empty &ldquo;seen&rdquo; list</p>
+
+<p>Note the use of <code>cond/a</code> in the check below &mdash; the <code>cond/a</code> differs form <code>cond/e</code> in that the first branch that succeedes will produce values and this is important if we want to fail for seen participants.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">group-helper/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">seen</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="o">'</span><span class="p">()))</span><span class="w">                        </span><span class="c1">; The empty group is a valid group.</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="c1">;; Otherwise the group is a list with a HEAD and a TAIL</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="c1">;; The first element of the group (HEAD) needs to be a valid</span><span class="w"></span>
+<span class="w">       </span><span class="c1">;; participant</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="n">head</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="k">cond/a</span><span class="w"></span>
+<span class="w">         </span><span class="c1">;; If we have seen this participant before, we fail</span><span class="w"></span>
+<span class="w">         </span><span class="p">((</span><span class="k">once</span><span class="w"> </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="p">))</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">updated</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="c1">;; otherwise add this participant to the seen ones and check the</span><span class="w"></span>
+<span class="w">            </span><span class="c1">;; remaining of the list.</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="n">updated</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">group-helper/o</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">updated</span><span class="p">))))))))</span><span class="w"></span>
+<span class="w">            </span>
+<span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">group-helper/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="o">'</span><span class="p">()))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s see how this works:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; The empty group is a valid group</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="o">'</span><span class="p">())</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; ... and so are &#39;(Wolf Cabbage) &#39;(Cabbage Wolf)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; ... but duplicates are not valid groups</span><span class="w"></span>
+<span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The group/o relation can also be used to generate all the valid groups in the puzzle, and there is only 16 of them:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; List all groups</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(()</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Some participant groups are safe to be left unattended, some are not. <code>(Wolf
+Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Cabbage)</code> is not, since the Goat, left unsupervised, will eat the Cabbage. The <code>safe-group/o</code> relation checks if a group <code>g</code> is safe, it does that by checking that no two members of a group can eat each other:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; `g` must be a valid group</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; The use of `cond/u` here, instead of `cond/a` is an optimisation -- when</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; we fail beacuse found one set of who/what eats in the group , we don&#39;t</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; need to try any other combinations of who/what anymore.</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">what</span><span class="w"> </span><span class="n">g</span><span class="p">))</span><span class="w"></span>
+<span class="w">           </span><span class="c1">;; fail if we find a pair of participants who eat each other...</span><span class="w"></span>
+<span class="w">           </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s try it out:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; The empty group is safe</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">())</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; The Wolf does not eat the Cabbage, so `(Wolf Cabbage) is safe</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Success</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; ... but the Goat does eat the Cabbage, so `(Goat Cabbage) is not safe</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>As with <code>group/o</code>, the <code>safe-group/o</code> relation can also be used to generate all the safe groups in the puzzle, and there is only 6 of them:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(()</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h3 id="candidate-picking">Candidate Picking</h3>
+
+<p>The puzzle requires us to pick a participant form a group and ferry them across the river. This has to be done in such a way that the participants that remain on the river bank won&rsquo;t eat each other. The <code>pick/o</code> relation allows picking a participant from a group, <code>g</code>, such that the remaining participants form a safe group. The normal use case is that <code>g</code> is an &ldquo;input&rdquo; to the relation, and the participant and the remaining group are &ldquo;output&rdquo; to the <code>participant</code> and <code>out</code> parameters, however this is just one use case, the relation can also be used to determine what group <code>g</code> can be formed by &ldquo;unpicking&rdquo; a participant from an output group (we&rsquo;ll see examples of this below):</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">      </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">head</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">tail</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">intermediate</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">intermediate</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">intermediate</span><span class="w"> </span><span class="n">out</span><span class="p">)))))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="n">out</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s see how this relation works in the normal use case:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; There is nothing to pick from an empty group</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="o">'</span><span class="p">()</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Success</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+<span class="c1">;; If there is only one participant, there is only one pick</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="p">(</span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="w"> </span><span class="p">()))</span><span class="w"></span>
+<span class="c1">;; If there are two possibilities, they can both be picked</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="p">(</span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="p">)))</span><span class="w"></span>
+<span class="c1">;; However, from the `(Goat Wolf Cabbage) group only Goat can be picked so</span><span class="w"></span>
+<span class="c1">;; the remaining participants don&#39;t eat each other.</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="p">(</span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">remaining</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>pick/o</code> relation can also be used to find all the groups from which <code>Cabbage</code> can be picked. Note that the group <code>(Goat Cabbage Wolf)</code> is not in this list, since we cannot pick <code>Cabbage</code> from that group and still leaving the group safe (the Wolf will eat the Goat):</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Cabbage</span><span class="w"> </span><span class="n">o</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>While the <code>pick/o</code> relation will pick an existing participant from a group, this is not sufficient to be to solve the puzzle. An insight to solving the puzzle is to realize that the boat can ferry empty across the river, that is, if the group on a river bank is safe, where no one gets eaten (e.g. Wolf and Cabbage), than we have the option of ferrying <code>Nothing</code> to the other bank, in addition to picking one of the participant from the group:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">pick-maybe-nothing/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="n">safe-group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="c1">;; If the group is safe, there is an option to pick &#39;Nothing</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">g</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="n">pick/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>pick-maybe-nothing/o</code> allows us to pick &ldquo;nothing&rdquo; from an empty group, or from safe groups to pick either one of the participants or nothing:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick-maybe-nothing/o</span><span class="w"> </span><span class="o">'</span><span class="p">()</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="n">o</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick-maybe-nothing/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="n">o</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>pick-maybe-nothing/o</code> relation can also be used to find from which groups we can pick &rsquo;Nothing, these are effectively all the safe groups, as defined by the <code>safe-group/o</code> relation:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick-maybe-nothing/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="n">o</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(()</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h3 id="same-group">Same Group</h3>
+
+<p>The <code>pick/o</code> relation can be used &ldquo;in reverse&rdquo; to determine from what groups we can pick a <code>Cabbage</code> and remain with a <code>Wolf</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Cabbage</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Since we don&rsquo;t constrain the order of participants in groups, <code>(Wolf Cabbage)</code> and <code>(Cabbage Wolf)</code> are considered different groups by the <code>group/o</code> relation, and this can create problems when searching for a solution: since we want to avoid getting into the same state again (such as by just ferrying the Goat back and forth across the river), we need a relation to determine if two participant groups are the same, that is, they contain the same participants, regardless of the order in which they appear.</p>
+
+<p>We&rsquo;ll define the <code>same/o</code> relation in terms of two other relations, one that succeeds when two lists <code>l1</code> and <code>l2</code> have the same number of elements, and a second one which succeeds when each element from <code>l1</code> is present in <code>l2</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">same/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">same-length/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"> </span><span class="c1">; same number of elements in l1 and l2</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w">   </span><span class="c1">; all elements in l1 are in l2</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">l2</span><span class="w"> </span><span class="n">l1</span><span class="p">))</span><span class="w">  </span><span class="c1">; all elements in l2 are in l1</span><span class="w"></span>
+
+<span class="c1">;; Succeed if l1 and l2 have the same number of elements</span><span class="w"></span>
+<span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">same-length/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="n">null/o</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">null/o</span><span class="w"> </span><span class="n">l2</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">a1</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">a2</span><span class="w"> </span><span class="n">d2</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a2</span><span class="w"> </span><span class="n">d2</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">same-length/o</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">d2</span><span class="p">)))))</span><span class="w"></span>
+<span class="c1">;; Succeed if every element from l1 is present in l2</span><span class="w"></span>
+<span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="n">null/o</span><span class="w"> </span><span class="n">l1</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="n">d</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">proper-member/o</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">l2</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Below are some basic usage of the <code>same/o</code> relation: it succeeds and fails as expected.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">same/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Succeed</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">same/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>same/o</code> relation can also be used to generate all permutations of list elements: we can generate all the lists which would be the same as one of the input lists:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">same/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h3 id="search-history">Search History</h3>
+
+<p>As we search for a river crossing solution, we&rsquo;ll need to keep track of the groups we have seen, to avoid going in an infinite loop: ferrying the Goat accross the river back and forth will satisfy the condition that the participants left on either river bank are in a safe group, but it keep trying forever and will never find a solution to the puzzle.</p>
+
+<p>While planning the solution, we&rsquo;ll keep track of the previous groups we have seen seen and check if the newly proposed group is in fact a new one. <code>seen-group/o</code> will check if a group <code>g</code> is present in <code>history</code> which is a list of groups:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k">cond/e</span><span class="w"> </span><span class="p">((</span><span class="n">same/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">head</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">tail</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The implementation <code>seen-group/o</code> is similar to the <code>member/o</code> relation, except we use <code>same/o</code> to check if the items are the same, since a group of participants is the same regardless of the order in which they appear:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; History is empty, so the &#39;(Goat) group was not seen</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">()))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+<span class="c1">;; The &#39;(Wolf Cabbage) group is "seen" even though it appears in a different order</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Succeed</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>seen-group/o</code> relation can also be used to find all the histories where a specific group was seen, but the output might be surprising. First, since there are an infinite number of histories which can contain a group, we&rsquo;ll just get the first 5 here using <code>(run 5 q ...)</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(((</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="ss">_.0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">((</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="ss">_.0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">_.0</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="ss">_.1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">_.0</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="ss">_.1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">_.0</span><span class="w"> </span><span class="ss">_.1</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="ss">_.2</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The symbols <code>_.0</code>, <code>_.1</code>, <code>_.2</code>, etc stand for &ldquo;any value&rdquo;, so the list &rsquo;((Wolf Cabbage) . _.0) means a list whose first element is <code>(Wolf Cabbage)</code> followed by any tail value, that is, all lists which have <code>(Wolf Cabbage)</code> as the first element. Essentially, the answer for the histories which contain <code>(Wolf Cabbage)</code> are the all the lists which have that element in the first position, followed by all the lists that have the element in the second position and so on.</p>
+
+<p>Of course, when we choose the next move, we want to pick a group that was NOT yet seen, and <code>seen-group/o</code> succeeds if a group was seen. Unfortunately, implementing &ldquo;not&rdquo; in a relational language has some challenges. We can easily implement <code>not-seen-group/o</code> such that it fails when <code>seen-group/o</code> succeeds, but this would break the symetry that we had in our relations so far:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; cond/u (instead of cond/a) is an optimization here, to avoid trying to</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; exhaust all `seen groups`</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>not-seen-group/o</code> relation works as expected when both <code>g</code> and <code>history</code> are &ldquo;known&rdquo;, that is they have actual values, for example:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Succeed</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip; however, if we try to find what values are NOT in a history, or try to find what histories don&rsquo;t contain a value, the relation does not work as expected:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; Try to find groups NOT in the search history ...</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group1/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">))))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+<span class="c1">;; Try to find search histories that don&#39;t contain the &#39;(Wolf) group...</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group1/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The problem is that there is no way to represent the value "a list without a specific element" in <em>miniKanren</em> (an extension of the language using <code>absent/o</code> is able to represent such lists). In our case, we don&rsquo;t actually need this feature, but it is a good idea to protect the relation and report an error if the values are not grounded, since the <code>fail</code> the relation would return does not represent an actual failure and can be misleading:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">project</span><span class="w"> </span><span class="p">(</span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb">ground*?</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb">ground*?</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">succeed</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span><span class="w"> </span><span class="s2">"not-seen-group/o: history is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> ground"</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span><span class="w"> </span><span class="s2">"not-seen-group/o: g is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> ground"</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>With these changes, <code>not-seen-group/o</code> still works as expected of both <code>g</code> and <code>history</code> are known, but it will report an error if the result cannot be determined (that is, when input values are not ground):</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Succeed</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)))</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">))))</span><span class="w"></span>
+<span class="c1">; not-seen-group/o: g is not ground</span><span class="w"></span>
+<span class="c1">; Context (plain; to see better errortrace context, re-run with C-u prefix):</span><span class="w"></span>
+<span class="c1">;   c:\Users\alexh\Projects\Racket\mk\mk.rkt:321:5</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="c1">; not-seen-group/o: history is not ground</span><span class="w"></span>
+<span class="c1">; Context (plain; to see better errortrace context, re-run with C-u prefix):</span><span class="w"></span>
+<span class="c1">;   c:\Users\alexh\Projects\Racket\mk\mk.rkt:321:5</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h3 id="river-banks">River Banks</h3>
+
+<p>We now need to define the last data structure for solving the puzzle: the River Bank. There are two river banks in the problem, a left and a right one, and each holds a group of participants; the objective of the puzzle is to find a crossing order between these two banks. For each river bank, we also need to track what the goal group is, that is, what end results are we aiming for when planning the trips, as well as a history of previous groups that we have seen so far, to avoid getting stuck in an infinite loop.</p>
+
+<p>A river bank will be represented as a list, with the <code>River-Bank</code> symbol as the first element. Using a symbol as the first element in the list is not strictly required, but since the only data structure supported by <em>miniKanren</em> is the list, it is difficult to tell apart a &ldquo;group&rdquo; list and a &ldquo;river bank&rdquo; list and the <code>River-Bank</code> symbol serves to differentiate between the two.</p>
+
+<p>Here is what the Left and Right banks look like at the start of the puzzle. For example, the left bank contains all the participants, the goal state is the empty group and the history contains the first group, since we don&rsquo;t want to see that group again while planning the crossings:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">((</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">(()))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In general a river bank look like this:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="ss">group</span><span class="w"> </span><span class="ss">goal</span><span class="w"> </span><span class="ss">history</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Where:</p>
+
+<ul>
+ <li><code>River-Bank</code> is a symbol identifying this as a River-Bank structure.</li>
+ <li><code>tag</code> is one of the Left or Right symbols &mdash; this will help telling the two  river banks apart and construct plan steps that the user can understand</li>
+ <li><code>group</code> is the current group of participants on the bank, for example,  <code>(Goat Wolf Cabbage)</code>,</li>
+ <li><code>goal</code> is the goal group for each bank &mdash; this is used to check if we have  completed the plan, for the Left, which starts with all the participants,  this is the empty list (i.e. no participants left on that bank), for the  right bank, which starts out empty, the goal is the full list of  participants.</li>
+ <li><code>history</code> is a list of previous groups seen on the bank during the planning  process &mdash; this starts out as an empty list.</li></ul>
+
+<p>We&rsquo;ll need to write some relations to manipulate river bank structures, and the first one is <code>goal-state/o</code> which is used to determine if the goal was reached for a river bank, that is the &ldquo;group&rdquo; and &ldquo;goal&rdquo; are the same:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">goal-state/o</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">goal</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="o">,</span><span class="n">group</span><span class="w"> </span><span class="o">,</span><span class="n">goal</span><span class="w"> </span><span class="o">,</span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">same/o</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">goal</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s see how this works:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; Current state is not a goal state:</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<span class="w">             </span><span class="p">(</span><span class="n">goal-state/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">()))</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">()</span><span class="w"></span>
+<span class="c1">;; Current state is the goal state:</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<span class="w">             </span><span class="p">(</span><span class="n">goal-state/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">()))</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">'</span><span class="ss">Succeed</span><span class="p">)))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(</span><span class="ss">Succeed</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Next, we&rsquo;ll need a relation to pick a candidate from a river bank. We already have <code>pick-maybe-nothing/o</code> but that works on groups, which are list of participants, the <code>pick-participant-from/o</code> relation will use it to pick a candidate, ensuring that it was not already picked (by checking the history) and produce a new river bank structure with that participant removed and history updated::</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">pick-participant-from/o</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">goal</span><span class="w"> </span><span class="n">history</span><span class="w"> </span><span class="n">updated-group</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="o">,</span><span class="n">group</span><span class="w"> </span><span class="o">,</span><span class="n">goal</span><span class="w"> </span><span class="o">,</span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">pick-maybe-nothing/o</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">updated-group</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">updated-group</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="o">,</span><span class="n">updated-group</span><span class="w"> </span><span class="o">,</span><span class="n">goal</span><span class="w"> </span><span class="p">(</span><span class="o">,</span><span class="n">updated-group</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="o">,</span><span class="n">history</span><span class="p">))</span><span class="w"> </span><span class="n">out</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s see how this works: from a River-Bank with the Wolf and Cabbage, we can pick Nothing, the Wolf or the Cabbage &mdash; note how the history is updated in each case.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pick-participant-from/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="n">r</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">((</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">))))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">((</span><span class="ss">Cabbage</span><span class="p">))))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="ss">Cabbage</span><span class="w"> </span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">((</span><span class="ss">Wolf</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Once a participant was ferried accross the river, it needs to be added to that state, producing a new output state, and this is the role of the <code>add-participant-to/o</code> relation. Special care is taken not to add <code>Nothing</code> to the state &mdash; also we have to use <code>cond/a</code> instead of <code>cond/e</code> here, so only one of the &ldquo;cond&rdquo; branches produces values:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">add-participant-to/o</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/a</span><span class="w"></span>
+<span class="w">   </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">state</span><span class="p">))</span><span class="w"></span>
+<span class="w">   </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">goal</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="o">,</span><span class="n">group</span><span class="w"> </span><span class="o">,</span><span class="n">goal</span><span class="w"> </span><span class="o">,</span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="k"><a href="http://docs.racket-lang.org/reference/creatingunits.html#(form._((lib._racket/unit..rkt)._tag))" style="color: inherit">tag</a></span><span class="w"> </span><span class="p">(</span><span class="o">,</span><span class="n">participant</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="o">,</span><span class="n">group</span><span class="p">)</span><span class="w"> </span><span class="o">,</span><span class="n">goal</span><span class="w"> </span><span class="o">,</span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">out</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s check that this works correctly, when we first try to add <code>Nothing</code> to a river bank and than try to add the <code>Goat</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">add-participant-to/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()))</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">add-participant-to/o</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">())</span><span class="w"> </span><span class="o">'</span><span class="ss">Goat</span><span class="w"> </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Finally, the <em>miniKanren</em> program to solve the puzzle must produce a plan, which is a sequence of steps required to solve the puzzle. The plan is a list of steps, where each step is simply a list forming an English sentence, for example <code>(Ferry Goat From Left To Right)</code>. Once an candidate has been picked from a river bank, the <code>make-step/o</code> relation will produce a plan step by simply taking the names of the participant and the two river banks:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">make-step/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">step</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">ftag</span><span class="w"> </span><span class="n">fgroup</span><span class="w"> </span><span class="n">fgoal</span><span class="w"> </span><span class="n">fhistory</span><span class="w"> </span><span class="n">ttag</span><span class="w"> </span><span class="n">tgroup</span><span class="w"> </span><span class="n">tgoal</span><span class="w"> </span><span class="n">thistory</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="n">ftag</span><span class="w"> </span><span class="o">,</span><span class="n">fgroup</span><span class="w"> </span><span class="o">,</span><span class="n">fgoal</span><span class="w"> </span><span class="o">,</span><span class="n">fhistory</span><span class="p">)</span><span class="w"> </span><span class="n">from</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="o">,</span><span class="n">ttag</span><span class="w"> </span><span class="o">,</span><span class="n">tgroup</span><span class="w"> </span><span class="o">,</span><span class="n">tgoal</span><span class="w"> </span><span class="o">,</span><span class="n">thistory</span><span class="p">)</span><span class="w"> </span><span class="n">to</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="o">`</span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="o">,</span><span class="n">participant</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="o">,</span><span class="n">ftag</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="o">,</span><span class="n">ttag</span><span class="p">)</span><span class="w"> </span><span class="n">step</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here is how it works:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run*</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="p">(</span><span class="n">make-step/o</span><span class="w"></span>
+<span class="w">            </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">())</span><span class="w"></span>
+<span class="w">            </span><span class="o">'</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)</span><span class="w"> </span><span class="p">())</span><span class="w"></span>
+<span class="w">            </span><span class="o">'</span><span class="ss">Goat</span><span class="w"></span>
+<span class="w">            </span><span class="n">q</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">((</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Right</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We now have all the required <em>miniKanren</em> relations to plan the river crossing, lets do that next.</p>
+
+<h3 id="planning-the-crossing">Planning the Crossing</h3>
+
+<p>With all the relations defined so far, all that remains is to define the constraints for planning process. The <code>do-plan/o</code> relation will construct a <code>plan</code> to move participants <code>from</code> a river bank <code>to</code> the other one:</p>
+
+<ul>
+ <li>If the <code>from</code> state is already in the goal state, the plan is empty  (i.e. nothing needs to be done), otherwise:</li>
+ <li>Pick a participant, producing a new <code>from</code> river bank state  <code>updated-from</code></li>
+ <li>Add that participant to the <code>to</code> river bank, producing a new state,  <code>updated-to</code></li>
+ <li>Construct a step in the plan by collating the information with the  participant and the name of the two river banks</li>
+ <li>Add the step to the plan</li>
+ <li>Construct the remaining of the plan by swapping the two river banks and  calling <code>do-plan/o</code> recursively.</li></ul>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">do-plan/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">plan</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
+<span class="w">   </span><span class="p">((</span><span class="n">goal-state/o</span><span class="w"> </span><span class="n">from</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">plan</span><span class="w"> </span><span class="o">'</span><span class="p">()))</span><span class="w"></span>
+<span class="w">   </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">participant</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="n">updated-from</span><span class="w"> </span><span class="n">updated-to</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">pick-participant-from/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">updated-from</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">add-participant-to/o</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">updated-to</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">make-step/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">step</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="n">plan</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">do-plan/o</span><span class="w"> </span><span class="n">updated-to</span><span class="w"> </span><span class="n">updated-from</span><span class="w"> </span><span class="n">remaining</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Before we try it out, let&rsquo;s write a helper relation which sets up the <code>from</code> and <code>to</code> river banks as the problem states them:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">wolf-goat-cabbage-plan/o</span><span class="w"> </span><span class="n">plan</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">from</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">to</span><span class="w"> </span><span class="o">'</span><span class="p">()])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">do-plan/o</span><span class="w"></span>
+<span class="w">     </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="o">,</span><span class="n">from</span><span class="w"> </span><span class="o">,</span><span class="n">to</span><span class="w"> </span><span class="p">(</span><span class="o">,</span><span class="n">from</span><span class="p">))</span><span class="w"></span>
+<span class="w">     </span><span class="o">`</span><span class="p">(</span><span class="ss">River-Bank</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="o">,</span><span class="n">to</span><span class="w"> </span><span class="o">,</span><span class="n">from</span><span class="w"> </span><span class="p">(</span><span class="o">,</span><span class="n">to</span><span class="p">))</span><span class="w"></span>
+<span class="w">     </span><span class="n">plan</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Running this last relation will produce a plan to ferry all participants safely across the river:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k">run</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">plan</span><span class="w"> </span><span class="p">(</span><span class="n">wolf-goat-cabbage-plan/o</span><span class="w"> </span><span class="n">plan</span><span class="p">))</span><span class="w"></span>
+<span class="o">'</span><span class="p">(((</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Right</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Left</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Right</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Left</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Cabbage</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Right</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss"><a href="http://docs.racket-lang.org/ts-reference/type-ref.html#(form._((lib._typed-racket/base-env/base-types..rkt)._.Nothing))" style="color: inherit">Nothing</a></span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Right</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Left</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="ss">Ferry</span><span class="w"> </span><span class="ss">Goat</span><span class="w"> </span><span class="ss">From</span><span class="w"> </span><span class="ss">Left</span><span class="w"> </span><span class="ss">To</span><span class="w"> </span><span class="ss">Right</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We can even find that there are in fact two possible solutions to this puzzle, when asking for all the solutions using <code>run*</code>.</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>Looking at the <code>plan/o</code> relation, it appears to be a simple recursive definition: find the fist step of them plan than find the remaining steps until completed. There is no explicit backtracking, the relations appear to know how to pick the correct participant at each step &mdash; this is of course an illusion and the backtracking itself is built into <em>miniKanren</em>. Technically, <em>miniKanren</em> does not use backtracking, but it does keep track of all the alternatives for us and automatically retries other <code>cond/e</code> branches of one fails.</p>
+
+<p>If you would like the entire program as a single file, it is available as a <a href="https://gist.github.com/alex-hhh/53e81f0261c96234450379b2d8096aae">gist here</a>.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2022/08/timezone-lookup-revisited.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Timezone Lookup Revisited</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.identifier = undefined;
+        this.page.url = undefined;
+        this.page.title = undefined;
+        this.page.category_id = undefined;
+      };
+      var disqus_shortname = 'alex-hhh-github-com';
+      (function() {
+          var dsq = document.createElement('script');
+          dsq.type = 'text/javascript';
+          dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          dsq.setAttribute('data-timestamp', +new Date());
+          (document.head || document.body).appendChild(dsq);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+    <!-- </body> JS -->
+  <!-- NOTE: jQuery must be loaded first -->
+  <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="/js/custom.js"></script>
+  </body>
+</html>

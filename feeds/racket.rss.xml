@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'racket'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'racket'</description>
   <link>https://alex-hhh.github.io/tags/racket.html</link>
-  <lastBuildDate>Fri, 05 Aug 2022 23:05:26 UT</lastBuildDate>
-  <pubDate>Fri, 05 Aug 2022 23:05:26 UT</pubDate>
+  <lastBuildDate>Wed, 28 Sep 2022 09:33:43 UT</lastBuildDate>
+  <pubDate>Wed, 28 Sep 2022 09:33:43 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>The Wolf, the Goat and the Cabbage</title>
+   <link>https://alex-hhh.github.io/2022/09/wolf-goat-cabbage.html?utm_source=racket&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2022-09-wolf-goat-cabbage-html</guid>
+   <pubDate>Wed, 28 Sep 2022 09:33:43 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;&amp;hellip; in which we revisit &lt;a href="http://minikanren.org/"&gt;miniKanren&lt;/a&gt; and use it to solve a planning puzzle about ferrying some items safely across a river.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2022/09/wolf-goat-cabbage.html?utm_source=racket&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Timezone Lookup Revisited</title>
    <link>https://alex-hhh.github.io/2022/08/timezone-lookup-revisited.html?utm_source=racket&amp;utm_medium=RSS</link>
