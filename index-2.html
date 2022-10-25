@@ -86,6 +86,26 @@
 
           <div class"index-entry">
   <div>
+    <h2 class="index-entry"><a href='/2021/01/plot-animations.html' title='Plot Animations'>Plot Animations</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2021-01-10" pubdate="true">2021-01-10</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </div>
+  <div class="container">
+            <div class="row">
+              <div id="content" class="col-md-3 center-block zoom-on-hover">
+                <a href='/2021/01/plot-animations.html'><img class="rounded thumbnail" src='/img/a045/thumb.png'/></a>
+              </div>
+              <div id="content" class="col-md-9">
+
+  <p>There is no specific animation function in the Racket <a href="https://docs.racket-lang.org/plot/index.html">plot</a> package, but animations can be build by repeatedly plotting individual frames onto a canvas or image using <code>plot/dc</code>. The technique requires drawing the entire plot every frame, which will be inefficient for complex plots. In this blog post we explore how to construct plot animations using the <code>set-overlay-renderers</code> method of a plot snip, which is a more efficient method when plots are embedded in GUI applications.</p>
+                <div><a href='/2021/01/plot-animations.html'>&hellip; more &hellip;</a></div>
+              </div>
+            </div>
+  </div>
+  <hr>
+</div>
+<div class"index-entry">
+  <div>
     <h2 class="index-entry"><a href='/2020/11/space-invaders.html' title='Space Invaders'>Space Invaders</a></h2>
     <p class='date-and-tags'>
 <time datetime="2020-11-28" pubdate="true">2020-11-28</time> :: <span class="tags"><a href="/tags/games-in-racket.html">games in racket</a>, <a href="/tags/racket.html">racket</a></span></p>
@@ -299,26 +319,6 @@
 
   <p>&hellip; in which we explore how to show on the same plot two data series that have different data ranges. The <a href="https://docs.racket-lang.org/plot/index.html">Racket Plot</a> package does not support this functionality directly, but with the help of some data transformation, we can still achieve good results.</p>
                 <div><a href='/2020/02/dual-axis-plots.html'>&hellip; more &hellip;</a></div>
-              </div>
-            </div>
-  </div>
-  <hr>
-</div>
-<div class"index-entry">
-  <div>
-    <h2 class="index-entry"><a href='/2019/11/custom-rackunit-test-runner.html' title='Custom Rackunit Test Runner'>Custom Rackunit Test Runner</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2019-11-29" pubdate="true">2019-11-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a></span></p>
-  </div>
-  <div class="container">
-            <div class="row">
-              <div id="content" class="col-md-3 center-block zoom-on-hover">
-                <a href='/2019/11/custom-rackunit-test-runner.html'><img class="rounded thumbnail" src='/img/a033/thumb.png'/></a>
-              </div>
-              <div id="content" class="col-md-9">
-
-  <p>As the number of tests for a program continues to increase, it is no longer sufficient to know that all tests passed or which test failed. Other questions start to become important: were some tests inadvertently disabled? which tests were skipped? how did the duration of a test evolve over several versions of a program? Existing build platforms, such as Azure Devops, can help with test management, but in order make use of their features, we need to extend the Racket unit test library to report the test results to the build pipeline.</p>
-                <div><a href='/2019/11/custom-rackunit-test-runner.html'>&hellip; more &hellip;</a></div>
               </div>
             </div>
   </div>
