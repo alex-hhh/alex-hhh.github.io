@@ -104,59 +104,60 @@
 <p>Relatively early on in the ActivityLog2 project, I added support for writing out FIT files, especially workouts and settings. Since I am a programmer, I just wrote a small library which allowed to write workouts something like this:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">hr/warmup</span><span class="p">)</span> <span class="p">(</span><span class="n">hr/bpm</span> <span class="mi">60</span> <span class="mi">163</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">pace/hard</span><span class="p">)</span> <span class="p">(</span><span class="n">speed</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">4</span> <span class="mi">29</span><span class="p">)</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">4</span> <span class="mi">0</span><span class="p">)))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span> <span class="p">(</span><span class="n">speed</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">7</span> <span class="mi">32</span><span class="p">)</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">5</span> <span class="mi">7</span><span class="p">)))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span> <span class="p">(</span><span class="n">speed</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">4</span> <span class="mi">45</span><span class="p">)</span> <span class="p">(</span><span class="n">pace</span> <span class="mi">4</span> <span class="mi">31</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">hr/warmup</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hr/bpm</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="mi">163</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">pace/hard</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">speed</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">29</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">0</span><span class="p">)))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">speed</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="mi">7</span><span class="p">)))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">speed</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">45</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">31</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">wk-daniel-q10</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">wk</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">fit-workout-file%</span> <span class="p">[</span><span class="n">name</span> <span class="s2">"daniel-q9"</span><span class="p">]</span> <span class="p">[</span><span class="n">sport</span> <span class="mi">1</span><span class="p">]))</span>
-  <span class="p">((</span><span class="n">workout</span>
-    <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">miles</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="n">hr/warmup</span><span class="p">)</span> <span class="n">warmup</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">repeat</span>
-     <span class="mi">4</span>
-     <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">miles</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span> <span class="n">active</span><span class="p">)</span>
-     <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">minutes</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">no-target</span><span class="p">)</span> <span class="n">recover</span><span class="p">))</span>
-    <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">minutes</span> <span class="mi">5</span><span class="p">)</span> <span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span> <span class="n">recover</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">repeat</span>
-     <span class="mi">3</span>
-     <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">miles</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span> <span class="n">active</span><span class="p">)</span>
-     <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">minutes</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">no-target</span><span class="p">)</span> <span class="n">recover</span><span class="p">))</span>
-    <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">miles</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span> <span class="n">cooldown</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">step</span> <span class="p">(</span><span class="n">lap-button</span><span class="p">)</span> <span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span> <span class="n">cooldown</span><span class="p">))</span>
-   <span class="n">wk</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">wk</span> <span class="n">get-fit-data</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">wk-daniel-q10</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">wk</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">fit-workout-file%</span><span class="w"> </span><span class="p">[</span><span class="n">name</span><span class="w"> </span><span class="s2">"daniel-q9"</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">sport</span><span class="w"> </span><span class="mi">1</span><span class="p">]))</span><span class="w"></span>
+<span class="w">  </span><span class="p">((</span><span class="n">workout</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">miles</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hr/warmup</span><span class="p">)</span><span class="w"> </span><span class="n">warmup</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">repeat</span><span class="w"></span>
+<span class="w">     </span><span class="mi">4</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">miles</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span><span class="w"> </span><span class="n">active</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">minutes</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">no-target</span><span class="p">)</span><span class="w"> </span><span class="n">recover</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">minutes</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span><span class="w"> </span><span class="n">recover</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">repeat</span><span class="w"></span>
+<span class="w">     </span><span class="mi">3</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">miles</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace/tempo</span><span class="p">)</span><span class="w"> </span><span class="n">active</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">minutes</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">no-target</span><span class="p">)</span><span class="w"> </span><span class="n">recover</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">miles</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span><span class="w"> </span><span class="n">cooldown</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="n">lap-button</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">pace/easy</span><span class="p">)</span><span class="w"> </span><span class="n">cooldown</span><span class="p">))</span><span class="w"></span>
+<span class="w">   </span><span class="n">wk</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">wk</span><span class="w"> </span><span class="n">get-fit-data</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>To someone familiar with writing (or reading) code it should not be too difficult to determine that the code above defines the following workout:</p>
@@ -218,28 +219,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

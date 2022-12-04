@@ -252,23 +252,24 @@ intercept = 1 - slope * min_reading
 <p>The slope and intercept values for each axis must be placed in the <a href="https://github.com/alex-hhh/Arduino_Inclinometer/blob/master/inclinometer/inclinometer.ino">inclinometer.ino</a> file, replacing the values that are already present there. The &ldquo;calibration parameters&rdquo; section is shown below:</p>
 
 <div class="brush: C++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="c1">// Calibration parameters.  These will need to be updated for each unit, see</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">// Calibration parameters.  These will need to be updated for each unit, see</span>
 <span class="c1">// the Calibration section in README.md</span>
 
 <span class="cp">#define X_SLOPE 0.003976143</span>
@@ -277,8 +278,8 @@ intercept = 1 - slope * min_reading
 <span class="cp">#define Y_INTERCEPT 0.084812623</span>
 <span class="cp">#define Z_SLOPE 0.003960396</span>
 <span class="cp">#define Z_INTERCEPT 0.089108911</span>
-</pre></div>
-</td></tr></tbody></table>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="the-arduino-sketch-explained">The Arduino Sketch Explained</h2>
@@ -302,71 +303,72 @@ intercept = 1 - slope * min_reading
 <p>The <code>read_accelerometer</code> function defined below reads the values from the accelerometer as a 3 D vector, but applies the calibration <em>slope</em> and <em>intercept</em> values and than filters them using a <a href="https://en.wikipedia.org/wiki/Low-pass_filter">low pass filter</a>. Unlike a rolling average filter, a low pass filter only requires a single extra vector to be kept in the global state. This is important, as the sketch uses up almost all the memory on the Arduino Nano board.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">read_accelerometer</span><span class="p">(</span><span class="kt">float</span> <span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="c1">// The filtered accelerometer values.  This is &#39;static&#39;, so it remembers</span>
-    <span class="c1">// its values between `read_accelerometer&#39; calls.</span>
-    <span class="k">static</span> <span class="kt">float</span> <span class="n">filter</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">read_accelerometer</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// The filtered accelerometer values.  This is &#39;static&#39;, so it remembers</span>
+<span class="w">    </span><span class="c1">// its values between `read_accelerometer&#39; calls.</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
 
-    <span class="c1">// Step 1: read the raw values from the accelerometer</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">adxl345</span><span class="p">.</span><span class="n">getX</span><span class="p">();</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">adxl345</span><span class="p">.</span><span class="n">getY</span><span class="p">();</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">adxl345</span><span class="p">.</span><span class="n">getZ</span><span class="p">();</span>
+<span class="w">    </span><span class="c1">// Step 1: read the raw values from the accelerometer</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adxl345</span><span class="p">.</span><span class="n">getX</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adxl345</span><span class="p">.</span><span class="n">getY</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adxl345</span><span class="p">.</span><span class="n">getZ</span><span class="p">();</span><span class="w"></span>
 
-    <span class="c1">// Step 2: calibrate the values, see the readme.md file</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">X_SLOPE</span> <span class="o">+</span> <span class="n">X_INTERCEPT</span><span class="p">;</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">Y_SLOPE</span> <span class="o">+</span> <span class="n">Y_INTERCEPT</span><span class="p">;</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">Z_SLOPE</span> <span class="o">+</span> <span class="n">Z_INTERCEPT</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Step 2: calibrate the values, see the readme.md file</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">X_SLOPE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">X_INTERCEPT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Y_SLOPE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Y_INTERCEPT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Z_SLOPE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Z_INTERCEPT</span><span class="p">;</span><span class="w"></span>
 
-    <span class="c1">// Step 3: calculate the filter alpha value and update the filter.</span>
-    <span class="kt">float</span> <span class="n">alpha</span> <span class="o">=</span> <span class="kt">float</span><span class="p">(</span><span class="n">delta_time</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">LPF_ALPHA</span> <span class="o">+</span> <span class="kt">float</span><span class="p">(</span><span class="n">delta_time</span><span class="p">));</span>
+<span class="w">    </span><span class="c1">// Step 3: calculate the filter alpha value and update the filter.</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">float</span><span class="p">(</span><span class="n">delta_time</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">LPF_ALPHA</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">float</span><span class="p">(</span><span class="n">delta_time</span><span class="p">));</span><span class="w"></span>
 
-    <span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">;</span>
-    <span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">;</span>
-    <span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">;</span>
+<span class="w">    </span><span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">;</span><span class="w"></span>
 
-    <span class="c1">// Step 4: produce the final calibrated and filtered values.</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-    <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="c1">// Step 4: produce the final calibrated and filtered values.</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filter</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="acquiring-the-down-direction">Acquiring the down direction</h3>
@@ -378,51 +380,52 @@ intercept = 1 - slope * min_reading
 <p>If <code>cal</code> and <code>zaxis</code> are not pointing in the same direction, the <code>zaxis</code> is updated to be &ldquo;between&rdquo; the previous <code>zaxis</code> and the new <code>cal</code> reading. Effectively, <code>zaxis</code> is slowly moved towards the <code>cal</code> reading.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">on_acquire_down_direction</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">dot</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">cal</span><span class="p">,</span> <span class="n">zaxis</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">dot</span> <span class="o">&gt;</span> <span class="mf">0.99</span> <span class="o">&amp;&amp;</span> <span class="n">dot</span> <span class="o">&lt;</span> <span class="mf">1.01</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">vnormalize</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span> <span class="n">zaxis</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">on_acquire_down_direction</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">cal</span><span class="p">,</span><span class="w"> </span><span class="n">zaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dot</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.99</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1.01</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span><span class="w"> </span><span class="n">zaxis</span><span class="p">);</span><span class="w"></span>
 
-        <span class="c1">// Got our down direction, we can now determine the forward direction.</span>
-        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_FORWARD_DIRECTION</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">else</span> <span class="p">{</span>
-        <span class="n">zaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">;</span>
-        <span class="n">zaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">;</span>
-        <span class="n">zaxis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">;</span>
+<span class="w">        </span><span class="c1">// Got our down direction, we can now determine the forward direction.</span>
+<span class="w">        </span><span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_FORWARD_DIRECTION</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">zaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">zaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">zaxis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">zaxis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w"></span>
 
-        <span class="c1">// Show a message on the screen that we are acquiring the down</span>
-        <span class="c1">// direction.</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">        </span><span class="c1">// Show a message on the screen that we are acquiring the down</span>
+<span class="w">        </span><span class="c1">// direction.</span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="acquiring-the-forward-direction">Acquiring the forward direction</h3>
@@ -434,53 +437,54 @@ intercept = 1 - slope * min_reading
 <p>We now have two reference vectors, one that points down, <code>zaxis</code>, and one that points down and slightly backwards. The <em>cross product</em> of these two vectors is a vector that points straight to the left of the unit, this is the <code>yaxis</code>. Finally, the <em>cross product</em> between the <code>yaxis</code> and <code>zaxis</code> is a vector that points forward, the <code>xaxis</code>. The two new vectors are also normalized, as the length of the vector produced by the <em>cross product</em> is not necessarily 1.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">on_acquire_forward_direction</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">gforce</span> <span class="o">=</span> <span class="n">vlen</span><span class="p">(</span><span class="n">cal</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">on_acquire_forward_direction</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">gforce</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vlen</span><span class="p">(</span><span class="n">cal</span><span class="p">);</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">gforce</span> <span class="o">&gt;</span> <span class="mf">1.02</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// 0.02 of acceleration indicates that the vehicle is moving and we</span>
-        <span class="c1">// can determine the forward direction.  Note that on Earth, the</span>
-        <span class="c1">// vehicle will always be subjected to at leas 1g due to gravity</span>
-        <span class="c1">// (unless the vehicle is in free fall).</span>
-        <span class="n">vcross</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span> <span class="n">cal</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">);</span>
-        <span class="n">vcross</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span> <span class="n">zaxis</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
-        <span class="n">vnormalize</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
-        <span class="n">vnormalize</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">);</span>
-        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_RUNNING</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="c1">// The vehicle is not accelerating fast enough yet.  Show a message on</span>
-        <span class="c1">// the screen instructing the user to move the vehicle forward.</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gforce</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1.02</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// 0.02 of acceleration indicates that the vehicle is moving and we</span>
+<span class="w">        </span><span class="c1">// can determine the forward direction.  Note that on Earth, the</span>
+<span class="w">        </span><span class="c1">// vehicle will always be subjected to at leas 1g due to gravity</span>
+<span class="w">        </span><span class="c1">// (unless the vehicle is in free fall).</span>
+<span class="w">        </span><span class="n">vcross</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">,</span><span class="w"> </span><span class="n">yaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">vcross</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span><span class="w"> </span><span class="n">zaxis</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span><span class="w"> </span><span class="n">yaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_RUNNING</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// The vehicle is not accelerating fast enough yet.  Show a message on</span>
+<span class="w">        </span><span class="c1">// the screen instructing the user to move the vehicle forward.</span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="main-running-function">Main running function</h3>
@@ -490,83 +494,84 @@ intercept = 1 - slope * min_reading
 <p>The <code>on_running</code> function is the main function of the application. It takes an accelerometer reading, <code>cal</code>, transforms it into the local reference frame of the unit, calculates roll and pitch angles and displays them.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">on_running</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="c1">// &#39;cal&#39; is in world coordinates, transform it to local coordinates, to</span>
-    <span class="c1">// calculate the calibrated roll and pitch.  Note that the vdot() calls</span>
-    <span class="c1">// together make a matrix -- vector multiplication.</span>
-    <span class="kt">float</span> <span class="n">ncal</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-    <span class="n">ncal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">cal</span><span class="p">);</span>
-    <span class="n">ncal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span> <span class="n">cal</span><span class="p">);</span>
-    <span class="n">ncal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span> <span class="n">cal</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">on_running</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// &#39;cal&#39; is in world coordinates, transform it to local coordinates, to</span>
+<span class="w">    </span><span class="c1">// calculate the calibrated roll and pitch.  Note that the vdot() calls</span>
+<span class="w">    </span><span class="c1">// together make a matrix -- vector multiplication.</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">ncal</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="n">ncal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">ncal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">yaxis</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">ncal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">zaxis</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">);</span><span class="w"></span>
 
-    <span class="kt">float</span> <span class="n">pitch</span> <span class="o">=</span> <span class="n">calculate_pitch</span><span class="p">(</span><span class="n">ncal</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">roll</span> <span class="o">=</span> <span class="n">calculate_roll</span><span class="p">(</span><span class="n">ncal</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">gforce</span> <span class="o">=</span> <span class="n">vlen</span><span class="p">(</span><span class="n">cal</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_pitch</span><span class="p">(</span><span class="n">ncal</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_roll</span><span class="p">(</span><span class="n">ncal</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">gforce</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vlen</span><span class="p">(</span><span class="n">cal</span><span class="p">);</span><span class="w"></span>
 
-    <span class="c1">// Check for WARN conditions being met and set or clear appropriate flags.</span>
-    <span class="c1">// We set the warn flag when an angle exceeds the warn value, but only</span>
-    <span class="c1">// clear it when it drops two degrees below that value.  This ensures that</span>
-    <span class="c1">// there is no annoying quick on-off buzzer when the inclinometer hovers</span>
-    <span class="c1">// around the warn value.</span>
+<span class="w">    </span><span class="c1">// Check for WARN conditions being met and set or clear appropriate flags.</span>
+<span class="w">    </span><span class="c1">// We set the warn flag when an angle exceeds the warn value, but only</span>
+<span class="w">    </span><span class="c1">// clear it when it drops two degrees below that value.  This ensures that</span>
+<span class="w">    </span><span class="c1">// there is no annoying quick on-off buzzer when the inclinometer hovers</span>
+<span class="w">    </span><span class="c1">// around the warn value.</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">roll</span> <span class="o">&gt;</span> <span class="n">ROLL_WARN</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">SET_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">roll</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">ROLL_WARN</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// note the -2, hysteresis !</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">roll</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">ROLL_WARN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">SET_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">roll</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">ROLL_WARN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// note the -2, hysteresis !</span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">pitch</span> <span class="o">&gt;</span> <span class="n">PITCH_WARN</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">SET_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">pitch</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">PITCH_WARN</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// note the -2, hysteresis !</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span>
-    <span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pitch</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">PITCH_WARN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">SET_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pitch</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">PITCH_WARN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// note the -2, hysteresis !</span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    <span class="n">display_pitch_roll</span><span class="p">(</span><span class="n">pitch</span><span class="p">,</span> <span class="n">roll</span><span class="p">,</span> <span class="n">gforce</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="n">display_pitch_roll</span><span class="p">(</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="n">roll</span><span class="p">,</span><span class="w"> </span><span class="n">gforce</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="calculating-pitch-and-roll">Calculating pitch and roll</h3>
@@ -578,49 +583,50 @@ intercept = 1 - slope * min_reading
 <p>For <em>roll</em> angle, we are interested in the left - right angle of the unit, so we keep the Y and Z coordinates from the &ldquo;down&rdquo; vector, <code>cal</code>. As with the pitch vector, this vector has to be normalized.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">float</span> <span class="nf">calculate_pitch</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
-    <span class="kt">float</span> <span class="n">pitch_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
-    <span class="n">vnormalize</span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">pitch</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
-    <span class="k">return</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">pitch</span><span class="p">));</span>
-<span class="p">}</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">float</span><span class="w"> </span><span class="nf">calculate_pitch</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">,</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">pitch</span><span class="p">));</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="kt">float</span> <span class="nf">calculate_roll</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
-    <span class="kt">float</span> <span class="n">roll_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
-    <span class="n">vnormalize</span><span class="p">(</span><span class="n">roll_dir</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">roll</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
-    <span class="k">return</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">roll</span><span class="p">));</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="kt">float</span><span class="w"> </span><span class="nf">calculate_roll</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">roll_dir</span><span class="p">,</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">roll</span><span class="p">));</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="possible-improvements">Possible Improvements</h3>
@@ -668,28 +674,6 @@ intercept = 1 - slope * min_reading
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

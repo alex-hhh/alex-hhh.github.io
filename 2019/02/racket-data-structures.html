@@ -105,27 +105,28 @@
 <p><strong>Constructing lists</strong> is only efficient when it is done by adding an element to the front of the list, using <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></code>. If you need to construct a list by adding an element to the end of the list, it will be more efficient to construct the list in reverse first, using <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></code>, than reverse the list at the end. The example below constructs a list of 10 integers by accumulating the result in reverse, than reverting the result at the end to produce the final list.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">my-list</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="n">loop</span> <span class="p">([</span><span class="n">accumulator</span> <span class="o">'</span><span class="p">()]</span>
-             <span class="p">[</span><span class="n">index</span> <span class="mi">0</span><span class="p">])</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">index</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">loop</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">index</span> <span class="n">accumulator</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span> <span class="n">index</span><span class="p">))</span>
-        <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._reverse))" style="color: inherit">reverse</a></span> <span class="n">accumulator</span><span class="p">))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">my-list</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="n">loop</span><span class="w"> </span><span class="p">([</span><span class="n">accumulator</span><span class="w"> </span><span class="o">'</span><span class="p">()]</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="n">index</span><span class="w"> </span><span class="mi">0</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">loop</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="n">accumulator</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span><span class="w"> </span><span class="n">index</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._reverse))" style="color: inherit">reverse</a></span><span class="w"> </span><span class="n">accumulator</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The above pattern might be difficult to read and understand and use for complex scenarios, so consider using <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></code> or <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for*/list))" style="color: inherit">for*/list</a></code> to construct lists by iteration.</p>
@@ -133,19 +134,20 @@
 <p><strong>Iterating over all the elements in a list</strong>, using <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></code> or <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._for-each))" style="color: inherit">for-each</a></code> is usually efficient, however if you need to traverse a lot of large collections, a <code>vector</code> might be a better alternative. When using <a href="https://docs.racket-lang.org/reference/for.html">iterations and comprehensions</a>, like <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code> or <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></code> to iterate over lists, consider using an <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></code> sequence, as this is significantly more efficient, than just passing the list itself to the <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code> construct. For example, use:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">element</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">my-list</span><span class="p">)))</span>
-  <span class="p">(</span><span class="n">prinf</span> <span class="s2">"~a~%"</span> <span class="n">element</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">element</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">my-list</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">prinf</span><span class="w"> </span><span class="s2">"~a~%"</span><span class="w"> </span><span class="n">element</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p><strong>Searching for an element in a list</strong> using <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/base..rkt)._member))" style="color: inherit">member</a></code>, <code><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._findf))" style="color: inherit">findf</a></code> and related functions takes a linear time and this can become a problem for large lists. If you need to do a lot of lookups, consider using a <code><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></code> or <code><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-set))" style="color: inherit">hash-set</a></code> instead.</p>
@@ -175,23 +177,24 @@
 <p><strong>Iterating over all the elements in a vector</strong> can be done using <a href="https://docs.racket-lang.org/reference/for.html">iterations and comprehensions</a>, like <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code>, however, when doing so, consider using an <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-vector))" style="color: inherit">in-vector</a></code> sequence, as this is significantly more efficient, than just passing the vector itself to the <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code> construct. For example, use:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">my-vector</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((lib._racket/private/list..rkt)._build-vector))" style="color: inherit">build-vector</a></span> <span class="mi">10</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="n">i</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">my-vector</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((lib._racket/private/list..rkt)._build-vector))" style="color: inherit">build-vector</a></span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">element</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-vector))" style="color: inherit">in-vector</a></span> <span class="n">my-vector</span><span class="p">)))</span>
-  <span class="p">(</span><span class="n">prinf</span> <span class="s2">"~a~%"</span> <span class="n">element</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">element</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-vector))" style="color: inherit">in-vector</a></span><span class="w"> </span><span class="n">my-vector</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">prinf</span><span class="w"> </span><span class="s2">"~a~%"</span><span class="w"> </span><span class="n">element</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Note that the <code><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((lib._racket/vector..rkt)._vector-map))" style="color: inherit">vector-map</a></code> function will produce a new vector with the results of the map function, so it is not a good idea to use it just for simply iterating over the elements. <code><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((lib._racket/vector..rkt)._vector-map!))" style="color: inherit">vector-map!</a></code> can be used however, to update all elements in-place.</p>
@@ -221,19 +224,20 @@
 <p><strong>Iterating over all the elements in a hash table</strong>* can be done using <a href="https://docs.racket-lang.org/reference/for.html">iterations and comprehensions</a>, but consider using <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash))" style="color: inherit">in-hash</a></code>, <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash-keys))" style="color: inherit">in-hash-keys</a></code>, or <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash-values))" style="color: inherit">in-hash-values</a></code> for these <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code> loops. Avoid using <code><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((lib._racket/private/base..rkt)._hash-keys))" style="color: inherit">hash-keys</a></code> or <code><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((lib._racket/private/base..rkt)._hash-values))" style="color: inherit">hash-values</a></code> as these functions construct an intermediate list, which can be a performance problem. For example, to print out all elements in a hash table, you can use:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">[(</span><span class="n">k</span> <span class="n">v</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash))" style="color: inherit">in-hash</a></span> <span class="n">h</span><span class="p">)]</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"key: ~a, value ~a~%"</span> <span class="n">k</span> <span class="n">v</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">[(</span><span class="n">k</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash))" style="color: inherit">in-hash</a></span><span class="w"> </span><span class="n">h</span><span class="p">)]</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span><span class="w"> </span><span class="s2">"key: ~a, value ~a~%"</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="n">v</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p><strong>Searching for an element in a hash table</strong> using <code><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></code> is efficient. If you need to scan all elements to look for a value, this will take a linear amount of time, it will be inefficient and should be avoided. If you do need to scan all elements to look for one, at least consider using a <code><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></code> form and <code><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-hash-values))" style="color: inherit">in-hash-values</a></code> &mdash; the alternative of obtaining a list of elements and scanning them using list operations has even worse performance characteristics.</p>
@@ -282,28 +286,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

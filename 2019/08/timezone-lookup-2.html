@@ -131,51 +131,53 @@
 <p>How to save the data? Well, Racket already provides the <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> function to write an internal data structure to an output stream and the corresponding <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> function to read it back. There are some limitations on what data can be serialized this way, but this includes structures, vectors and lists, which is what we use, so these functions are adequate for our purpose. The only change is that we have to tag our structures with the <code>#:prefab</code> keyword, but this does not affect the rest of the code:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">bbox</span> <span class="p">(</span><span class="n">min-x</span> <span class="n">min-y</span> <span class="n">max-x</span> <span class="n">max-y</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">polygon</span> <span class="p">(</span><span class="n">bbox</span> <span class="n">points</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">shape</span> <span class="p">(</span><span class="n">outline</span> <span class="n">holes</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">feature</span> <span class="p">(</span><span class="n">name</span> <span class="n">shapes</span><span class="p">)</span> <span class="kd">#:prefab</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">bbox</span><span class="w"> </span><span class="p">(</span><span class="n">min-x</span><span class="w"> </span><span class="n">min-y</span><span class="w"> </span><span class="n">max-x</span><span class="w"> </span><span class="n">max-y</span><span class="p">)</span><span class="w"> </span><span class="kd">#:prefab</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">polygon</span><span class="w"> </span><span class="p">(</span><span class="n">bbox</span><span class="w"> </span><span class="n">points</span><span class="p">)</span><span class="w"> </span><span class="kd">#:prefab</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="p">(</span><span class="n">outline</span><span class="w"> </span><span class="n">holes</span><span class="p">)</span><span class="w"> </span><span class="kd">#:prefab</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">shapes</span><span class="p">)</span><span class="w"> </span><span class="kd">#:prefab</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>We can than load the GeoJSON, prepare the features and save it all to disk, in the &ldquo;tzdata.dat&rdquo; file, in only a few lines of code:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
-    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">tzdata</span><span class="w"> </span><span class="p">(</span><span class="n">load-geojson</span><span class="w"> </span><span class="s2">"./data/combined.json"</span><span class="w"> </span><span class="kd">#:verbose</span><span class="w"> </span><span class="no">#t</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">prepare-features</span><span class="w"> </span><span class="n">tzdata</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"./tzdata.dat"</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span> <span class="n">features</span> <span class="n">out</span><span class="p">))</span>
-  <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span><span class="w"> </span><span class="s2">"./tzdata.dat"</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">out</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="kd">#:exists</span><span class="w"> </span><span class="o">'</span><span class="ss">replace</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Running the above program will require the <code>load-geojson</code>, <code>prepare-features</code> and related functions presented in the <a href="/2019/08/timezone-lookup.html">previous blog post</a>, and will produce a data file which is 117Mb in size, which is smaller than the original 129Mb GeoJSON file, but not by much, in both cases we could compress the resulting files, reducing their size on disk, but they would have to be stored uncompressed in memory anyway, so these numbers are also indicative of the approximate memory usage of the program.</p>
@@ -183,23 +185,24 @@
 <p>The lookup program will have to load this data, which in this case it involves calling <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> to load the data into the <code>features</code> global variable. The rest of the program will remain unchanged:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./tzdata.dat"</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="s2">"./tzdata.dat"</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>How does this compare? Well, the running times are below and a few things are expected: <code>load-geojson</code> and <code>prepare-features</code> are no longer called, since they were replaced by <code>load-data</code> and the rest of the running times are about the same, since the <code>tz-lookup</code> operates on the same data structures. Unfortunately, loading the data takes 38 seconds, which is much longer than loading the GeoJSON and preparing the features each time, so using <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> and <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> to write a complex data structure to disk and read it back is easy, but the result is not very fast:</p>
@@ -270,55 +273,57 @@
 <p>The output produced by <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> is indented to be somewhat human readable and this might contribute to it being slow. Racket also provides some serialization/deserialization routines which produce binary data and promise to be faster. They are part of the <code>racket/fasl</code> library and using them is as simple as replacing <code><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></code> with <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> and <code><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></code> with <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></code>. The <code>tzpack</code> program becomes:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">racket/fasl</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">racket/fasl</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
-    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">tzdata</span><span class="w"> </span><span class="p">(</span><span class="n">load-geojson</span><span class="w"> </span><span class="s2">"./data/combined.json"</span><span class="w"> </span><span class="kd">#:verbose</span><span class="w"> </span><span class="no">#t</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">prepare-features</span><span class="w"> </span><span class="n">tzdata</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"./tzdata.dat"</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">features</span> <span class="n">out</span><span class="p">))</span>
-  <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span><span class="w"> </span><span class="s2">"./tzdata.dat"</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">out</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="kd">#:exists</span><span class="w"> </span><span class="o">'</span><span class="ss">replace</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>And loading the data in the lookup program becomes:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span> <span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./tzdata.dat"</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="s2">"./tzdata.dat"</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <hr />
@@ -403,73 +408,75 @@
 <p>Saving individual features, means that we&rsquo;ll need to call <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> on each individual feature and save it into a separate file. File names are constructed from the actual time zone names by replacing the "/" (which is invalid in a file name) with a "+" sign:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">save-data</span> <span class="n">data</span> <span class="n">file-name</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="n">file-name</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">feature</span> <span class="n">out</span><span class="p">))</span>
-    <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">save-data</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">file-name</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span><span class="w"> </span><span class="n">file-name</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">out</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="kd">#:exists</span><span class="w"> </span><span class="o">'</span><span class="ss">replace</span><span class="p">))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzdata</span> <span class="p">(</span><span class="n">load-geojson</span> <span class="s2">"./data/combined.json"</span> <span class="kd">#:verbose</span> <span class="no">#t</span><span class="p">)])</span>
-    <span class="p">(</span><span class="n">prepare-features</span> <span class="n">tzdata</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">tzdata</span><span class="w"> </span><span class="p">(</span><span class="n">load-geojson</span><span class="w"> </span><span class="s2">"./data/combined.json"</span><span class="w"> </span><span class="kd">#:verbose</span><span class="w"> </span><span class="no">#t</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">prepare-features</span><span class="w"> </span><span class="n">tzdata</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._make-directory*))" style="color: inherit">make-directory*</a></span><span class="w"> </span><span class="s2">"./pack"</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._make-directory*))" style="color: inherit">make-directory*</a></span> <span class="s2">"./pack"</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">features</span><span class="p">)])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">file-name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="w"> </span><span class="s2">"pack/~a.dat"</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span><span class="w"> </span><span class="p">(</span><span class="n">feature-name</span><span class="w"> </span><span class="n">feature</span><span class="p">)</span><span class="w"> </span><span class="s2">"/"</span><span class="w"> </span><span class="s2">"+"</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">save-data</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">file-name</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">features</span><span class="p">)])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"pack/~a.dat"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">)</span> <span class="s2">"/"</span> <span class="s2">"+"</span><span class="p">)))</span>
-  <span class="p">(</span><span class="n">save-data</span> <span class="n">feature</span> <span class="n">file-name</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
 </div>
 
 <p>To build the index, we&rsquo;ll need to scan all the features and find the polygon bounding box for each shape outline, and produce a list with the feature name and the bounding box itself. The index itself is saved into a separate file, &ldquo;index.dat&rdquo;, also using <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code>:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index</span> <span class="o">'</span><span class="p">())</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">features</span><span class="p">)])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">name</span> <span class="p">(</span><span class="n">feature-name</span> <span class="n">feature</span><span class="p">))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">shape</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="p">(</span><span class="n">feature-shapes</span> <span class="n">feature</span><span class="p">))])</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">outline</span> <span class="p">(</span><span class="n">shape-outline</span> <span class="n">shape</span><span class="p">))</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">index</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">name</span> <span class="p">(</span><span class="n">polygon-bbox</span> <span class="n">outline</span><span class="p">))</span> <span class="n">index</span><span class="p">))))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">'</span><span class="p">())</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">features</span><span class="p">)])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">(</span><span class="n">feature-name</span><span class="w"> </span><span class="n">feature</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">shape</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="p">(</span><span class="n">feature-shapes</span><span class="w"> </span><span class="n">feature</span><span class="p">))])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">outline</span><span class="w"> </span><span class="p">(</span><span class="n">shape-outline</span><span class="w"> </span><span class="n">shape</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">(</span><span class="n">polygon-bbox</span><span class="w"> </span><span class="n">outline</span><span class="p">))</span><span class="w"> </span><span class="n">index</span><span class="p">))))</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">save-data</span> <span class="s2">"pack/index.dat"</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="n">save-data</span><span class="w"> </span><span class="s2">"pack/index.dat"</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>While the total data size is still the same, each timezone definition is in its own separate file, which means that it can be loaded individuality, while the index file is only 56Kb in size.</p>
@@ -477,85 +484,88 @@
 <p>The lookup functionality will have to change, since we changed the the way we store the data: we will load the index first, and just prepare a hash table for the features that will be loaded. Initially, the hash will be empty:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">index</span> <span class="p">(</span><span class="n">load-data</span> <span class="s2">"./pack/index.dat"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">features</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="s2">"./pack/index.dat"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The <code>tz-lookup</code> function will have to scan the index first, and only check features for which the location to be tested is inside the bounding box:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">tz-lookup</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">candidates</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">result</span> <span class="o">'</span><span class="p">()])</span>
-              <span class="p">([</span><span class="n">entry</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">index</span><span class="p">)])</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">name</span> <span class="n">bbox</span><span class="p">)</span> <span class="n">entry</span><span class="p">)</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="n">inside-bbox?</span> <span class="n">bbox</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
-          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">wn</span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">name</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)))</span>
-            <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">name</span> <span class="n">wn</span><span class="p">)</span> <span class="n">result</span><span class="p">))</span>
-          <span class="n">result</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">tz-lookup</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">candidates</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span><span class="w"> </span><span class="p">([</span><span class="n">result</span><span class="w"> </span><span class="o">'</span><span class="p">()])</span><span class="w"></span>
+<span class="w">              </span><span class="p">([</span><span class="n">entry</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">index</span><span class="p">)])</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">bbox</span><span class="p">)</span><span class="w"> </span><span class="n">entry</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="n">inside-bbox?</span><span class="w"> </span><span class="n">bbox</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">((</span><span class="n">wn</span><span class="w"> </span><span class="p">(</span><span class="n">feature-winding-number</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)))</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">wn</span><span class="p">)</span><span class="w"> </span><span class="n">result</span><span class="p">))</span><span class="w"></span>
+<span class="w">          </span><span class="n">result</span><span class="p">)))</span><span class="w"></span>
 
-  <span class="c1">;; filtering and selecting candidates remains the same</span>
-  <span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">  </span><span class="c1">;; filtering and selecting candidates remains the same</span><span class="w"></span>
+<span class="w">  </span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>And, finally, the <code>feature-winding-number</code> needs to be updated to accept a time zone name (instead of the feature structure itself), lookup the feature and load it if needed. <code>feature-winding-number-internal</code> contains the old body, which evaluates the actual feature struct:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">feature-winding-number</span> <span class="n">feature-name</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">features</span> <span class="n">feature-name</span> <span class="no">#f</span><span class="p">))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="n">feature</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="s2">"pack/~a.dat"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span> <span class="n">feature-name</span> <span class="s2">"/"</span> <span class="s2">"+"</span><span class="p">)))</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">feature</span> <span class="p">(</span><span class="n">load-data</span> <span class="n">file-name</span><span class="p">))</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-set!))" style="color: inherit">hash-set!</a></span> <span class="n">features</span> <span class="n">feature-name</span> <span class="n">feature</span><span class="p">))</span>
-  <span class="p">(</span><span class="n">feature-winding-number-internal</span> <span class="n">feature</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span> <span class="n">lat</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span> <span class="n">lon</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">feature-winding-number</span><span class="w"> </span><span class="n">feature-name</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">feature-name</span><span class="w"> </span><span class="no">#f</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span><span class="w"> </span><span class="n">feature</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">file-name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="w"> </span><span class="s2">"pack/~a.dat"</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span><span class="w"> </span><span class="n">feature-name</span><span class="w"> </span><span class="s2">"/"</span><span class="w"> </span><span class="s2">"+"</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="n">file-name</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-set!))" style="color: inherit">hash-set!</a></span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="n">feature-name</span><span class="w"> </span><span class="n">feature</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">feature-winding-number-internal</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span><span class="w"> </span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._exact-~3einexact))" style="color: inherit">exact-&gt;inexact</a></span><span class="w"> </span><span class="n">lon</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>And below are the performance results for the updated code. <code>load-data</code> is now called multiple times, to load both the index and the features, as they are needed, however, on average this call only takes 2.35 milliseconds now, since it has to load much less data each time. The time for the <code>tz-lookup</code> call went up by 5 milliseconds, since the function may have to load some timezone data if it is not already in the cache, but the average time is still under 30 milliseconds, which is pretty good, with even the maximum time of 234 milliseconds probably being acceptable for many applications &mdash; this time corresponds to a call that had to load one or more data files.</p>
@@ -635,71 +645,73 @@
 <p>The compression is done using <code><a href="http://docs.racket-lang.org/file/gzip.html#(def._((lib._file/gzip..rkt)._gzip-through-ports))" style="color: inherit">gzip-through-ports</a></code>, which requires an input port and output port; the output port will be the file itself, and is provided by <code>call-with-output-file</code>, while the input port will be provided from a byte buffer using <code>call-with-input-bytes</code>. The byte buffer itself will be created by calling <code><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></code> with an byte output buffer, via <code>call-with-output-bytes</code>.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">file/gzip</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">file/gzip</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">save-data</span> <span class="n">data</span> <span class="n">file-name</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">buffer</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span> <span class="n">data</span> <span class="n">out</span><span class="p">))))</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="n">file-name</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span>
-       <span class="n">buffer</span>
-       <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">in</span><span class="p">)</span>
-         <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gzip.html#(def._((lib._file/gzip..rkt)._gzip-through-ports))" style="color: inherit">gzip-through-ports</a></span> <span class="n">in</span> <span class="n">out</span> <span class="n">file-name</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-milliseconds))" style="color: inherit">current-milliseconds</a></span><span class="p">)))))</span>
-    <span class="kd">#:exists</span> <span class="o">'</span><span class="ss">replace</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">save-data</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">file-name</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._s-exp-~3efasl))" style="color: inherit">s-exp-&gt;fasl</a></span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">out</span><span class="p">))))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span><span class="w"> </span><span class="n">file-name</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span><span class="w"></span>
+<span class="w">       </span><span class="n">buffer</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gzip.html#(def._((lib._file/gzip..rkt)._gzip-through-ports))" style="color: inherit">gzip-through-ports</a></span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">file-name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-milliseconds))" style="color: inherit">current-milliseconds</a></span><span class="p">)))))</span><span class="w"></span>
+<span class="w">    </span><span class="kd">#:exists</span><span class="w"> </span><span class="o">'</span><span class="ss">replace</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>To read the data, we&rsquo;ll need to use <code><a href="http://docs.racket-lang.org/file/gunzip.html#(def._((lib._file/gunzip..rkt)._gunzip-through-ports))" style="color: inherit">gunzip-through-ports</a></code> and perform all the steps in reverse:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">file/gunzip</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">file/gunzip</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">load-data</span> <span class="n">path</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">data</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span>
-     <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
-       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="n">path</span>
-         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">in</span><span class="p">)</span>
-           <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gunzip.html#(def._((lib._file/gunzip..rkt)._gunzip-through-ports))" style="color: inherit">gunzip-through-ports</a></span> <span class="n">in</span> <span class="n">out</span><span class="p">))))))</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span> <span class="n">data</span> <span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">load-data</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">data</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-output-bytes))" style="color: inherit">call-with-output-bytes</a></span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span><span class="w"> </span><span class="n">path</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/file/gunzip.html#(def._((lib._file/gunzip..rkt)._gunzip-through-ports))" style="color: inherit">gunzip-through-ports</a></span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">out</span><span class="p">))))))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._call-with-input-bytes))" style="color: inherit">call-with-input-bytes</a></span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/reference/fasl.html#(def._((lib._racket/fasl..rkt)._fasl-~3es-exp))" style="color: inherit">fasl-&gt;s-exp</a></span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>These changes are isolated to the <code>save-data</code> and <code>load-data</code> functions only, nothing else needs to change, so it is a good disk space saving with a minimum of effort. How does the performance change? The full performance results re below, and we can see that the average time for <code>load-data</code> has gone up to 18 milliseconds from 2 milliseconds, since it now has to decompress the data. The time for <code>tz-lookup</code> has also gone up by 5 milliseconds on average, since it has to call a slower <code>load-data</code> for some of the lookups, but not for all of them. The price we paid for smaller disk usage was a higher lookup time.</p>
@@ -804,28 +816,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

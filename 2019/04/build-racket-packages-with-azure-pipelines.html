@@ -108,47 +108,48 @@
 <p>The <code>azure-pipelines.yml</code> file controls the build and test of the application, and for a basic racket package can be really simple. The example below should work for any package as long as the <code>PACKAGE_NAME</code> variable is updated to contain the actual package name:</p>
 
 <div class="brush: yaml">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nt">pool</span><span class="p">:</span>
-  <span class="nt">vmImage</span><span class="p">:</span> <span class="s">&#39;Ubuntu-16.04&#39;</span>
-<span class="nt">variables</span><span class="p">:</span>
-  <span class="nt">PACKAGE_NAME</span><span class="p">:</span> <span class="s">"plot-container"</span>
-  <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
-  <span class="nt">RACKET_DIR</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(Agent.BuildDirectory)/racket</span>
-  <span class="nt">PLTSTDERR</span><span class="p">:</span> <span class="s">&#39;error</span><span class="nv"> </span><span class="s">warning@optimizer&#39;</span>
-<span class="nt">steps</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bash ./ci/install-racket.sh</span>
-  <span class="nt">displayName</span><span class="p">:</span> <span class="s">&#39;Install</span><span class="nv"> </span><span class="s">Racket</span><span class="nv"> </span><span class="s">$(RACKET_VERSION)&#39;</span>
-<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="p p-Indicator">|</span>
-    <span class="no">PATH="$(RACKET_DIR)/bin:$(PATH)"</span>
-    <span class="no">raco pkg install --deps search-auto  --type dir --name $(PACKAGE_NAME)</span>
-    <span class="no">raco setup --check-pkg-deps --pkgs $(PACKAGE_NAME)</span>
-    <span class="no">raco test --no-run-if-absent --package $(PACKAGE_NAME)</span>
-  <span class="nt">displayName</span><span class="p">:</span> <span class="s">&#39;Build</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Test</span><span class="nv"> </span><span class="s">$(PACKAGE_NAME)&#39;</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nt">pool</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">vmImage</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Ubuntu-16.04&#39;</span><span class="w"></span>
+<span class="nt">variables</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">PACKAGE_NAME</span><span class="p">:</span><span class="w"> </span><span class="s">"plot-container"</span><span class="w"></span>
+<span class="w">  </span><span class="nt">RACKET_VERSION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.2</span><span class="w"></span>
+<span class="w">  </span><span class="nt">RACKET_DIR</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$(Agent.BuildDirectory)/racket</span><span class="w"></span>
+<span class="w">  </span><span class="nt">PLTSTDERR</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;error</span><span class="nv"> </span><span class="s">warning@optimizer&#39;</span><span class="w"></span>
+<span class="nt">steps</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bash ./ci/install-racket.sh</span><span class="w"></span>
+<span class="w">  </span><span class="nt">displayName</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Install</span><span class="nv"> </span><span class="s">Racket</span><span class="nv"> </span><span class="s">$(RACKET_VERSION)&#39;</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">    </span><span class="no">PATH="$(RACKET_DIR)/bin:$(PATH)"</span><span class="w"></span>
+<span class="w">    </span><span class="no">raco pkg install --deps search-auto  --type dir --name $(PACKAGE_NAME)</span><span class="w"></span>
+<span class="w">    </span><span class="no">raco setup --check-pkg-deps --pkgs $(PACKAGE_NAME)</span><span class="w"></span>
+<span class="w">    </span><span class="no">raco test --no-run-if-absent --package $(PACKAGE_NAME)</span><span class="w"></span>
+<span class="w">  </span><span class="nt">displayName</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Build</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Test</span><span class="nv"> </span><span class="s">$(PACKAGE_NAME)&#39;</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>If you are familiar with Travis, the structure of the file should be easy to understand:</p>
@@ -163,57 +164,59 @@
 <p>To build the package using different Racket versions, you can set up matrix configurations for variables by adding a <code>strategy</code> section to the azure pipelines files and specifying which variable combinations to use for building. In the example below, the package would be built with two jobs, one for Racket 7.2 and one for Racket 7.1:</p>
 
 <div class="brush: yaml">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nt">strategy</span><span class="p">:</span>
-  <span class="nt">maxParallel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
-  <span class="nt">matrix</span><span class="p">:</span>
-    <span class="nt">Racket_7_2</span><span class="p">:</span>
-      <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.2</span>
-    <span class="nt">Racket_7_1</span><span class="p">:</span>
-      <span class="nt">RACKET_VERSION</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">7.1</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nt">strategy</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">maxParallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
+<span class="w">  </span><span class="nt">matrix</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">Racket_7_2</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">RACKET_VERSION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.2</span><span class="w"></span>
+<span class="w">    </span><span class="nt">Racket_7_1</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">RACKET_VERSION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.1</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>If the Racket package uses the <code>racket/gui</code> library during running the tests (even if no GUI windows are opened), you will find that the above pipelines file will fail to build, because no X Server is running by default on the build machines. The solution is to start the X Virtual Frame Buffer server, <code>Xvfb</code>, as a separate build step early in the pipeline, than add a <code>DISPLAY</code> variable indicating which connection the server is using:</p>
 
 <div class="brush: yaml">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nt">variables</span><span class="p">:</span>
-  <span class="nt">DISPLAY</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">:99.0</span>
-  <span class="c1"># other variables follow here</span>
-<span class="nt">steps</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(/usr/bin/Xvfb :99 -screen 0 1280x1024x24 &amp;)</span>
-  <span class="nt">displayName</span><span class="p">:</span> <span class="s">"Start</span><span class="nv"> </span><span class="s">Xvfb</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">DISPLAY=$(DISPLAY)"</span>
-<span class="c1"># other steps folow here</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nt">variables</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">DISPLAY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">:99.0</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># other variables follow here</span><span class="w"></span>
+<span class="nt">steps</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(/usr/bin/Xvfb :99 -screen 0 1280x1024x24 &amp;)</span><span class="w"></span>
+<span class="w">  </span><span class="nt">displayName</span><span class="p">:</span><span class="w"> </span><span class="s">"Start</span><span class="nv"> </span><span class="s">Xvfb</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">DISPLAY=$(DISPLAY)"</span><span class="w"></span>
+<span class="c1"># other steps folow here</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="installing-racket">Installing Racket</h3>
@@ -221,27 +224,28 @@
 <p>Racket is not installed on any of the virtual machines used for the builds, so it has to be installed as part of the pipeline. It is the simplest to do this in a shell script which is invoked from the pipeline itself. A basic shell script is just a few lines of code, which downloads the installer file using <code>curl</code> than runs it:</p>
 
 <div class="brush: sh">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="ch">#!/bin/bash</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="ch">#!/bin/bash</span>
 <span class="nb">set</span> -e                         <span class="c1"># fail script if any of the commands in it fail</span>
 <span class="nv">RACKET_DIR</span><span class="o">=</span><span class="si">${</span><span class="nv">RACKET_DIR</span><span class="p">:=~/racket</span><span class="si">}</span>
 <span class="nv">RACKET_VERSION</span><span class="o">=</span><span class="si">${</span><span class="nv">RACKET_VERSION</span><span class="p">:=7.2</span><span class="si">}</span>
@@ -254,8 +258,8 @@
 curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
 <span class="nb">echo</span> <span class="s2">"Installing Racket into </span><span class="nv">$RACKET_DIR</span><span class="s2"> ..."</span>
 /bin/bash <span class="nv">$DFILE</span> --in-place --dest <span class="s2">"</span><span class="nv">$RACKET_DIR</span><span class="s2">"</span>
-</pre></div>
-</td></tr></tbody></table>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The above script will install the latest Racket version (7.2 at the time of this writing), but it also allows controlling the actual version using the <code>RACKET_VERSION</code> environment variable and the place where Racket is installed using the <code>RACKET_DIR</code> environment variable. Values for these variables can be specified in the Azure Pipelines build files, allowing installation of different versions without modifying this script.</p>
@@ -302,28 +306,6 @@ curl --output <span class="nv">$DFILE</span> <span class="nv">$URL</span>
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

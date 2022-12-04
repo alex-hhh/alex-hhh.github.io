@@ -155,53 +155,54 @@
 <p>To put the constant strings into program memory, each string has to be declared using <code>PROGMEM</code> and all the strings have to be put in a separate table, <code>string_table</code>, which is also declared using <code>PROGMEM</code>. To print out a string, first it has to be copied back into a local buffer (which is in data memory), using <code>strcpy_P</code>, than it can be used. I wrote the <code>oled_print_from_progmem</code> function which wraps all this process and can be used to display constant strings, it uses an index instead of the string directly, but I also defined convenient constants for these strings.</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="k">const</span> <span class="kt">char</span> <span class="n">string_0</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="s">"Roll"</span><span class="p">;</span>
-<span class="k">const</span> <span class="kt">char</span> <span class="n">string_1</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="s">"Pitch"</span><span class="p">;</span> <span class="c1">// ... other strings ommited</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">string_0</span><span class="p">[]</span><span class="w"> </span><span class="n">PROGMEM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Roll"</span><span class="p">;</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">string_1</span><span class="p">[]</span><span class="w"> </span><span class="n">PROGMEM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Pitch"</span><span class="p">;</span><span class="w"> </span><span class="c1">// ... other strings ommited</span>
 
-<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">string_table</span><span class="p">[]</span> <span class="n">PROGMEM</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">string_0</span><span class="p">,</span> <span class="n">string_1</span><span class="p">,</span> <span class="c1">// ... other strings ommited</span>
-<span class="p">};</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">string_table</span><span class="p">[]</span><span class="w"> </span><span class="n">PROGMEM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">string_0</span><span class="p">,</span><span class="w"> </span><span class="n">string_1</span><span class="p">,</span><span class="w"> </span><span class="c1">// ... other strings ommited</span>
+<span class="p">};</span><span class="w"></span>
 
 <span class="c1">// Name the string indices, for easy of use</span>
 <span class="cp">#define ROLL_STR 0</span>
 <span class="cp">#define PITCH_STR 1</span>
 
-<span class="kt">void</span> <span class="nf">oled_print_from_progmem</span><span class="p">(</span><span class="kt">int</span> <span class="n">text_size</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">string_index</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span>
-    <span class="n">oled</span><span class="p">.</span><span class="n">setTextSize</span><span class="p">(</span><span class="n">text_size</span><span class="p">);</span>
-    <span class="n">oled</span><span class="p">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
-    <span class="n">strcpy_P</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">pgm_read_word</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">string_table</span><span class="p">[</span><span class="n">string_index</span><span class="p">])));</span>
-    <span class="n">oled</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="kt">void</span><span class="w"> </span><span class="nf">oled_print_from_progmem</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">text_size</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">string_index</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="n">oled</span><span class="p">.</span><span class="n">setTextSize</span><span class="p">(</span><span class="n">text_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">oled</span><span class="p">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">strcpy_P</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">pgm_read_word</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">string_table</span><span class="p">[</span><span class="n">string_index</span><span class="p">])));</span><span class="w"></span>
+<span class="w">    </span><span class="n">oled</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The strings where using the most of the memory, however, I also put the CRC constant table in PROGMEM, this is used by the CRC function that validates the calibration stored in EEPROM (this is described below).</p>
@@ -233,65 +234,66 @@
 <p>The updated code is shown below, <a href="/2017/12/arduino-inclinometer.html#calculating-pitch-and-roll">this</a> section shows how the angles are actually calculated.</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">float</span> <span class="nf">calculate_pitch</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
-    <span class="kt">float</span> <span class="n">pitch_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
-    <span class="n">vnormalize</span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">pitch</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">pitch_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">pitch</span><span class="p">));</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">pitch_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">angle</span><span class="p">;</span>                   <span class="c1">// up</span>
-    <span class="k">else</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">angle</span><span class="p">;</span>                  <span class="c1">// down</span>
-<span class="p">}</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">float</span><span class="w"> </span><span class="nf">calculate_pitch</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">,</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span><span class="w"> </span><span class="n">pitch_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">pitch</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pitch_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">angle</span><span class="p">;</span><span class="w">                   </span><span class="c1">// up</span>
+<span class="w">    </span><span class="k">else</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">angle</span><span class="p">;</span><span class="w">                  </span><span class="c1">// down</span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="kt">float</span> <span class="nf">calculate_roll</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="kt">float</span> <span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
-    <span class="kt">float</span> <span class="n">roll_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">};</span>
-    <span class="n">vnormalize</span><span class="p">(</span><span class="n">roll_dir</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">roll</span> <span class="o">=</span> <span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">roll_dir</span><span class="p">);</span>
-    <span class="kt">float</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">roll</span><span class="p">));</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">roll_dir</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">angle</span><span class="p">;</span>                  <span class="c1">// right</span>
-    <span class="k">else</span>
-        <span class="k">return</span> <span class="n">angle</span><span class="p">;</span>                   <span class="c1">// left</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="kt">float</span><span class="w"> </span><span class="nf">calculate_roll</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">down</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="n">vnormalize</span><span class="p">(</span><span class="n">roll_dir</span><span class="p">,</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vdot</span><span class="p">(</span><span class="n">down</span><span class="p">,</span><span class="w"> </span><span class="n">roll_dir</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rad2deg</span><span class="p">(</span><span class="n">acos</span><span class="p">(</span><span class="n">roll</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">roll_dir</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">angle</span><span class="p">;</span><span class="w">                  </span><span class="c1">// right</span>
+<span class="w">    </span><span class="k">else</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">angle</span><span class="p">;</span><span class="w">                   </span><span class="c1">// left</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="keep-track-of-the-maximum-pitch-and-roll-angle">Keep track of the maximum pitch and roll angle</h3>
@@ -301,47 +303,48 @@
 <p>Updating the maximum angles is simple, they are stored in the <code>max_pitch</code> and <code>max_roll</code> global variables and are updated in the <code>on_running</code> function based on the current pitch and roll angle (they are only updated if the <code>HOLD_MAX_FLAG</code> is not set):</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">float</span> <span class="n">max_roll</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="kt">float</span> <span class="n">max_pitch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">float</span><span class="w"> </span><span class="n">max_roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">float</span><span class="w"> </span><span class="n">max_pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">void</span> <span class="nf">on_running</span><span class="p">(</span><span class="kt">float</span> <span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="p">{</span>
-    <span class="c1">// ... other on_running() code ommited</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">on_running</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">cal</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// ... other on_running() code ommited</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="w"> </span><span class="n">IS_FLAG_SET</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_pitch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">max_pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_roll</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">max_roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
 
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span> <span class="n">IS_FLAG_SET</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">))</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_pitch</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">max_pitch</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">pitch</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_roll</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">max_roll</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">roll</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
 </div>
 
 <p>The more interesting part is dealing with the reset button. The reset button is wired to pin 11 on the Arduino, using a pull up resistor. As a side note, I only found out about the internal Arduino pull up resistors after I soldered my own external resistors to the board, if I knew about them earlier it would have saved me the trouble of soldering my own resistors. The reset button is active low, meaning that a <code>digitalRead</code> for the pin will read 0 if the button is pressed and 1 if the button is released.</p>
@@ -353,55 +356,56 @@
 <p>When the button is released, that is, <code>digitalRead</code> reads a 1, the <code>HOLD_MAX_FLAG</code> is toggled, to enable or disable the update of the maximum roll and pitch angles. Before the flag is toggled, the code checks to see if the button was held down for a short period, by checking the value in <code>reset_hold_time</code>, this prevents accidental presses and helps with debouncing the signal from the button.</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
 <span class="cp">#define RESET_PIN 11</span>
-<span class="kt">int32_t</span> <span class="n">reset_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int32_t</span><span class="w"> </span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">void</span> <span class="nf">handle_reset_button</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">RESET_PIN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">reset_hold_time</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">HOLD_INTERVAL</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">reset_hold_time</span> <span class="o">&lt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">TOGGLE_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="n">reset_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">reset_hold_time</span> <span class="o">+=</span> <span class="n">delta_time</span><span class="p">;</span>
-    <span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">handle_reset_button</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">RESET_PIN</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">HOLD_INTERVAL</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">HOLD_INTERVAL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">TOGGLE_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">delta_time</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">reset_hold_time</span> <span class="o">&gt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">max_pitch</span> <span class="o">=</span> <span class="n">max_roll</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">reset_hold_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">HOLD_INTERVAL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">max_pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">max_roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="on-demand-calibration">On demand calibration</h3>
@@ -413,131 +417,133 @@
 <p>To enter calibration mode, the function will set the state of the program to <code>STATE_ACQUIRE_DOWN_DIRECTION</code>, which is the first calibration step, and will also reset the internal state of the program.</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="cp">#define HOLD_INTERVAL (1000000) </span><span class="c1">// microseconds</span>
 <span class="cp">#define CALIBRATE_PIN 12</span>
-<span class="kt">int32_t</span> <span class="n">calibrate_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int32_t</span><span class="w"> </span><span class="n">calibrate_hold_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">void</span> <span class="nf">handle_calibrate_button</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">CALIBRATE_PIN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">calibrate_hold_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">calibrate_hold_time</span> <span class="o">+=</span> <span class="n">delta_time</span><span class="p">;</span>
-    <span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">handle_calibrate_button</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">CALIBRATE_PIN</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">calibrate_hold_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">calibrate_hold_time</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">delta_time</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">calibrate_hold_time</span> <span class="o">&gt;</span> <span class="n">HOLD_INTERVAL</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span>
-        <span class="c1">// reset the Z-Axis so it is acquired again</span>
-        <span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span>
-        <span class="c1">// Clear all state flags</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span>
-        <span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calibrate_hold_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">HOLD_INTERVAL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// reset the Z-Axis so it is acquired again</span>
+<span class="w">        </span><span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Clear all state flags</span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">HOLD_MAX_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">PITCH_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">CLR_FLAG</span><span class="p">(</span><span class="n">ROLL_WARN_FLAG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The calibration data are the <code>xaxis</code>, <code>yaxis</code> and <code>zaxis</code> vectors determined from the calibration. These are saved to EEPROM at the end of calibration and restored when the unit is powered up. To prevent against data corruption, for example, when the unit looses power while writing new calibration data to EEPROM, the data is protected by a 16bit CRC checksum, and will only be used if it is valid.</p>
 
 <div class="brush: C">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="cp">#define EEPROM_CALIBRATION_ADDRESS (0)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="cp">#define EEPROM_CALIBRATION_ADDRESS (0)</span>
 
-<span class="k">struct</span> <span class="n">orientation_t</span> <span class="p">{</span>
-    <span class="kt">float</span> <span class="n">xaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-    <span class="kt">float</span> <span class="n">yaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-    <span class="kt">float</span> <span class="n">zaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-<span class="p">}</span> <span class="n">orientation</span><span class="p">;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">orientation_t</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">xaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">yaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">zaxis</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">orientation</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">void</span> <span class="nf">save_calibration_to_eeprom</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="kt">uint16_t</span> <span class="n">crc</span> <span class="o">=</span> <span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span>
-    <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span> <span class="n">orientation</span><span class="p">);</span>
-    <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span> <span class="n">crc</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">save_calibration_to_eeprom</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">crc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span><span class="w"> </span><span class="n">orientation</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span><span class="w"> </span><span class="n">crc</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="kt">void</span> <span class="nf">restore_calibration_from_eeprom</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="kt">uint16_t</span> <span class="n">stored_crc</span><span class="p">;</span>
-    <span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span> <span class="n">orientation</span><span class="p">);</span>
-    <span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span> <span class="n">stored_crc</span><span class="p">);</span>
-    <span class="kt">uint16_t</span> <span class="n">crc</span> <span class="o">=</span> <span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">restore_calibration_from_eeprom</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">stored_crc</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="p">,</span><span class="w"> </span><span class="n">orientation</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">EEPROM_CALIBRATION_ADDRESS</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span><span class="w"> </span><span class="n">stored_crc</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">crc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_crc</span><span class="p">((</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">orientation</span><span class="p">),</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">orientation</span><span class="p">));</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">crc</span> <span class="o">==</span> <span class="n">stored_crc</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_RUNNING</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span> <span class="c1">// reset the Z-Axis so it is acquired again</span>
-        <span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">crc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">stored_crc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_RUNNING</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">vzero</span><span class="p">(</span><span class="n">orientation</span><span class="p">.</span><span class="n">zaxis</span><span class="p">);</span><span class="w"> </span><span class="c1">// reset the Z-Axis so it is acquired again</span>
+<span class="w">        </span><span class="n">SET_STATE</span><span class="p">(</span><span class="n">STATE_ACQUIRE_DOWN_DIRECTION</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="conclusions">Conclusions</h2>
@@ -571,28 +577,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

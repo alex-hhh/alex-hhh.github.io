@@ -156,97 +156,99 @@
 <p>The function shown below will add the heart beats series to a session, which in <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> is represented as a <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/doc/data-frame.md">data-frame%</a> object. The series that already exist for a session, such as &ldquo;elapsed&rdquo; and &ldquo;hr&rdquo;, are documented <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/doc/session-df.md">here</a>:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">add-heartbeats-series</span> <span class="n">df</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">add-heartbeats-series</span><span class="w"> </span><span class="n">df</span><span class="p">)</span><span class="w"></span>
 
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">hb</span> <span class="mi">0</span><span class="p">)</span>                         <span class="c1">; holds accumulated heart beats</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">hb</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w">                         </span><span class="c1">; holds accumulated heart beats</span><span class="w"></span>
 
-  <span class="c1">;; Called by the `data-frame%/map` method with two adjacent data points,</span>
-  <span class="c1">;; PREV and NEXT. The value returned by this function will be the data point</span>
-  <span class="c1">;; in the new series at the same index as NEXT</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">accumulate-heart-beats</span> <span class="n">prev</span> <span class="n">next</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">;; Called by the `data-frame%/map` method with two adjacent data points,</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; PREV and NEXT. The value returned by this function will be the data point</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; in the new series at the same index as NEXT</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">accumulate-heart-beats</span><span class="w"> </span><span class="n">prev</span><span class="w"> </span><span class="n">next</span><span class="p">)</span><span class="w"></span>
 
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="n">prev</span>                          <span class="c1">; first time PREV is #f</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span> <span class="p">(((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">e1</span> <span class="n">hr1</span><span class="p">)</span> <span class="n">prev</span><span class="p">)</span>
-                  <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">e2</span> <span class="n">hr2</span><span class="p">)</span> <span class="n">next</span><span class="p">))</span>
-        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="n">e1</span> <span class="n">hr1</span> <span class="n">e2</span> <span class="n">hr2</span><span class="p">)</span>
-          <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">((</span><span class="n">beats</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mf">0.5</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">hr1</span> <span class="n">hr2</span><span class="p">))</span> <span class="mf">60.0</span><span class="p">)))</span>
-            <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">hb</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">hb</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">beats</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">e2</span> <span class="n">e1</span><span class="p">))))))))</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="n">prev</span><span class="w">                          </span><span class="c1">; first time PREV is #f</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-let))" style="color: inherit">match-let</a></span><span class="w"> </span><span class="p">(((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">e1</span><span class="w"> </span><span class="n">hr1</span><span class="p">)</span><span class="w"> </span><span class="n">prev</span><span class="p">)</span><span class="w"></span>
+<span class="w">                  </span><span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">e2</span><span class="w"> </span><span class="n">hr2</span><span class="p">)</span><span class="w"> </span><span class="n">next</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="n">e1</span><span class="w"> </span><span class="n">hr1</span><span class="w"> </span><span class="n">e2</span><span class="w"> </span><span class="n">hr2</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">((</span><span class="n">beats</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">hr1</span><span class="w"> </span><span class="n">hr2</span><span class="p">))</span><span class="w"> </span><span class="mf">60.0</span><span class="p">)))</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span><span class="w"> </span><span class="n">hb</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">hb</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">beats</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">e2</span><span class="w"> </span><span class="n">e1</span><span class="p">))))))))</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span><span class="w"> </span><span class="n">hb</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="n">contains?</span><span class="w"> </span><span class="s2">"hb"</span><span class="p">)</span><span class="w">  </span><span class="c1">; might already be present due to caching!</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="n">add-derived-series</span><span class="w"></span>
+<span class="w">          </span><span class="s2">"hb"</span><span class="w">                          </span><span class="c1">; new series name</span><span class="w"></span>
+<span class="w">          </span><span class="o">'</span><span class="p">(</span><span class="s2">"elapsed"</span><span class="w"> </span><span class="s2">"hr"</span><span class="p">)</span><span class="w">             </span><span class="c1">; based on these series</span><span class="w"></span>
+<span class="w">          </span><span class="n">accumulate-heart-beats</span><span class="w">        </span><span class="c1">; generator function for the new series</span><span class="w"></span>
+<span class="w">          </span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
 
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="n">hb</span><span class="p">))</span>
-
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._unless))" style="color: inherit">unless</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">df</span> <span class="n">contains?</span> <span class="s2">"hb"</span><span class="p">)</span>  <span class="c1">; might already be present due to caching!</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">df</span> <span class="n">add-derived-series</span>
-          <span class="s2">"hb"</span>                          <span class="c1">; new series name</span>
-          <span class="o">'</span><span class="p">(</span><span class="s2">"elapsed"</span> <span class="s2">"hr"</span><span class="p">)</span>             <span class="c1">; based on these series</span>
-          <span class="n">accumulate-heart-beats</span>        <span class="c1">; generator function for the new series</span>
-          <span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
 </div>
 
 <p>The functions below, are used to convert a heartbeats value into a &ldquo;fatigue&rdquo; value, which is a number between 1 and 5:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">heartbeats-&gt;fatigue</span> <span class="n">hb</span><span class="p">)</span>
-  <span class="c1">;; 30 min @ 160bpm (z2 lower limit) increments, max out at 5.</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="n">hb</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">30</span> <span class="mi">160</span><span class="p">)))</span> <span class="mf">5.0</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">heartbeats-&gt;fatigue</span><span class="w"> </span><span class="n">hb</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; 30 min @ 160bpm (z2 lower limit) increments, max out at 5.</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._exact-truncate))" style="color: inherit">exact-truncate</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="n">hb</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="mi">160</span><span class="p">)))</span><span class="w"> </span><span class="mf">5.0</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">fatigue-name</span> <span class="n">f</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">f</span> <span class="mf">1.0</span><span class="p">)</span> <span class="s2">"no fatigue"</span><span class="p">)</span>
-        <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">f</span> <span class="mf">2.0</span><span class="p">)</span> <span class="s2">"mild fatigue"</span><span class="p">)</span>
-        <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">f</span> <span class="mf">3.0</span><span class="p">)</span> <span class="s2">"moderate fatigue"</span><span class="p">)</span>
-        <span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">f</span> <span class="mf">4.0</span><span class="p">)</span> <span class="s2">"heavy fatigue"</span><span class="p">)</span>
-        <span class="p">(</span><span class="no">#t</span> <span class="s2">"severe fatigue"</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">fatigue-name</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span><span class="w"> </span><span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="s2">"no fatigue"</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="s2">"mild fatigue"</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="mf">3.0</span><span class="p">)</span><span class="w"> </span><span class="s2">"moderate fatigue"</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="mf">4.0</span><span class="p">)</span><span class="w"> </span><span class="s2">"heavy fatigue"</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="no">#t</span><span class="w"> </span><span class="s2">"severe fatigue"</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The source code for generating the plots on this page is available <a href="https://gist.github.com/alex-hhh/204be1d29e518689c9621ec9cdb5f4f2">here</a>.</p>
@@ -273,28 +275,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

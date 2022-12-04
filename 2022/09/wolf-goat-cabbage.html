@@ -163,7 +163,7 @@
      <td class="code">
       <div>
        <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"></span>
-<span class="w">  </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">member/o</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">Goat</span><span class="w"> </span><span class="ss">Wolf</span><span class="w"> </span><span class="ss">Cabbage</span><span class="p">)))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
 
 </div>
@@ -323,17 +323,17 @@ Cabbage Wolf)</code> is not, since there is only one Wolf in our puzzle.</p>
 <span class="w">    </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="o">'</span><span class="p">()))</span><span class="w">                        </span><span class="c1">; The empty group is a valid group.</span><span class="w"></span>
 <span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="c1">;; Otherwise the group is a list with a HEAD and a TAIL</span><span class="w"></span>
-<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="c1">;; The first element of the group (HEAD) needs to be a valid</span><span class="w"></span>
 <span class="w">       </span><span class="c1">;; participant</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="n">participant/o</span><span class="w"> </span><span class="n">head</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="k">cond/a</span><span class="w"></span>
 <span class="w">         </span><span class="c1">;; If we have seen this participant before, we fail</span><span class="w"></span>
-<span class="w">         </span><span class="p">((</span><span class="k">once</span><span class="w"> </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="p">))</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">((</span><span class="n">once</span><span class="w"> </span><span class="p">(</span><span class="n">member/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="p">))</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">updated</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="c1">;; otherwise add this participant to the seen ones and check the</span><span class="w"></span>
 <span class="w">            </span><span class="c1">;; remaining of the list.</span><span class="w"></span>
-<span class="w">            </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="n">updated</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="n">updated</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="n">group-helper/o</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">updated</span><span class="p">))))))))</span><span class="w"></span>
 <span class="w">            </span>
 <span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
@@ -461,10 +461,10 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
 <span class="w">  </span><span class="c1">;; The use of `cond/u` here, instead of `cond/a` is an optimisation -- when</span><span class="w"></span>
 <span class="w">  </span><span class="c1">;; we fail beacuse found one set of who/what eats in the group , we don&#39;t</span><span class="w"></span>
 <span class="w">  </span><span class="c1">;; need to try any other combinations of who/what anymore.</span><span class="w"></span>
-<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">cond/u</span><span class="w"> </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
 <span class="w">             </span><span class="p">(</span><span class="n">eats/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">what</span><span class="p">)</span><span class="w"></span>
-<span class="w">             </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
-<span class="w">             </span><span class="p">(</span><span class="nb">member/o</span><span class="w"> </span><span class="n">what</span><span class="w"> </span><span class="n">g</span><span class="p">))</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="n">member/o</span><span class="w"> </span><span class="n">who</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">             </span><span class="p">(</span><span class="n">member/o</span><span class="w"> </span><span class="n">what</span><span class="w"> </span><span class="n">g</span><span class="p">))</span><span class="w"></span>
 <span class="w">           </span><span class="c1">;; fail if we find a pair of participants who eat each other...</span><span class="w"></span>
 <span class="w">           </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
 <span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
@@ -561,13 +561,13 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
        <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="n">group/o</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
 <span class="w">      </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">head</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._~3d~3d))" style="color: inherit">==</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">tail</span><span class="p">))</span><span class="w"></span>
 <span class="w">      </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">intermediate</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">(</span><span class="n">pick/o</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">intermediate</span><span class="p">)</span><span class="w"></span>
-<span class="w">         </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">intermediate</span><span class="w"> </span><span class="n">out</span><span class="p">)))))</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">intermediate</span><span class="w"> </span><span class="n">out</span><span class="p">)))))</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="n">safe-group/o</span><span class="w"> </span><span class="n">out</span><span class="p">))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
 
@@ -789,15 +789,15 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
 <span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
 <span class="w">    </span><span class="p">((</span><span class="n">null/o</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">null/o</span><span class="w"> </span><span class="n">l2</span><span class="p">))</span><span class="w"></span>
 <span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">a1</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">a2</span><span class="w"> </span><span class="n">d2</span><span class="p">)</span><span class="w"></span>
-<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
-<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a2</span><span class="w"> </span><span class="n">d2</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">a2</span><span class="w"> </span><span class="n">d2</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="n">same-length/o</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="n">d2</span><span class="p">)))))</span><span class="w"></span>
 <span class="c1">;; Succeed if every element from l1 is present in l2</span><span class="w"></span>
 <span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">l1</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="k">cond/e</span><span class="w"></span>
 <span class="w">    </span><span class="p">((</span><span class="n">null/o</span><span class="w"> </span><span class="n">l1</span><span class="p">))</span><span class="w"></span>
 <span class="w">    </span><span class="p">((</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="n">d</span><span class="p">)</span><span class="w"></span>
-<span class="w">       </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">l1</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="n">proper-member/o</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">l2</span><span class="p">)</span><span class="w"></span>
 <span class="w">       </span><span class="p">(</span><span class="n">subset-of/o</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">l2</span><span class="p">)))))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
@@ -878,7 +878,7 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
       <div>
        <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="k">fresh</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">head</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="p">(</span><span class="k">cond/e</span><span class="w"> </span><span class="p">((</span><span class="n">same/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">head</span><span class="p">))</span><span class="w"></span>
 <span class="w">            </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">tail</span><span class="p">)))))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
@@ -960,7 +960,7 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
        <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="c1">;; cond/u (instead of cond/a) is an optimization here, to avoid trying to</span><span class="w"></span>
 <span class="w">  </span><span class="c1">;; exhaust all `seen groups`</span><span class="w"></span>
-<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
 <span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
 
@@ -1038,12 +1038,12 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
       <div>
        <pre><span></span><span class="p">(</span><span class="k">defrel</span><span class="w"> </span><span class="p">(</span><span class="n">not-seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="p">(</span><span class="k">project</span><span class="w"> </span><span class="p">(</span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb">ground*?</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb">ground*?</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="n">ground*?</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="n">ground*?</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">succeed</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span><span class="w"> </span><span class="s2">"not-seen-group/o: history is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> ground"</span><span class="p">))</span><span class="w"></span>
 <span class="w">        </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/exns.html#(def._((quote._~23~25kernel)._error))" style="color: inherit">error</a></span><span class="w"> </span><span class="s2">"not-seen-group/o: g is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> ground"</span><span class="p">)))</span><span class="w"></span>
-<span class="w">  </span><span class="p">(</span><span class="k">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">cond/u</span><span class="w"> </span><span class="p">((</span><span class="n">seen-group/o</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="n">history</span><span class="p">)</span><span class="w"> </span><span class="n">fail</span><span class="p">)</span><span class="w"></span>
 <span class="w">          </span><span class="p">(</span><span class="n">succeed</span><span class="p">)))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
 
@@ -1392,7 +1392,7 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
 <span class="w">      </span><span class="p">(</span><span class="n">pick-participant-from/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">updated-from</span><span class="p">)</span><span class="w"></span>
 <span class="w">      </span><span class="p">(</span><span class="n">add-participant-to/o</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">updated-to</span><span class="p">)</span><span class="w"></span>
 <span class="w">      </span><span class="p">(</span><span class="n">make-step/o</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">participant</span><span class="w"> </span><span class="n">step</span><span class="p">)</span><span class="w"></span>
-<span class="w">      </span><span class="p">(</span><span class="nb">cons/o</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="n">plan</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">cons/o</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="n">plan</span><span class="p">)</span><span class="w"></span>
 <span class="w">      </span><span class="p">(</span><span class="n">do-plan/o</span><span class="w"> </span><span class="n">updated-to</span><span class="w"> </span><span class="n">updated-from</span><span class="w"> </span><span class="n">remaining</span><span class="p">)))))</span><span class="w"></span>
 </pre></div></td></tr></tbody></table></div>
 
@@ -1488,28 +1488,6 @@ Cabbage)</code> is safe, since the Wolf does not eat Cabbage, but <code>(Goat Ca
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

@@ -119,45 +119,46 @@
 <p>Each trend chart has to derive from the following <code>trends-chart%</code> interface and implement, at minimum <code>make-settings-dialog</code>, <code>invalidate-data</code> and <code>put-plot-snip</code>. There are some other optional methods, for example for saving an image of the plot or saving the plot data to file, plus some helper methods as well, which are not shown here:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">trends-chart%</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
-    <span class="c1">;; Create a new settings dialog for this class.</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">make-settings-dialog</span><span class="p">)</span>
-      <span class="c1">;; needs implementation</span>
-      <span class="no">#f</span><span class="p">)</span>
-    <span class="c1">;; Called when the chart parameters have been changed, and the data for the</span>
-    <span class="c1">;; chart will need to be updated.</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">invalidate-data</span><span class="p">)</span>
-      <span class="c1">;; needs implementation</span>
-      <span class="no">#f</span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span> <span class="p">(</span><span class="n">put-plot-snip</span> <span class="n">canvas</span><span class="p">)</span>
-      <span class="c1">;; need implementation</span>
-      <span class="no">#f</span><span class="p">)</span>
-<span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">trends-chart%</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/createclass.html#(def._((lib._racket/private/class-internal..rkt)._object~25))" style="color: inherit">object%</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; Create a new settings dialog for this class.</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span><span class="w"> </span><span class="p">(</span><span class="n">make-settings-dialog</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="c1">;; needs implementation</span><span class="w"></span>
+<span class="w">      </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; Called when the chart parameters have been changed, and the data for the</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; chart will need to be updated.</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span><span class="w"> </span><span class="p">(</span><span class="n">invalidate-data</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="c1">;; needs implementation</span><span class="w"></span>
+<span class="w">      </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/public))" style="color: inherit">define/public</a></span><span class="w"> </span><span class="p">(</span><span class="n">put-plot-snip</span><span class="w"> </span><span class="n">canvas</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="c1">;; need implementation</span><span class="w"></span>
+<span class="w">      </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>This simple trend chart interface has proved flexible enough to allow implementing a wide variety of plots from bar chart plots to histograms ans scatter plots. The plot snips themselves can be made <a href="/2018/02/interactive-overlays-with-the-racket-plot-package.html">interactive</a>, to allow more information to be displayed, and the <code>canvas</code> argument passed to <code>put-plot-snip</code> is a special <code>editor-canvas%</code> which allows defining floating snips for displaying mode information in an enhanced plot legend.</p>
@@ -219,28 +220,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

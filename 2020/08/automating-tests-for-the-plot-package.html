@@ -147,21 +147,22 @@
 <p>One of these <a href="https://docs.racket-lang.org/draw/dc___.html"><code>dc&lt;%&gt;</code></a> implementations is <a href="https://docs.racket-lang.org/draw/record-dc_.html">record-dc%</a>, and this implementation does not draw anything, instead, as the name implies, it just records the draw steps, and these can be retrieved using <code>get-recorded-datum</code>. For example, to find out what the draw steps are for plotting the sine function we can use the following snippet:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">)))</span>
-<span class="p">(</span><span class="n">plot/dc</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-3</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"sin(x)"</span><span class="p">)</span> <span class="n">dc</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">800</span> <span class="mi">600</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-recorded-datum</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">record-dc%</span><span class="w"> </span><span class="p">[</span><span class="n">width</span><span class="w"> </span><span class="mi">800</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">height</span><span class="w"> </span><span class="mi">600</span><span class="p">)))</span><span class="w"></span>
+<span class="p">(</span><span class="n">plot/dc</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="w"> </span><span class="mi">-3</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"sin(x)"</span><span class="p">)</span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">800</span><span class="w"> </span><span class="mi">600</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">draw-steps</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="n">get-recorded-datum</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Note how we used <code>plot/dc</code> for plotting which plots directly to a device context <code>dc&lt;%&gt;</code> &mdash; all other plot functions are implemented in terms of this one (i.e. <code>plot-file</code> will create a bitmap, than use <code>plot/dc</code> on the device context of the bitmap).</p>
@@ -169,43 +170,44 @@
 <p><code>draw-steps</code> is a list of draw commands, and it looks something like the example below. There are 337 actual commands for drawing the plot, and most of them have been omitted. While the draw commands are a bit obscure, it is still possible to identify where different elements of the plot are drawn:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">((</span><span class="n">do-set-pen!</span> <span class="p">((</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mf">1.0</span><span class="p">)</span> <span class="mi">1</span> <span class="n">solid</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span> <span class="no">#f</span><span class="p">))</span>
- <span class="p">(</span><span class="n">do-set-brush!</span> <span class="p">((</span><span class="mi">255</span> <span class="mi">255</span> <span class="mi">255</span> <span class="mf">1.0</span><span class="p">)</span> <span class="n">solid</span> <span class="no">#f</span> <span class="no">#f</span> <span class="no">#f</span><span class="p">))</span>
- <span class="p">(</span><span class="n">set-font</span> <span class="p">(</span><span class="mi">12</span> <span class="no">#f</span> <span class="n">default</span> <span class="n">normal</span> <span class="n">normal</span> <span class="no">#f</span> <span class="n">default</span> <span class="no">#f</span> <span class="n">aligned</span><span class="p">))</span>
- <span class="p">(</span><span class="n">set-smoothing</span> <span class="n">unsmoothed</span><span class="p">)</span>
- <span class="p">(</span><span class="n">set-text-mode</span> <span class="n">transparent</span><span class="p">)</span>
- <span class="c1">;; ... lots of other draw calls ommited</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">((</span><span class="n">do-set-pen!</span><span class="w"> </span><span class="p">((</span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">solid</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._round))" style="color: inherit">round</a></span><span class="w"> </span><span class="no">#f</span><span class="p">))</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">do-set-brush!</span><span class="w"> </span><span class="p">((</span><span class="mi">255</span><span class="w"> </span><span class="mi">255</span><span class="w"> </span><span class="mi">255</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="n">solid</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="no">#f</span><span class="p">))</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">set-font</span><span class="w"> </span><span class="p">(</span><span class="mi">12</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="n">normal</span><span class="w"> </span><span class="n">normal</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="n">aligned</span><span class="p">))</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">set-smoothing</span><span class="w"> </span><span class="n">unsmoothed</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">set-text-mode</span><span class="w"> </span><span class="n">transparent</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="c1">;; ... lots of other draw calls ommited</span><span class="w"></span>
 
- <span class="c1">;; ... this is where we draw the axis labels...</span>
- <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"x axis"</span> <span class="mf">52.5</span> <span class="mf">82.22216796875</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span>
- <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"y axis"</span> <span class="mf">-0.22216796875</span> <span class="mf">46.5</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mf">1.5707963267948966</span><span class="p">)</span>
- <span class="c1">;; ... this is where we draw the actual plot</span>
- <span class="p">(</span><span class="n">draw-lines</span> <span class="p">((</span><span class="mf">94.0</span> <span class="o">.</span> <span class="mf">25.61311515106986</span><span class="p">)</span> <span class="p">(</span><span class="mf">93.90180360721442</span> <span class="o">.</span> <span class="mf">25.327677256040936</span><span class="p">)</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
- <span class="c1">;; ... and this is where we draw the legend entry</span>
- <span class="p">(</span><span class="n">draw-text</span> <span class="s2">"sin(x)"</span> <span class="mf">56.0</span> <span class="mf">15.333984375</span> <span class="no">#t</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w"> </span><span class="c1">;; ... this is where we draw the axis labels...</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">draw-text</span><span class="w"> </span><span class="s2">"x axis"</span><span class="w"> </span><span class="mf">52.5</span><span class="w"> </span><span class="mf">82.22216796875</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">draw-text</span><span class="w"> </span><span class="s2">"y axis"</span><span class="w"> </span><span class="mf">-0.22216796875</span><span class="w"> </span><span class="mf">46.5</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">1.5707963267948966</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="c1">;; ... this is where we draw the actual plot</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">draw-lines</span><span class="w"> </span><span class="p">((</span><span class="mf">94.0</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mf">25.61311515106986</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="mf">93.90180360721442</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="mf">25.327677256040936</span><span class="p">)</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span><span class="w"></span>
+<span class="w"> </span><span class="c1">;; ... and this is where we draw the legend entry</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">draw-text</span><span class="w"> </span><span class="s2">"sin(x)"</span><span class="w"> </span><span class="mf">56.0</span><span class="w"> </span><span class="mf">15.333984375</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="comparing-draw-steps">Comparing Draw Steps</h3>
@@ -213,55 +215,57 @@
 <p>Of course, we are not really interested in analyzing these draw steps in detail. Instead, we can write them to a file and when the tests runs, it reads the saved draw steps and compares them against a freshly generated set.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="c1">;; Saving the draw steps</span>
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span> <span class="s2">"draw-steps.rktd"</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span> <span class="n">draw-steps</span> <span class="n">out</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; Saving the draw steps</span><span class="w"></span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-output-file))" style="color: inherit">call-with-output-file</a></span><span class="w"> </span><span class="s2">"draw-steps.rktd"</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._write))" style="color: inherit">write</a></span><span class="w"> </span><span class="n">draw-steps</span><span class="w"> </span><span class="n">out</span><span class="p">)))</span><span class="w"></span>
 
-<span class="c1">;; reading saved draw steps</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="s2">"draw-steps.rktd"</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="c1">;; reading saved draw steps</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">draw-steps</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span><span class="w"> </span><span class="s2">"draw-steps.rktd"</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/Reading.html#(def._((quote._~23~25kernel)._read))" style="color: inherit">read</a></span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Comparing draw steps is simply a matter of traversing a tree structure and checking if things are <code>equal?</code>, with the additional &ldquo;variation&rdquo; that numbers are checked if they are very close to each other instead of being equal, since most of them are floating point numbers:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="n">set1</span> <span class="n">set2</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span> <span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span> <span class="n">set2</span><span class="p">))</span>
-         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">set2</span><span class="p">))</span>
-              <span class="p">(</span><span class="n">same-draw-steps?</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span> <span class="n">set2</span><span class="p">))))</span>
-        <span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span> <span class="n">set1</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span> <span class="n">set2</span><span class="p">))</span>
-         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">set1</span> <span class="n">set2</span><span class="p">))</span> <span class="mf">1e-4</span><span class="p">))</span>
-        <span class="p">(</span><span class="no">#t</span>
-         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="n">set1</span> <span class="n">set2</span><span class="p">))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">same-draw-steps?</span><span class="w"> </span><span class="n">set1</span><span class="w"> </span><span class="n">set2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span><span class="w"> </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span><span class="w"> </span><span class="n">set1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._pair~3f))" style="color: inherit">pair?</a></span><span class="w"> </span><span class="n">set2</span><span class="p">))</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="p">(</span><span class="n">same-draw-steps?</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">set1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">set2</span><span class="p">))</span><span class="w"></span>
+<span class="w">              </span><span class="p">(</span><span class="n">same-draw-steps?</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span><span class="w"> </span><span class="n">set1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cdr))" style="color: inherit">cdr</a></span><span class="w"> </span><span class="n">set2</span><span class="p">))))</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span><span class="w"> </span><span class="n">set1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/number-types.html#(def._((quote._~23~25kernel)._number~3f))" style="color: inherit">number?</a></span><span class="w"> </span><span class="n">set2</span><span class="p">))</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._abs))" style="color: inherit">abs</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">set1</span><span class="w"> </span><span class="n">set2</span><span class="p">))</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="no">#t</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span><span class="w"> </span><span class="n">set1</span><span class="w"> </span><span class="n">set2</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="device-independent-draw-steps">Device Independent Draw Steps</h3>
@@ -269,47 +273,49 @@
 <p>Unfortunately, the draw steps produced by <code>record-dc%</code> are still platform dependent: the plot library queries the device context for font and text dimensions and aligns elements in the plot based on this informations. Since fonts have slightly different dimensions, all draw coordinates will be slightly different on different platforms. Since we use these draw steps for testing purpose only, we can use fake values for all font metrics. There are only three methods that need to be overridden to ensure consistent &ldquo;font sizes&rdquo; on all platforms:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">mock-record-dc%</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">record-dc%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-text-extent</span> <span class="n">text</span> <span class="p">(</span><span class="n">font</span> <span class="no">#f</span><span class="p">)</span> <span class="p">(</span><span class="n">combine?</span> <span class="no">#f</span><span class="p">)</span> <span class="p">(</span><span class="n">offset</span> <span class="mi">0</span><span class="p">))</span>
-      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">10</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-length))" style="color: inherit">string-length</a></span> <span class="n">text</span><span class="p">))</span> <span class="mi">10</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-char-width</span><span class="p">)</span> <span class="mi">10</span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">get-char-height</span><span class="p">)</span> <span class="mi">10</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">mock-record-dc%</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span><span class="w"> </span><span class="n">record-dc%</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span><span class="w"> </span><span class="p">(</span><span class="n">get-text-extent</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="p">(</span><span class="n">font</span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">combine?</span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">offset</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((quote._~23~25kernel)._string-length))" style="color: inherit">string-length</a></span><span class="w"> </span><span class="n">text</span><span class="p">))</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span><span class="w"> </span><span class="p">(</span><span class="n">get-char-width</span><span class="p">)</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span><span class="w"> </span><span class="p">(</span><span class="n">get-char-height</span><span class="p">)</span><span class="w"> </span><span class="mi">10</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>We can use <code>mock-record-dc%</code> instead of <code>record-dc%</code> to generate platform independent draw steps which means that tests build using them will run and pass on any platform:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">dc</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">record-dc%</span> <span class="p">[</span><span class="n">width</span> <span class="mi">800</span><span class="p">]</span> <span class="p">[</span><span class="n">height</span> <span class="mi">600</span><span class="p">]))</span>
-<span class="p">(</span><span class="n">plot/dc</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span> <span class="mi">-3</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"sin(x)"</span><span class="p">)</span> <span class="n">dc</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">800</span> <span class="mi">600</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">draw-steps</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">dc</span> <span class="n">get-recorded-datum</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">record-dc%</span><span class="w"> </span><span class="p">[</span><span class="n">width</span><span class="w"> </span><span class="mi">800</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">height</span><span class="w"> </span><span class="mi">600</span><span class="p">]))</span><span class="w"></span>
+<span class="p">(</span><span class="n">plot/dc</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="w"> </span><span class="mi">-3</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"sin(x)"</span><span class="p">)</span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">800</span><span class="w"> </span><span class="mi">600</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">draw-steps</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">dc</span><span class="w"> </span><span class="n">get-recorded-datum</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h3 id="some-other-details">Some Other Details</h3>
@@ -348,28 +354,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

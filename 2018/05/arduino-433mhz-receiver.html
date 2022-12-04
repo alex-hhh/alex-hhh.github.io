@@ -156,45 +156,46 @@
 <p>The Arduino program begins running with the <code>setup</code> function. This function ensures that the pins are setup correctly, <code>D8</code> and <code>D2</code> as inputs from the 433Mhz shield and <code>D6</code> and <code>D7</code> as outputs to the lets on the breadboard. The setup code also sets up the <code>pin2ISR</code> as the function to be called when data on the input pin <code>D2</code> changes, this function will be called when the input pin changes from 0 to 1 or from 1 to 0.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="cp">#define PREAMBLE_LED 7</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="cp">#define PREAMBLE_LED 7</span>
 <span class="cp">#define DATA_LED 6</span>
 
-<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
-<span class="p">{</span>
-  <span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">38400</span><span class="p">);</span>
-  <span class="c1">// Board has the data bit wired to pin 8, and we bridge it to pin 2 to be</span>
-  <span class="c1">// able to attach an interrupt.</span>
-  <span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>
-  <span class="n">pinMode</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>
-  <span class="n">pinMode</span><span class="p">(</span><span class="n">PREAMBLE_LED</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
-  <span class="n">pinMode</span><span class="p">(</span><span class="n">DATA_LED</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
-  <span class="n">attachInterrupt</span><span class="p">(</span><span class="n">digitalPinToInterrupt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">pin2ISR</span><span class="p">,</span> <span class="n">CHANGE</span><span class="p">);</span>
-  <span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Started listening</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="kt">void</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">38400</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="c1">// Board has the data bit wired to pin 8, and we bridge it to pin 2 to be</span>
+<span class="w">  </span><span class="c1">// able to attach an interrupt.</span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">INPUT</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">INPUT</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="n">PREAMBLE_LED</span><span class="p">,</span><span class="w"> </span><span class="n">OUTPUT</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="n">DATA_LED</span><span class="p">,</span><span class="w"> </span><span class="n">OUTPUT</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">attachInterrupt</span><span class="p">(</span><span class="n">digitalPinToInterrupt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">pin2ISR</span><span class="p">,</span><span class="w"> </span><span class="n">CHANGE</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Started listening</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The <code>pin2ISR</code> maintains some global state about the state of the receive, since it is invoked each time the digital input changes. First, it maintains <code>rx_state</code>, which records the phase of the receive: <code>RS_NOSYNC</code> when no receive is in progress, <code>RS_PREAMBLE</code> when the preamble is being received, <code>RS_DATA</code> when the actual code word data is being received and <code>RS_COMPLETED</code> indicates that an entire code word has been received.</p>
@@ -206,47 +207,48 @@
 <p>Finally, <code>last_timestamp</code> and <code>last_pulse_width</code> are used to keep track of the previous timestamp and pulse width and it is used to decode the bits in the transmission.</p>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="k">enum</span> <span class="n">RxState</span> <span class="p">{</span>
-    <span class="n">RS_NOSYNC</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>                      <span class="c1">// Receiver is inactive</span>
-    <span class="n">RS_PREAMBLE</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>                    <span class="c1">// 50% duty cycle</span>
-    <span class="n">RS_DATA</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>                        <span class="c1">// DATA is being received</span>
-    <span class="n">RS_COMPLETED</span> <span class="o">=</span> <span class="mi">3</span>                    <span class="c1">// Receive complete</span>
-<span class="p">};</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">enum</span><span class="w"> </span><span class="nc">RxState</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">RS_NOSYNC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">                      </span><span class="c1">// Receiver is inactive</span>
+<span class="w">    </span><span class="n">RS_PREAMBLE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">                    </span><span class="c1">// 50% duty cycle</span>
+<span class="w">    </span><span class="n">RS_DATA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">                        </span><span class="c1">// DATA is being received</span>
+<span class="w">    </span><span class="n">RS_COMPLETED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">                    </span><span class="c1">// Receive complete</span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="k">volatile</span> <span class="kt">char</span> <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_NOSYNC</span><span class="p">;</span>
+<span class="k">volatile</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_NOSYNC</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">char</span> <span class="n">rx_bit_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="kt">uint32_t</span> <span class="n">rx_buf</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="kt">char</span><span class="w"> </span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">uint32_t</span><span class="w"> </span><span class="n">rx_buf</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w"></span>
 
-<span class="kt">unsigned</span> <span class="n">tx_clock</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="n">tx_clock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-<span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">last_timestamp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="kt">unsigned</span> <span class="n">last_pulse_width</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">last_timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="n">last_pulse_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The <code>pin2ISR</code> function is shown below. It first determines the &ldquo;pulse width&rdquo; which is the time since the function was last called, and reads the state of the input pin. It may be useful to review the transmission pattern of the HCS200 to better understand what is happening:</p>
@@ -263,165 +265,167 @@
  <li>Note that the function does nothing while the receiver is in <code>RS_COMPLETED</code>  state &mdash; in this state, it waits for the main program loop to read the  received data and to reset the state back to <code>RS_NOSYNC</code>, so a new code word  can be received.</li></ul>
 
 <div class="brush: c++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">pin2ISR</span><span class="p">()</span>
-<span class="p">{</span>
-  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">timestamp</span> <span class="o">=</span> <span class="n">micros</span><span class="p">();</span>
-  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">pulse_width</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="o">-</span> <span class="n">last_timestamp</span><span class="p">;</span>
-  <span class="kt">int</span> <span class="n">pin</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">pin2ISR</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">micros</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">pulse_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timestamp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">last_timestamp</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">pin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
 
-  <span class="k">switch</span> <span class="p">(</span><span class="n">rx_state</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">case</span> <span class="nl">RS_NOSYNC</span><span class="p">:</span>
-      <span class="c1">// "Sync" is a high pulse, folowed by a long low</span>
-      <span class="k">if</span> <span class="p">(</span><span class="n">pin</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">pulse_width</span> <span class="o">&gt;</span> <span class="mi">10000</span> <span class="o">&amp;&amp;</span> <span class="n">pulse_width</span> <span class="o">&lt;</span> <span class="mi">50000</span><span class="p">)</span> <span class="p">{</span>
-          <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_PREAMBLE</span><span class="p">;</span>
-          <span class="n">tx_clock</span> <span class="o">=</span> <span class="n">last_pulse_width</span><span class="p">;</span>
-      <span class="p">}</span>
-      <span class="k">break</span><span class="p">;</span>
-  <span class="k">case</span> <span class="nl">RS_PREAMBLE</span><span class="p">:</span>
-      <span class="k">if</span> <span class="p">(</span><span class="n">pulse_width</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">tx_clock</span><span class="p">)</span> <span class="p">{</span>
-           <span class="n">tx_clock</span> <span class="o">=</span> <span class="p">(</span><span class="n">tx_clock</span> <span class="o">+</span> <span class="n">pulse_width</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
-      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">pin</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">pulse_width</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">)</span> <span class="p">{</span>
-          <span class="c1">// pulse_width was for a long low, switch to receiving data.</span>
-          <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_DATA</span><span class="p">;</span>
-          <span class="n">rx_bit_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-          <span class="n">memset</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">));</span>
-      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-          <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_NOSYNC</span><span class="p">;</span>         <span class="c1">// Transmission error</span>
-      <span class="p">}</span>
-      <span class="k">break</span><span class="p">;</span>
-  <span class="k">case</span> <span class="nl">RS_DATA</span><span class="p">:</span>
-      <span class="k">if</span> <span class="p">(</span><span class="n">pin</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-          <span class="kt">int</span> <span class="n">first</span> <span class="o">=</span> <span class="n">Classify</span><span class="p">(</span><span class="n">last_pulse_width</span><span class="p">);</span>
-          <span class="kt">int</span> <span class="n">second</span> <span class="o">=</span> <span class="n">Classify</span><span class="p">(</span><span class="n">pulse_width</span><span class="p">);</span>
-          <span class="k">if</span> <span class="p">(</span><span class="n">first</span> <span class="o">==</span> <span class="n">RB_LONG</span> <span class="o">&amp;&amp;</span> <span class="n">second</span> <span class="o">==</span> <span class="n">RB_SHORT</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Received a 1 bit</span>
-              <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">rx_bit_count</span> <span class="o">/</span> <span class="mi">32</span><span class="p">;</span>
-              <span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
-              <span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">|=</span> <span class="mh">0x80000000</span><span class="p">;</span>
-              <span class="n">rx_bit_count</span><span class="o">++</span><span class="p">;</span>
-          <span class="p">}</span>
-          <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">first</span> <span class="o">==</span> <span class="n">RB_SHORT</span> <span class="o">&amp;&amp;</span> <span class="n">second</span> <span class="o">==</span> <span class="n">RB_LONG</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Received a 0 bit</span>
-              <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">rx_bit_count</span> <span class="o">/</span> <span class="mi">32</span><span class="p">;</span>
-              <span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
-              <span class="n">rx_bit_count</span><span class="o">++</span><span class="p">;</span>
-          <span class="p">}</span>
-          <span class="k">else</span> <span class="p">{</span>                        <span class="c1">// invalid pulse combination</span>
-              <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_NOSYNC</span><span class="p">;</span>
-          <span class="p">}</span>
-      <span class="p">}</span>
-      <span class="k">if</span> <span class="p">(</span><span class="n">rx_bit_count</span> <span class="o">&gt;=</span> <span class="n">MAX_BITS</span><span class="p">)</span> <span class="p">{</span>
-          <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_COMPLETED</span><span class="p">;</span>
-      <span class="p">}</span>
-      <span class="k">break</span><span class="p">;</span>
-  <span class="p">}</span>
+<span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">rx_state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="no">RS_NOSYNC</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="c1">// "Sync" is a high pulse, folowed by a long low</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pin</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pulse_width</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10000</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pulse_width</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">50000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_PREAMBLE</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="n">tx_clock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">last_pulse_width</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="no">RS_PREAMBLE</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pulse_width</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tx_clock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">           </span><span class="n">tx_clock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">tx_clock</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pulse_width</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pin</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pulse_width</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="c1">// pulse_width was for a long low, switch to receiving data.</span>
+<span class="w">          </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_DATA</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="n">memset</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">));</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_NOSYNC</span><span class="p">;</span><span class="w">         </span><span class="c1">// Transmission error</span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="no">RS_DATA</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pin</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="kt">int</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Classify</span><span class="p">(</span><span class="n">last_pulse_width</span><span class="p">);</span><span class="w"></span>
+<span class="w">          </span><span class="kt">int</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Classify</span><span class="p">(</span><span class="n">pulse_width</span><span class="p">);</span><span class="w"></span>
+<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">first</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RB_LONG</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RB_SHORT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Received a 1 bit</span>
+<span class="w">              </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">32</span><span class="p">;</span><span class="w"></span>
+<span class="w">              </span><span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">              </span><span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="mh">0x80000000</span><span class="p">;</span><span class="w"></span>
+<span class="w">              </span><span class="n">rx_bit_count</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+<span class="w">          </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">first</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RB_SHORT</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RB_LONG</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Received a 0 bit</span>
+<span class="w">              </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">32</span><span class="p">;</span><span class="w"></span>
+<span class="w">              </span><span class="n">rx_buf</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">              </span><span class="n">rx_bit_count</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+<span class="w">          </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">                        </span><span class="c1">// invalid pulse combination</span>
+<span class="w">              </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_NOSYNC</span><span class="p">;</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">MAX_BITS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_COMPLETED</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-  <span class="n">last_timestamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="p">;</span>
-  <span class="n">last_pulse_width</span> <span class="o">=</span> <span class="n">pulse_width</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">  </span><span class="n">last_timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timestamp</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">last_pulse_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pulse_width</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The main program loop is really simple: It sets the leds on and off depending of the state of the receiver (<code>rx_state</code>) and checks if the state is <code>RS_COMPLETED</code>, in which case, it decodes the received data and prints it out to the serial port.</p>
 
 <div class="brush: C++">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">DATA_LED</span><span class="p">,</span> <span class="n">rx_state</span> <span class="o">==</span> <span class="n">RS_DATA</span><span class="p">);</span>
-    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">PREAMBLE_LED</span><span class="p">,</span> <span class="n">rx_state</span> <span class="o">==</span> <span class="n">RS_PREAMBLE</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">loop</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">DATA_LED</span><span class="p">,</span><span class="w"> </span><span class="n">rx_state</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RS_DATA</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">PREAMBLE_LED</span><span class="p">,</span><span class="w"> </span><span class="n">rx_state</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RS_PREAMBLE</span><span class="p">);</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">rx_state</span> <span class="o">==</span> <span class="n">RS_COMPLETED</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">rx_bit_count</span> <span class="o">&gt;=</span> <span class="n">MAX_BITS</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">Hcs200_keycode</span> <span class="n">keycode</span><span class="p">;</span>
-            <span class="n">Hcs200Decode</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">keycode</span><span class="p">);</span>
-            <span class="n">Hcs200Print</span><span class="p">(</span><span class="o">&amp;</span><span class="n">keycode</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="n">rx_state</span> <span class="o">=</span> <span class="n">RS_NOSYNC</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rx_state</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">RS_COMPLETED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rx_bit_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">MAX_BITS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">Hcs200_keycode</span><span class="w"> </span><span class="n">keycode</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="n">Hcs200Decode</span><span class="p">(</span><span class="n">rx_buf</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">keycode</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="n">Hcs200Print</span><span class="p">(</span><span class="o">&amp;</span><span class="n">keycode</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="n">rx_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RS_NOSYNC</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="final-thoughts">Final thoughts</h2>
@@ -450,28 +454,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

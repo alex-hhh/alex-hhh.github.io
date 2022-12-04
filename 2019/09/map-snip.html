@@ -109,63 +109,65 @@
 <p>GPS tracks are loaded from <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPX files</a> using the <a href="https://pkgs.racket-lang.org/package/data-frame">data-frame package</a>: the <code>df-read/gpx</code> function will read a GPX file into a data frame, and the <code>df-select*</code> function can be used to extract the latitude, longitude track to use for the map snip:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">data-frame</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">track</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span> <span class="p">[</span><span class="n">track</span> <span class="n">track</span><span class="p">])</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">data-frame</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="p">(</span><span class="n">df-read/gpx</span><span class="w"> </span><span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">track</span><span class="w"> </span><span class="p">(</span><span class="n">df-select*</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="s2">"lat"</span><span class="w"> </span><span class="s2">"lon"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">map-snip%</span><span class="w"> </span><span class="p">[</span><span class="n">track</span><span class="w"> </span><span class="n">track</span><span class="p">])</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>To quickly find out what data series are available in the data frame, you can use the <code>df-describe</code> function:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">df-describe</span> <span class="n">df</span><span class="p">)</span>
-<span class="n">data-frame:</span> <span class="mi">5</span> <span class="n">columns</span><span class="o">,</span> <span class="mi">16287</span> <span class="n">rows</span>
-<span class="n">properties:</span>
-  <span class="n">waypoints</span> <span class="p">((</span><span class="mi">1485442935</span> <span class="mf">-42.67913189716637</span> <span class="mf">146.58711176365614</span> <span class="mf">1126.94</span> <span class="n">Lap</span> <span class="mi">1</span><span class="p">)</span> 
-  <span class="n">laps</span>      <span class="p">(</span><span class="mi">1485442935</span> <span class="mi">1485444483</span> <span class="mi">1485445975</span> <span class="mi">1485447502</span> <span class="mi">1485449146</span> <span class="mi">1485450523</span>
-  <span class="n">name</span>      <span class="n">Tarn</span> <span class="n">Shelf</span><span class="o">,</span> <span class="n">Mt</span> <span class="n">Field</span> <span class="n">NP</span> <span class="p">(</span><span class="n">Hiking</span><span class="p">)</span>
-<span class="n">series:</span>
-              <span class="n">NAs</span>           <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span>           <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span>          <span class="n">mean</span>        <span class="n">stddev</span>
-  <span class="n">alt</span>           <span class="mi">0</span>        <span class="mf">854.93</span>       <span class="mf">1278.35</span>       <span class="mf">1089.94</span>        <span class="mf">122.06</span>
-  <span class="n">dst</span>           <span class="mi">0</span>             <span class="mi">0</span>      <span class="mf">14903.55</span>       <span class="mf">7184.98</span>       <span class="mf">4192.82</span>
-  <span class="n">lat</span>           <span class="mi">0</span>        <span class="mf">-42.69</span>        <span class="mf">-42.65</span>        <span class="mf">-42.67</span>          <span class="mf">0.01</span>
-  <span class="n">lon</span>           <span class="mi">0</span>        <span class="mf">146.56</span>        <span class="mf">146.59</span>        <span class="mf">146.58</span>          <span class="mf">0.01</span>
-  <span class="n">timestamp</span>     <span class="mi">0</span>    <span class="mi">1485470647</span>    <span class="mi">1485490648</span>  <span class="mf">1485480878.4</span>       <span class="mf">5984.35</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">df-describe</span><span class="w"> </span><span class="n">df</span><span class="p">)</span><span class="w"></span>
+<span class="n">data-frame:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">columns</span><span class="o">,</span><span class="w"> </span><span class="mi">16287</span><span class="w"> </span><span class="n">rows</span><span class="w"></span>
+<span class="n">properties:</span><span class="w"></span>
+<span class="w">  </span><span class="n">waypoints</span><span class="w"> </span><span class="p">((</span><span class="mi">1485442935</span><span class="w"> </span><span class="mf">-42.67913189716637</span><span class="w"> </span><span class="mf">146.58711176365614</span><span class="w"> </span><span class="mf">1126.94</span><span class="w"> </span><span class="n">Lap</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span>
+<span class="w">  </span><span class="n">laps</span><span class="w">      </span><span class="p">(</span><span class="mi">1485442935</span><span class="w"> </span><span class="mi">1485444483</span><span class="w"> </span><span class="mi">1485445975</span><span class="w"> </span><span class="mi">1485447502</span><span class="w"> </span><span class="mi">1485449146</span><span class="w"> </span><span class="mi">1485450523</span><span class="w"></span>
+<span class="w">  </span><span class="n">name</span><span class="w">      </span><span class="n">Tarn</span><span class="w"> </span><span class="n">Shelf</span><span class="o">,</span><span class="w"> </span><span class="n">Mt</span><span class="w"> </span><span class="n">Field</span><span class="w"> </span><span class="n">NP</span><span class="w"> </span><span class="p">(</span><span class="n">Hiking</span><span class="p">)</span><span class="w"></span>
+<span class="n">series:</span><span class="w"></span>
+<span class="w">              </span><span class="n">NAs</span><span class="w">           </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span><span class="w">           </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span><span class="w">          </span><span class="n">mean</span><span class="w">        </span><span class="n">stddev</span><span class="w"></span>
+<span class="w">  </span><span class="n">alt</span><span class="w">           </span><span class="mi">0</span><span class="w">        </span><span class="mf">854.93</span><span class="w">       </span><span class="mf">1278.35</span><span class="w">       </span><span class="mf">1089.94</span><span class="w">        </span><span class="mf">122.06</span><span class="w"></span>
+<span class="w">  </span><span class="n">dst</span><span class="w">           </span><span class="mi">0</span><span class="w">             </span><span class="mi">0</span><span class="w">      </span><span class="mf">14903.55</span><span class="w">       </span><span class="mf">7184.98</span><span class="w">       </span><span class="mf">4192.82</span><span class="w"></span>
+<span class="w">  </span><span class="n">lat</span><span class="w">           </span><span class="mi">0</span><span class="w">        </span><span class="mf">-42.69</span><span class="w">        </span><span class="mf">-42.65</span><span class="w">        </span><span class="mf">-42.67</span><span class="w">          </span><span class="mf">0.01</span><span class="w"></span>
+<span class="w">  </span><span class="n">lon</span><span class="w">           </span><span class="mi">0</span><span class="w">        </span><span class="mf">146.56</span><span class="w">        </span><span class="mf">146.59</span><span class="w">        </span><span class="mf">146.58</span><span class="w">          </span><span class="mf">0.01</span><span class="w"></span>
+<span class="w">  </span><span class="n">timestamp</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">1485470647</span><span class="w">    </span><span class="mi">1485490648</span><span class="w">  </span><span class="mf">1485480878.4</span><span class="w">       </span><span class="mf">5984.35</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="using-location-data-from-other-sources">Using location data from other sources</h2>
@@ -173,65 +175,67 @@
 <p>The <code>map-snip%</code> can also have an initial position specified and, as an example, I used a simple, predefined location:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">new-york</span> <span class="o">#</span><span class="p">(</span><span class="mf">40.6943</span> <span class="mf">-73.9249</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span> <span class="p">[</span><span class="n">position</span> <span class="n">new-york</span><span class="p">])</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">new-york</span><span class="w"> </span><span class="o">#</span><span class="p">(</span><span class="mf">40.6943</span><span class="w"> </span><span class="mf">-73.9249</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">map-snip%</span><span class="w"> </span><span class="p">[</span><span class="n">position</span><span class="w"> </span><span class="n">new-york</span><span class="p">])</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>When presenting these demos on <a href="https://groups.google.com/forum/#!topic/racket-users/pzy1jv1s61o">racket-users</a>, a suggestion was made to provide a database of common location names. This might be a worthwhile project, but the <code>data-frame</code> package can also be used with the <a href="https://simplemaps.com/data/world-cities">world cities database</a> to query location names directly<sup><a href="#2019-09-08-map-snip-footnote-2-definition" name="2019-09-08-map-snip-footnote-2-return">2</a></sup>:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="c1">;; Load the world cities data from the CSV file</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">world-cities</span> <span class="p">(</span><span class="n">df-read/csv</span> <span class="s2">"worldcities.csv"</span> <span class="kd">#:quoted-numbers?</span> <span class="no">#t</span><span class="p">))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; Load the world cities data from the CSV file</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">world-cities</span><span class="w"> </span><span class="p">(</span><span class="n">df-read/csv</span><span class="w"> </span><span class="s2">"worldcities.csv"</span><span class="w"> </span><span class="kd">#:quoted-numbers?</span><span class="w"> </span><span class="no">#t</span><span class="p">))</span><span class="w"></span>
 
-<span class="c1">;; A filter function to check for a city name:</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">((</span><span class="n">is-city?</span> <span class="n">name</span><span class="p">)</span> <span class="n">v</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span> <span class="n">v</span> <span class="mi">0</span><span class="p">)</span> <span class="n">name</span><span class="p">))</span>
+<span class="c1">;; A filter function to check for a city name:</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">((</span><span class="n">is-city?</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Equality.html#(def._((quote._~23~25kernel)._equal~3f))" style="color: inherit">equal?</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector-ref))" style="color: inherit">vector-ref</a></span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">name</span><span class="p">))</span><span class="w"></span>
 
-<span class="c1">;; Select the city name, country and latitude/longitude coordinates for a city:</span>
+<span class="c1">;; Select the city name, country and latitude/longitude coordinates for a city:</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">df-select*</span> <span class="n">world-cities</span> <span class="s2">"city"</span> <span class="s2">"country"</span> <span class="s2">"lat"</span> <span class="s2">"lng"</span> <span class="kd">#:filter</span> <span class="p">(</span><span class="n">is-city?</span> <span class="s2">"Perth"</span><span class="p">))</span>
+<span class="p">(</span><span class="n">df-select*</span><span class="w"> </span><span class="n">world-cities</span><span class="w"> </span><span class="s2">"city"</span><span class="w"> </span><span class="s2">"country"</span><span class="w"> </span><span class="s2">"lat"</span><span class="w"> </span><span class="s2">"lng"</span><span class="w"> </span><span class="kd">#:filter</span><span class="w"> </span><span class="p">(</span><span class="n">is-city?</span><span class="w"> </span><span class="s2">"Perth"</span><span class="p">))</span><span class="w"></span>
 
-<span class="c1">;; Produces: &#39;#(#("Perth" "Australia" -31.955 115.84)</span>
-<span class="c1">;;              #("Perth" "United Kingdom" 56.4003 -3.47))</span>
+<span class="c1">;; Produces: &#39;#(#("Perth" "Australia" -31.955 115.84)</span><span class="w"></span>
+<span class="c1">;;              #("Perth" "United Kingdom" 56.4003 -3.47))</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">df-select*</span> <span class="n">world-cities</span> <span class="s2">"city"</span> <span class="s2">"country"</span> <span class="s2">"lat"</span> <span class="s2">"lng"</span> <span class="kd">#:filter</span> <span class="p">(</span><span class="n">is-city?</span> <span class="s2">"New York"</span><span class="p">))</span>
-<span class="c1">;; Produces: &#39;#(#("New York" "United States" 40.6943 -73.9249))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="n">df-select*</span><span class="w"> </span><span class="n">world-cities</span><span class="w"> </span><span class="s2">"city"</span><span class="w"> </span><span class="s2">"country"</span><span class="w"> </span><span class="s2">"lat"</span><span class="w"> </span><span class="s2">"lng"</span><span class="w"> </span><span class="kd">#:filter</span><span class="w"> </span><span class="p">(</span><span class="n">is-city?</span><span class="w"> </span><span class="s2">"New York"</span><span class="p">))</span><span class="w"></span>
+<span class="c1">;; Produces: &#39;#(#("New York" "United States" 40.6943 -73.9249))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>From the two example cities above it should be evident that the city name alone is not necessarily unique so any lookup code must account for multiple matches.</p>
@@ -241,37 +245,38 @@
 <p>If you try out the map snip demos, it will quickly become evident one of the limitations of the REPL: each time a snip is displayed, DrRacket will create a copy of the snip to display, leaving the original as a separate object. This means that the program below will not do what you expect:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">map-widget</span> <span class="n">data-frame</span><span class="p">)</span>
-<span class="c1">;; Create a map snip, and bind it to a variable</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span> <span class="n">map-snip%</span><span class="p">))</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span>   <span class="c1">;; show the map in the REPL</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">map-widget</span><span class="w"> </span><span class="n">data-frame</span><span class="p">)</span><span class="w"></span>
+<span class="c1">;; Create a map snip, and bind it to a variable</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._new))" style="color: inherit">new</a></span><span class="w"> </span><span class="n">map-snip%</span><span class="p">))</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w">   </span><span class="c1">;; show the map in the REPL</span><span class="w"></span>
 
-<span class="c1">;; Load a data track and add it to the displayed map</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">track</span> <span class="p">(</span><span class="n">df-select*</span> <span class="n">df</span> <span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span> <span class="n">add-track</span> <span class="n">track</span><span class="p">)</span>
+<span class="c1">;; Load a data track and add it to the displayed map</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="p">(</span><span class="n">df-read/gpx</span><span class="w"> </span><span class="s2">"tarn-shelf.gpx"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">track</span><span class="w"> </span><span class="p">(</span><span class="n">df-select*</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="s2">"lat"</span><span class="w"> </span><span class="s2">"lon"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="n">add-track</span><span class="w"> </span><span class="n">track</span><span class="p">)</span><span class="w"></span>
 
-<span class="c1">;; The original map is not updated with the track!</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="c1">;; The original map is not updated with the track!</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The reason for this, is that the map shown in the REPL is actually a copy of the <code>map</code> snip defined earlier and since the original is updated, the copy remains unchanged. Essentially, DrRacket allows either the program or the user to interact with the snips in the REPL &mdash; and there are good reasons for that &mdash; but we can work around this limitation: the video below shows a re-work of the original <a href="/2018/06/racket-map-widget.html">map-widget demo</a>, where the elevation plot is linked to the map snips displayed inside the REPL, showing the location on the map for a position on the elevation plot:</p>
@@ -282,63 +287,65 @@
 <p>The above code works by defining a class derived from <code>map-snip%</code>, which keeps track of all the copies in a global <code>all-map-snips</code> variable:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">all-map-snips</span> <span class="o">'</span><span class="p">())</span>  <span class="c1">;; a list of all the map snips shown in the REPL</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">all-map-snips</span><span class="w"> </span><span class="o">'</span><span class="p">())</span><span class="w">  </span><span class="c1">;; a list of all the map snips shown in the REPL</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">cmap-snip%</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span> <span class="n">map-snip%</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span>
-    <span class="c1">;; Override copy and add the copy to the `all-map-snips&#39; list before</span>
-    <span class="c1">;; returning it.</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span> <span class="p">(</span><span class="n">copy</span><span class="p">)</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">c</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span> <span class="n">copy</span><span class="p">))</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span> <span class="n">all-map-snips</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">c</span> <span class="n">all-map-snips</span><span class="p">))</span>
-      <span class="n">c</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">cmap-snip%</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._class))" style="color: inherit">class</a></span><span class="w"> </span><span class="n">map-snip%</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._init))" style="color: inherit">init</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/objcreation.html#(form._((lib._racket/private/class-internal..rkt)._super-new))" style="color: inherit">super-new</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; Override copy and add the copy to the `all-map-snips&#39; list before</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; returning it.</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._define/override))" style="color: inherit">define/override</a></span><span class="w"> </span><span class="p">(</span><span class="n">copy</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/createclass.html#(form._((lib._racket/private/class-internal..rkt)._super))" style="color: inherit">super</a></span><span class="w"> </span><span class="n">copy</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/set_.html#(form._((quote._~23~25kernel)._set!))" style="color: inherit">set!</a></span><span class="w"> </span><span class="n">all-map-snips</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="n">all-map-snips</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="n">c</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The functions that update the current location will than update the location on all the map snips in <code>all-map-snips</code>, rather than on the first map snip that was created.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">df</span> <span class="p">(</span><span class="n">df-read/gpx</span> <span class="s2">"mt clarence.gpx"</span><span class="p">))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="p">(</span><span class="n">df-read/gpx</span><span class="w"> </span><span class="s2">"mt clarence.gpx"</span><span class="p">))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">put-current-location</span> <span class="n">dst</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span> <span class="p">(</span><span class="n">df-lookup</span> <span class="n">df</span> <span class="s2">"dst"</span> <span class="o">'</span><span class="p">(</span><span class="s2">"lat"</span> <span class="s2">"lon"</span><span class="p">)</span> <span class="n">dst</span><span class="p">)])</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">m</span> <span class="n">all-map-snips</span><span class="p">])</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">m</span> <span class="n">current-location</span> <span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">clear-current-location</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">m</span> <span class="n">all-map-snips</span><span class="p">])</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span> <span class="n">m</span> <span class="n">current-location</span> <span class="no">#f</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">put-current-location</span><span class="w"> </span><span class="n">dst</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="w"> </span><span class="p">(</span><span class="n">df-lookup</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="s2">"dst"</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="s2">"lat"</span><span class="w"> </span><span class="s2">"lon"</span><span class="p">)</span><span class="w"> </span><span class="n">dst</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">m</span><span class="w"> </span><span class="n">all-map-snips</span><span class="p">])</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">current-location</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">))))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">clear-current-location</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">m</span><span class="w"> </span><span class="n">all-map-snips</span><span class="p">])</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/ivaraccess.html#(form._((lib._racket/private/class-internal..rkt)._send))" style="color: inherit">send</a></span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">current-location</span><span class="w"> </span><span class="no">#f</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>This type of interaction is specific to the example in the video, and any user program which needs to interact with snips in the REPL will need to devise a strategy which deals with the fact that snips are copied before being displayed &mdash; an obvious limitation of the example above is that all map snips are linked to the plot, and if you want to have other map snips which show a different area, a new strategy will need to be devised for dealing with these copies.</p>
@@ -376,28 +383,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

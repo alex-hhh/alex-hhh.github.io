@@ -108,53 +108,55 @@
 <p><a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a> stores times for activities as UTC seconds, which is are integers representing the number of seconds since January 1st 1970. The Racket libraries can convert this into a <code><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date))" style="color: inherit">date</a></code> structure using <code><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></code>. This conversion can be done in two ways: either show the UTC time or the local time on the computer where the code runs:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">now</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-seconds))" style="color: inherit">current-seconds</a></span><span class="p">))</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">now</span>
-<span class="mi">1571464832</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span> <span class="n">now</span> <span class="no">#f</span><span class="p">)</span>
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span> <span class="mi">32</span> <span class="mi">0</span> <span class="mi">6</span> <span class="mi">19</span> <span class="mi">10</span> <span class="mi">2019</span> <span class="mi">6</span> <span class="mi">291</span> <span class="no">#f</span> <span class="mi">0</span> <span class="mi">0</span> <span class="s2">"UTC"</span><span class="p">)</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span> <span class="n">now</span> <span class="no">#t</span><span class="p">)</span>
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span> <span class="mi">32</span> <span class="mi">0</span> <span class="mi">14</span> <span class="mi">19</span> <span class="mi">10</span> <span class="mi">2019</span> <span class="mi">6</span> <span class="mi">291</span> <span class="no">#f</span> <span class="mi">28800</span> <span class="mi">0</span> <span class="s2">"W. Australia Standard Time"</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._current-seconds))" style="color: inherit">current-seconds</a></span><span class="p">))</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="n">now</span><span class="w"></span>
+<span class="mi">1571464832</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span><span class="w"> </span><span class="mi">32</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">2019</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">291</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="s2">"UTC"</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span><span class="w"> </span><span class="mi">32</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">2019</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">291</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="mi">28800</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="s2">"W. Australia Standard Time"</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>In the example above, the same number, 1571464832, can be converted to show either 6am in UTC or 2pm in Western Australia where I run the code. There is no built-in way to use the local time in another place, such as Auckland. We can however use the <a href="https://pkgs.racket-lang.org/package/tzinfo">tzinfo</a> package to determine the timezone offset for another time zone, such as &ldquo;Pacific/Auckland&rdquo;, apply the offset to the time stamp than convert it to a date structure. All this would show us that it is 7pm in Auckland as I write this:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">tzinfo</span><span class="p">)</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">utc-seconds-&gt;tzoffset</span> <span class="s2">"Pacific/Auckland"</span> <span class="n">now</span><span class="p">)</span>
-<span class="p">(</span><span class="n">tzoffset</span> <span class="mi">46800</span> <span class="no">#t</span> <span class="s2">"NZDT"</span><span class="p">)</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">now</span> <span class="mi">46800</span><span class="p">)</span> <span class="no">#f</span><span class="p">)</span>
-<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span> <span class="mi">32</span> <span class="mi">0</span> <span class="mi">19</span> <span class="mi">19</span> <span class="mi">10</span> <span class="mi">2019</span> <span class="mi">6</span> <span class="mi">291</span> <span class="no">#f</span> <span class="mi">0</span> <span class="mi">0</span> <span class="s2">"UTC"</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">tzinfo</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">utc-seconds-&gt;tzoffset</span><span class="w"> </span><span class="s2">"Pacific/Auckland"</span><span class="w"> </span><span class="n">now</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">tzoffset</span><span class="w"> </span><span class="mi">46800</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="s2">"NZDT"</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((quote._~23~25kernel)._seconds-~3edate))" style="color: inherit">seconds-&gt;date</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="mi">46800</span><span class="p">)</span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/time.html#(def._((lib._racket/private/base..rkt)._date*))" style="color: inherit">date*</a></span><span class="w"> </span><span class="mi">32</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">2019</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">291</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="s2">"UTC"</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>It is perhaps worth clarifying that a time zone name such as &ldquo;Pacific/Auckland&rdquo; refers to a set of rules for determining the local time, and we need to call <code>utc-seconds-&gt;tzoffset</code> for every time stamp, as the offset itself might be different during daylight saving.</p>
@@ -170,21 +172,22 @@
 <p>I could have just copied the implementation of one of these libraries, the <a href="https://github.com/darkskyapp/tz-lookup">tz-lookup</a> one in particular is relatively simple, but instead I decided to try to understand the underlying mechanism for determining a time zone from latitude and longitude so I came up with my own implementation. After several failed starts, which I kept to myself, I produced the <a href="https://pkgs.racket-lang.org/package/tzgeolookup">tzgeolookup</a> package along with a few blog posts describing how it works, <a href="/2019/08/timezone-lookup.html">here</a>, <a href="/2019/08/timezone-lookup-2.html">here</a> and <a href="/2019/05/timezone-visualization.html">here</a>. The end result is that I now have a function which can determine the time zone from a GPS coordinate and this can be used to determine the time zone when an activity is imported.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">tzgeolookup</span><span class="p">)</span>
-<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="p">(</span><span class="n">lookup-timezone</span> <span class="mf">-45.06357632</span>	<span class="mf">168.8221158</span><span class="p">)</span>
-<span class="s2">"Pacific/Auckland"</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">tzgeolookup</span><span class="p">)</span><span class="w"></span>
+<span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">lookup-timezone</span><span class="w"> </span><span class="mf">-45.06357632</span><span class="w">	</span><span class="mf">168.8221158</span><span class="p">)</span><span class="w"></span>
+<span class="s2">"Pacific/Auckland"</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="database-schema-updates">Database schema updates</h2>
@@ -194,39 +197,40 @@
 <p>The session information is stored in a <a href="https://sqlite.org/index.html">SQLite</a> database, so I needed to (1) update the database schema and (2) ensure that databases already created using previous versions are upgraded as needed. Since this is not the first time I had to update the database schema, this process is fairly mature by now: the <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/sql/db-schema.sql">main database schema</a> was updated to add a time zone to the <code>A_SESSION</code> table and a <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/sql/migrations/p32-time-zone.sql">migration script</a> was written to update an existing database to the new version and registered with the application:</p>
 
 <div class="brush: sql">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="k">create</span> <span class="k">table</span> <span class="n">E_TIME_ZONE</span><span class="p">(</span>
-  <span class="n">id</span> <span class="nb">integer</span> <span class="k">not</span> <span class="k">null</span> <span class="k">primary</span> <span class="k">key</span> <span class="n">autoincrement</span><span class="p">,</span>
-  <span class="n">name</span> <span class="nb">text</span> <span class="k">unique</span> <span class="k">not</span> <span class="k">null</span><span class="p">);</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="w"></span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="k">primary</span><span class="w"> </span><span class="k">key</span><span class="w"> </span><span class="n">autoincrement</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">unique</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">);</span><span class="w"></span>
 
-<span class="k">create</span> <span class="k">unique</span> <span class="k">index</span> <span class="n">IX0_E_TIME_ZONE</span> <span class="k">on</span> <span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="k">create</span><span class="w"> </span><span class="k">unique</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="n">IX0_E_TIME_ZONE</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
 
-<span class="k">insert</span> <span class="k">into</span> <span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-<span class="k">values</span> <span class="p">(</span><span class="s1">&#39;Africa/Abidjan&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Africa/Accra&#39;</span><span class="p">),</span> <span class="p">...;</span> <span class="c1">-- all time zones listed here</span>
+<span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Africa/Abidjan&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Africa/Accra&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">...;</span><span class="w"> </span><span class="c1">-- all time zones listed here</span>
 
-<span class="k">alter</span> <span class="k">table</span> <span class="n">A_SESSION</span> <span class="k">add</span> <span class="n">time_zone_id</span> <span class="nb">integer</span> <span class="k">references</span> <span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">id</span><span class="p">);</span>
+<span class="k">alter</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">A_SESSION</span><span class="w"> </span><span class="k">add</span><span class="w"> </span><span class="n">time_zone_id</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">references</span><span class="w"> </span><span class="n">E_TIME_ZONE</span><span class="p">(</span><span class="n">id</span><span class="p">);</span><span class="w"></span>
 
-<span class="k">update</span> <span class="n">SCHEMA_VERSION</span> <span class="k">set</span> <span class="k">version</span> <span class="o">=</span> <span class="mi">32</span><span class="p">;</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="k">update</span><span class="w"> </span><span class="n">SCHEMA_VERSION</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="k">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="p">;</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Rather than storing the time zone by name in the <code>A_SESSION</code> table, a separate table <code>E_TIME_ZONE</code> is used to store the time zone names and the <code>A_SESSION</code> table references these using a foreign key. This design makes selection queries more complex, but it tries to minimize the chance that a non-existent time zone is stored in the database: a non-existent time zone cannot be just inserted into the <code>A_SESSION</code> table, instead the <code>E_TIME_ZONE</code> table has to be updated first.</p>
@@ -238,83 +242,85 @@
 <p>Rather than spending even more time on implementing a Racket migration mechanism, I opted for the simpler route of providing an &ldquo;Update time zones&hellip;&rdquo; tool, available in the Tools menu, which runs the update code on all activities in the database. The code is small and simple: an SQL query retrieves the list of sessions which have GPS information, along with the coordinates of their start location:</p>
 
 <div class="brush: sql">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="k">select</span> <span class="n">P</span><span class="p">.</span><span class="n">session_id</span><span class="p">,</span>
-       <span class="n">T</span><span class="p">.</span><span class="n">position_lat</span> <span class="k">as</span> <span class="n">lat</span><span class="p">,</span>
-       <span class="n">T</span><span class="p">.</span><span class="n">position_long</span> <span class="k">as</span> <span class="n">lon</span>
- <span class="k">from</span> <span class="n">A_TRACKPOINT</span> <span class="n">T</span><span class="p">,</span> <span class="n">A_LENGTH</span> <span class="n">L</span><span class="p">,</span> <span class="n">A_LAP</span> <span class="n">P</span>
-<span class="k">where</span> <span class="n">T</span><span class="p">.</span><span class="n">length_id</span> <span class="o">=</span> <span class="n">L</span><span class="p">.</span><span class="n">id</span>
-  <span class="k">and</span> <span class="n">L</span><span class="p">.</span><span class="n">lap_id</span> <span class="o">=</span> <span class="n">P</span><span class="p">.</span><span class="n">id</span>
-  <span class="k">and</span> <span class="n">T</span><span class="p">.</span><span class="n">position_lat</span> <span class="k">is</span> <span class="k">not</span> <span class="k">null</span>
-  <span class="k">and</span> <span class="n">T</span><span class="p">.</span><span class="n">position_long</span> <span class="k">is</span> <span class="k">not</span> <span class="k">null</span>
-<span class="k">group</span> <span class="k">by</span> <span class="n">P</span><span class="p">.</span><span class="n">session_id</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">select</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">session_id</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="n">T</span><span class="p">.</span><span class="n">position_lat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">lat</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="n">T</span><span class="p">.</span><span class="n">position_long</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">lon</span><span class="w"></span>
+<span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">A_TRACKPOINT</span><span class="w"> </span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">A_LENGTH</span><span class="w"> </span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="n">A_LAP</span><span class="w"> </span><span class="n">P</span><span class="w"></span>
+<span class="k">where</span><span class="w"> </span><span class="n">T</span><span class="p">.</span><span class="n">length_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">L</span><span class="p">.</span><span class="n">id</span><span class="w"></span>
+<span class="w">  </span><span class="k">and</span><span class="w"> </span><span class="n">L</span><span class="p">.</span><span class="n">lap_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">id</span><span class="w"></span>
+<span class="w">  </span><span class="k">and</span><span class="w"> </span><span class="n">T</span><span class="p">.</span><span class="n">position_lat</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"></span>
+<span class="w">  </span><span class="k">and</span><span class="w"> </span><span class="n">T</span><span class="p">.</span><span class="n">position_long</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"></span>
+<span class="k">group</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">session_id</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>A small racket program iterates over the result set from this query, determines the time zone using <code>lookup-timezone</code> and updates the <code>A_SESSION</code> table:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="c1">;; Prepare a hash to map timezone names to their id</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">tzids</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/hash))" style="color: inherit">for/hash</a></span> <span class="p">([</span><span class="n">data</span> <span class="p">(</span><span class="n">query-rows</span> <span class="n">database</span> <span class="s2">"select id, name from E_TIME_ZONE"</span><span class="p">)])</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span> <span class="n">name</span><span class="p">)</span> <span class="n">data</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span> <span class="n">name</span> <span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;; Prepare a hash to map timezone names to their id</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">tzids</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/hash))" style="color: inherit">for/hash</a></span><span class="w"> </span><span class="p">([</span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="n">query-rows</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="s2">"select id, name from E_TIME_ZONE"</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">session-data</span> <span class="p">(</span><span class="n">query-rows</span> <span class="n">database</span> <span class="s2">"***SQL QUERY HERE***"</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span> <span class="p">([</span><span class="n">data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">session-data</span><span class="p">)])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">sid</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)</span> <span class="n">data</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">timezone</span> <span class="p">(</span><span class="n">lookup-timezone</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">timezone</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">tzid</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">tzids</span> <span class="n">timezone</span> <span class="no">#f</span><span class="p">)])</span>
-        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">tzid</span>
-            <span class="p">(</span><span class="n">query-exec</span> <span class="n">database</span> <span class="s2">"update A_SESSION <a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a> time_zone_id <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> ? where <a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a> <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> ?"</span> <span class="n">tzid</span> <span class="n">sid</span><span class="p">)</span>
-            <span class="c1">;; This might indicate that the time zones in E_TIME_ZONE are</span>
-            <span class="c1">;; outdated and need updating...</span>
-            <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"Could <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> find E_TIME_ZONE.id <a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a> <a href="http://docs.racket-lang.org/reference/time.html#(form._((lib._racket/private/more-scheme..rkt)._time))" style="color: inherit">time</a> zone ~a"</span> <span class="n">timezone</span><span class="p">)))</span>
-      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"Could <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> find timezone <a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a> <a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a> lat <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> lon ~a"</span> <span class="n">lat</span> <span class="n">lon</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">session-data</span><span class="w"> </span><span class="p">(</span><span class="n">query-rows</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="s2">"***SQL QUERY HERE***"</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">session-data</span><span class="p">)])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">sid</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">timezone</span><span class="w"> </span><span class="p">(</span><span class="n">lookup-timezone</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">timezone</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">tzid</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">tzids</span><span class="w"> </span><span class="n">timezone</span><span class="w"> </span><span class="no">#f</span><span class="p">)])</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">tzid</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">query-exec</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="s2">"update A_SESSION <a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a> time_zone_id <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> ? where <a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a> <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> ?"</span><span class="w"> </span><span class="n">tzid</span><span class="w"> </span><span class="n">sid</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="c1">;; This might indicate that the time zones in E_TIME_ZONE are</span><span class="w"></span>
+<span class="w">            </span><span class="c1">;; outdated and need updating...</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span><span class="w"> </span><span class="s2">"Could <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> find E_TIME_ZONE.id <a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a> <a href="http://docs.racket-lang.org/reference/time.html#(form._((lib._racket/private/more-scheme..rkt)._time))" style="color: inherit">time</a> zone ~a"</span><span class="w"> </span><span class="n">timezone</span><span class="p">)))</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span><span class="w"> </span><span class="s2">"Could <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> find timezone <a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a> <a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a> lat <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> lon ~a"</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The application already had a mechanism of running a batch task against the database, together with a progress bar and a mechanism to cancel the jobs, so it was easy to add this upgrade code to the application GUI:</p>
@@ -349,24 +355,25 @@
 <p>The solution was to add all dependent packages as git submodules to the source repository of the application, and let git manage the versions of these packages. During the build, a new package catalog is created using the <code>pkg/dirs-catalog</code> command, and this is added to the list of package catalogs:</p>
 
 <div class="brush: sh">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="c1"># Go to the direcory containing the packages</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1"># Go to the direcory containing the packages</span>
 <span class="nb">cd</span> pkgs
 <span class="c1"># Index the directory as a package catalog</span>
 racket -l- pkg/dirs-catalog --link catalog .
@@ -376,8 +383,8 @@ racket -l- pkg/dirs-catalog --link catalog .
 raco pkg config catalogs &gt;&gt; ./catalogs-locations.txt
 <span class="c1"># Set the new list of catalog locations (note that the pkgs catalog is first)</span>
 raco pkg config --set catalogs <span class="sb">`</span>cat ./catalog-locations.txt<span class="sb">`</span>
-</pre></div>
-</td></tr></tbody></table>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The actual <strong>script</strong> run by the build is a bit more complex, but once the catalog is set up, the packages can be installed using:</p>
@@ -422,28 +429,6 @@ raco pkg config --set catalogs <span class="sb">`</span>cat ./catalog-locations.
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

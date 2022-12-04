@@ -106,71 +106,74 @@
 <p>To keep things simple, we&rsquo;ll approximate the Earth using a sphere of radius of 1, since the plot package does not really care what the radius of Earth is. The <code>lat-lng-&gt;unit-vector</code> function will convert a latitude/longitude coordinate into a 3D point on the unit sphere representing the earth, it is simply a wrapper around the <a href="https://docs.racket-lang.org/plot/utils.html#%28def._%28%28lib._plot%2Futils..rkt%29._3d-polar-~3e3d-cartesian%29%29">3d-polar-&gt;3d-cartesian</a> function from the <code>plot/utils</code> package, since that function works with radians, and geographic coordinates are supplied in degrees:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">plot</span> <span class="n">plot/utils</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">plot</span><span class="w"> </span><span class="n">plot/utils</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span> <span class="n">lat</span> <span class="n">lng</span><span class="p">)</span>
- <span class="p">(</span><span class="n">3d-polar-&gt;3d-cartesian</span> 
-   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._degrees-~3eradians))" style="color: inherit">degrees-&gt;radians</a></span> <span class="n">lng</span><span class="p">)</span>
-   <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._degrees-~3eradians))" style="color: inherit">degrees-&gt;radians</a></span> <span class="n">lat</span><span class="p">)</span>
-   <span class="mi">1</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lng</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">3d-polar-&gt;3d-cartesian</span><span class="w"> </span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._degrees-~3eradians))" style="color: inherit">degrees-&gt;radians</a></span><span class="w"> </span><span class="n">lng</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._degrees-~3eradians))" style="color: inherit">degrees-&gt;radians</a></span><span class="w"> </span><span class="n">lat</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="mi">1</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>To verify that the function works as expected, we can try plotting some shape that is easy to recognize and see if they look correct. I choose to plot meridians, which are arcs on the sphere for the same longitude. The <code>meridian</code> function constructs a list of 3d points with a constant longitude, and constructs a <a href="https://docs.racket-lang.org/plot/renderer3d.html#%28def._%28%28lib._plot%2Fmain..rkt%29._lines3d%29%29">lines3d</a> renderer from these points:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">meridian</span> <span class="n">lng</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">points</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">lat</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="mf">-90.0</span> <span class="mf">90.0</span> <span class="mf">5.0</span><span class="p">)])</span>
-      <span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span> <span class="n">lat</span> <span class="n">lng</span><span class="p">)))</span>
-  <span class="p">(</span><span class="n">lines3d</span> <span class="n">points</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">meridian</span><span class="w"> </span><span class="n">lng</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">points</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">lat</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mf">-90.0</span><span class="w"> </span><span class="mf">90.0</span><span class="w"> </span><span class="mf">5.0</span><span class="p">)])</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lng</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">lines3d</span><span class="w"> </span><span class="n">points</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>A renderer produced by <code>meridian</code> can be passed to <a href="https://docs.racket-lang.org/plot/plotting.html#%28def._%28%28lib._plot%2Fmain..rkt%29._plot3d%29%29">plot3d</a> to be displayed, but we can also construct a list of these meridians to circle the entire sphere. The <code>plot3d</code> function can plot a list of renderers:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot3d</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">lng</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="mi">-180</span> <span class="mi">180</span> <span class="mi">20</span><span class="p">)])</span>
-          <span class="p">(</span><span class="n">meridian</span> <span class="n">lng</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot3d</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">lng</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">-180</span><span class="w"> </span><span class="mi">180</span><span class="w"> </span><span class="mi">20</span><span class="p">)])</span><span class="w"></span>
+<span class="w">          </span><span class="p">(</span><span class="n">meridian</span><span class="w"> </span><span class="n">lng</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>If you type the above command in the DrRacket repl, the resulting plot can be rotated using the mouse, but here is an image of what it looks like:</p>
@@ -181,45 +184,47 @@
 <p>The meridian lines in the previous plot make the outline of a sphere, but this might be difficult to see, since the plot package will not apply shading to the 3d lines and this reduces the depth perception. To help with that, we can add an actual sphere to the plot, which can be rendered using the <a href="https://docs.racket-lang.org/plot/renderer3d.html#%28def._%28%28lib._plot%2Fmain..rkt%29._polar3d%29%29">polar3d</a> renderer, specifying a function which simply returns 1 (the radius of the sphere), and also adds a color and some transparency to it:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">unit-sphere</span>
-  <span class="p">(</span><span class="n">polar3d</span> <span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span> <span class="p">(</span><span class="n">θ</span> <span class="n">ϕ</span><span class="p">)</span> <span class="mf">1.0</span><span class="p">)</span>
-           <span class="kd">#:color</span> <span class="s2">"navajowhite"</span>
-           <span class="kd">#:line-style</span> <span class="o">'</span><span class="ss">transparent</span>
-           <span class="kd">#:alpha</span> <span class="mf">0.9</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">unit-sphere</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">polar3d</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">θ</span><span class="w"> </span><span class="n">ϕ</span><span class="p">)</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"navajowhite"</span><span class="w"></span>
+<span class="w">           </span><span class="kd">#:line-style</span><span class="w"> </span><span class="o">'</span><span class="ss">transparent</span><span class="w"></span>
+<span class="w">           </span><span class="kd">#:alpha</span><span class="w"> </span><span class="mf">0.9</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The unit sphere can be added to the list of renderers for plotting, making the resulting plot easier to interpret. And, of course, running the code in DrRacket allows rotating the plot with the mouse:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot3d</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="n">unit-sphere</span> 
-              <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">lng</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span> <span class="mi">-180</span> <span class="mi">180</span> <span class="mi">20</span><span class="p">)])</span>
-                <span class="p">(</span><span class="n">meridian</span> <span class="n">lng</span><span class="p">))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot3d</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">unit-sphere</span><span class="w"> </span>
+<span class="w">              </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">lng</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">-180</span><span class="w"> </span><span class="mi">180</span><span class="w"> </span><span class="mi">20</span><span class="p">)])</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">meridian</span><span class="w"> </span><span class="n">lng</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <div class="figure"><img src="/img/a043/meridian2.gif" alt="" />
@@ -234,19 +239,20 @@
 <p>Once downloaded from the website, the data can be loaded using the Racket json library:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">json</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">world-data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span> <span class="s2">"./custom.geo.json"</span> <span class="n"><a href="http://docs.racket-lang.org/json/index.html#(def._((lib._json/main..rkt)._read-json))" style="color: inherit">read-json</a></span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">world-data</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._call-with-input-file))" style="color: inherit">call-with-input-file</a></span><span class="w"> </span><span class="s2">"./custom.geo.json"</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/json/index.html#(def._((lib._json/main..rkt)._read-json))" style="color: inherit">read-json</a></span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The data file, even at 600kb in size is to large to understand it just by opening it in a text editor or printing it in the DrRacket REPL. In <a href="/2019/05/timezone-visualization.html">another blog post</a> I showed how to load and inspect a large <a href="https://en.wikipedia.org/wiki/GeoJSON">GeoJSON</a> file by using a random sample of its contents, in this blog post, I&rsquo;ll just summarize the structure of the file. The JSON file also contains some other geographic information, which we don&rsquo;t use and will not be explained here.</p>
@@ -265,91 +271,94 @@
 <p>The <code>make-renderers</code> function will traverse each of the feature in the GeoJSON file, and construct a renderer for each of the Polygon or MultiPolygon construct inside it. It is a simple traversal of the nested hash and list structure of the object. The actual renderer is created by calling <code>make-polygon-renderer</code>, which is explained below.</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-renderers</span> <span class="n">world-map-data</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span>
-      <span class="p">([</span><span class="n">renderers</span> <span class="o">'</span><span class="p">()])</span>
-      <span class="p">([</span><span class="n">feature</span>  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">world-map-data</span> <span class="o">'</span><span class="ss">features</span><span class="p">))])</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">geometry</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">feature</span> <span class="o">'</span><span class="ss">geometry</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></span><span class="p">)))]</span>
-           <span class="p">[</span><span class="n">data</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">coordinates</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span><span class="p">))])</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">type</span> <span class="no">#f</span><span class="p">)</span>
-        <span class="p">((</span><span class="s2">"Polygon"</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">make-polygon-renderer</span> <span class="n">data</span><span class="p">)</span> <span class="n">renderers</span><span class="p">))</span>
-        <span class="p">((</span><span class="s2">"MultiPolygon"</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">polygon</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">data</span><span class="p">)])</span>
-                                  <span class="p">(</span><span class="n">make-polygon-renderer</span> <span class="n">polygon</span><span class="p">))</span>
-                                <span class="n">renderers</span><span class="p">))</span>
-        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span> <span class="s2">"Skipping <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> geometry"</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span> <span class="n">geometry</span> <span class="o">'</span><span class="ss">type</span> <span class="no">#f</span><span class="p">))</span>
-              <span class="n">renderers</span><span class="p">)))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">make-renderers</span><span class="w"> </span><span class="n">world-map-data</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span><span class="w"></span>
+<span class="w">      </span><span class="p">([</span><span class="n">renderers</span><span class="w"> </span><span class="o">'</span><span class="p">()])</span><span class="w"></span>
+<span class="w">      </span><span class="p">([</span><span class="n">feature</span><span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">world-map-data</span><span class="w"> </span><span class="o">'</span><span class="ss">features</span><span class="p">))])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span><span class="w"> </span><span class="p">([</span><span class="n">geometry</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="o">'</span><span class="ss">geometry</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash))" style="color: inherit">hash</a></span><span class="p">)))]</span><span class="w"></span>
+<span class="w">           </span><span class="p">[</span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">geometry</span><span class="w"> </span><span class="o">'</span><span class="ss">coordinates</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span><span class="p">))])</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">geometry</span><span class="w"> </span><span class="o">'</span><span class="ss">type</span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="s2">"Polygon"</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="p">(</span><span class="n">make-polygon-renderer</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="n">renderers</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="s2">"MultiPolygon"</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">polygon</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">data</span><span class="p">)])</span><span class="w"></span>
+<span class="w">                                  </span><span class="p">(</span><span class="n">make-polygon-renderer</span><span class="w"> </span><span class="n">polygon</span><span class="p">))</span><span class="w"></span>
+<span class="w">                                </span><span class="n">renderers</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._printf))" style="color: inherit">printf</a></span><span class="w"> </span><span class="s2">"Skipping <a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a> geometry"</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">geometry</span><span class="w"> </span><span class="o">'</span><span class="ss">type</span><span class="w"> </span><span class="no">#f</span><span class="p">))</span><span class="w"></span>
+<span class="w">              </span><span class="n">renderers</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Finally, the <code>make-polygon-renderer</code> function will construct a lines3d from a single polygon. What GeoJSON calls a &ldquo;polygon&rdquo; it is actually a collection of polygons, the first one is an outline of the area (such as the country boundary in our case), while the remaining polygons represent the &ldquo;holes&rdquo; in the first area. To keep things simple, <code>make-polygon-renderer</code> constructs a <a href="https://docs.racket-lang.org/plot/renderer3d.html#%28def._%28%28lib._plot%2Fmain..rkt%29._lines3d%29%29">lines3d</a> renderer for each of these polygons:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-polygon-renderer</span> <span class="n">polygons</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span> <span class="p">([</span><span class="n">renderers</span> <span class="o">'</span><span class="p">()])</span>
-            <span class="p">([</span><span class="n">polygon</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">polygons</span><span class="p">)]</span> <span class="kd">#:unless</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span> <span class="n">polygon</span><span class="p">))</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">points</span>
-      <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">point</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-sequences))" style="color: inherit">in-sequences</a></span>
-                         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">polygon</span><span class="p">)</span>
-                         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-value))" style="color: inherit">in-value</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">polygon</span><span class="p">)))])</span>
-        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">lng</span> <span class="n">lat</span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span> <span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span> <span class="n">point</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span> <span class="n">lat</span> <span class="n">lng</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span> <span class="p">(</span><span class="n">lines3d</span> <span class="n">points</span><span class="p">)</span> <span class="n">renderers</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">make-polygon-renderer</span><span class="w"> </span><span class="n">polygons</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span><span class="w"> </span><span class="p">([</span><span class="n">renderers</span><span class="w"> </span><span class="o">'</span><span class="p">()])</span><span class="w"></span>
+<span class="w">            </span><span class="p">([</span><span class="n">polygon</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">polygons</span><span class="p">)]</span><span class="w"> </span><span class="kd">#:unless</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null~3f))" style="color: inherit">null?</a></span><span class="w"> </span><span class="n">polygon</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">points</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">point</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-sequences))" style="color: inherit">in-sequences</a></span><span class="w"></span>
+<span class="w">                         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">polygon</span><span class="p">)</span><span class="w"></span>
+<span class="w">                         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-value))" style="color: inherit">in-value</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">polygon</span><span class="p">)))])</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="n">lng</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span><span class="w"> </span><span class="n">point</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">lat-lng-&gt;unit-vector</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lng</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="p">(</span><span class="n">lines3d</span><span class="w"> </span><span class="n">points</span><span class="p">)</span><span class="w"> </span><span class="n">renderers</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>And that&rsquo;s all it takes to create the plot: start with the unit sphere and add the line renderers on top:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot3d</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">unit-sphere</span> <span class="p">(</span><span class="n">make-renderers</span> <span class="n">world-data</span><span class="p">)))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot3d</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="n">unit-sphere</span><span class="w"> </span><span class="p">(</span><span class="n">make-renderers</span><span class="w"> </span><span class="n">world-data</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <div class="figure"><img src="/img/a043/world.gif" alt="" />
@@ -384,28 +393,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>

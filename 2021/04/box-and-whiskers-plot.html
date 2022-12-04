@@ -106,75 +106,77 @@
 <p>To model real-world measurements, need to draw random numbers from a <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. Racket provides facilities for working with <a href="https://docs.racket-lang.org/math/Real_Distribution_Families.html">distributions</a>, and, to create a set of points following a random distribution, we need to construct a distribution object and sample it:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">math/distribution</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">math/distribution</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">mean</span> <span class="mi">2</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">stddev</span> <span class="mi">5</span><span class="p">)</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-distribution</span> <span class="p">(</span><span class="n">normal-dist</span> <span class="n">mean</span> <span class="n">stddev</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-samples</span> <span class="p">(</span><span class="n">sample</span> <span class="n">the-distribution</span> <span class="mi">100</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">stddev</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-distribution</span><span class="w"> </span><span class="p">(</span><span class="n">normal-dist</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="n">stddev</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-samples</span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="w"> </span><span class="n">the-distribution</span><span class="w"> </span><span class="mi">100</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The above code will create a normal distribution with a mean of 2 and a standard deviation of 5 and 100 random points are sampled from this distribution. We can easily verify that the points actually follow the normal distribution using a plot:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">gaussian</span> <span class="n">μ</span> <span class="n">σ</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">sqrt-2π</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sqrt))" style="color: inherit">sqrt</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="mi">2</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="mi">1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">σ</span> <span class="n">sqrt-2π</span><span class="p">))</span>
-       <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._exp))" style="color: inherit">exp</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="m">-1/2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">μ</span><span class="p">)</span> <span class="n">σ</span><span class="p">)</span> <span class="mi">2</span><span class="p">))))))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">gaussian</span><span class="w"> </span><span class="n">μ</span><span class="w"> </span><span class="n">σ</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">sqrt-2π</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sqrt))" style="color: inherit">sqrt</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((lib._racket/math..rkt)._pi))" style="color: inherit">pi</a></span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">σ</span><span class="w"> </span><span class="n">sqrt-2π</span><span class="p">))</span><span class="w"></span>
+<span class="w">       </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._exp))" style="color: inherit">exp</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="m">-1/2</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">μ</span><span class="p">)</span><span class="w"> </span><span class="n">σ</span><span class="p">)</span><span class="w"> </span><span class="mi">2</span><span class="p">))))))</span><span class="w"></span>
+<span class="w">       </span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-pen-color-map</span><span class="w"> </span><span class="o">'</span><span class="ss">tab10</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-x-label</span><span class="w">       </span><span class="no">#f</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-y-label</span><span class="w">       </span><span class="no">#f</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-y-ticks</span><span class="w">       </span><span class="n">no-ticks</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-legend-anchor</span><span class="w"> </span><span class="o">'</span><span class="ss">outside-top-left</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-legend-layout</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="ss">rows</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="ss">compact</span><span class="p">)])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n">vrule</span><span class="w"> </span><span class="n">mean</span><span class="w">                      </span><span class="kd">#:width</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"μ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 2"</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="p">(</span><span class="n">gaussian</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="n">stddev</span><span class="p">)</span><span class="w"> </span><span class="kd">#:width</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"μ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 2, σ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 5"</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">(</span><span class="n">density</span><span class="w"> </span><span class="n">the-samples</span><span class="w">             </span><span class="kd">#:width</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"samples"</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="kd">#:width</span><span class="w"> </span><span class="mi">800</span><span class="w"> </span><span class="kd">#:height</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-30</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">+30</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">tab10</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-x-label</span>       <span class="no">#f</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-y-label</span>       <span class="no">#f</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-y-ticks</span>       <span class="n">no-ticks</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-legend-anchor</span> <span class="o">'</span><span class="ss">outside-top-left</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-legend-layout</span> <span class="o">'</span><span class="p">(</span><span class="ss">rows</span> <span class="mi">1</span> <span class="ss">compact</span><span class="p">)])</span>
-  <span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
-         <span class="p">(</span><span class="n">vrule</span> <span class="n">mean</span>                      <span class="kd">#:width</span> <span class="mi">2</span> <span class="kd">#:color</span> <span class="mi">1</span> <span class="kd">#:label</span> <span class="s2">"μ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 2"</span><span class="p">)</span>
-         <span class="p">(</span><span class="n">function</span> <span class="p">(</span><span class="n">gaussian</span> <span class="n">mean</span> <span class="n">stddev</span><span class="p">)</span> <span class="kd">#:width</span> <span class="mi">4</span> <span class="kd">#:color</span> <span class="mi">0</span> <span class="kd">#:label</span> <span class="s2">"μ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 2, σ <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a> 5"</span><span class="p">)</span>
-         <span class="p">(</span><span class="n">density</span> <span class="n">the-samples</span>             <span class="kd">#:width</span> <span class="mi">4</span> <span class="kd">#:color</span> <span class="mi">3</span> <span class="kd">#:label</span> <span class="s2">"samples"</span><span class="p">))</span>
-        <span class="kd">#:width</span> <span class="mi">800</span> <span class="kd">#:height</span> <span class="mi">300</span> <span class="kd">#:x-min</span> <span class="mi">-30</span> <span class="kd">#:x-max</span> <span class="mi">+30</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
 </div>
 
 <div class="figure"><img src="/img/a047/samples.svg" alt="" />
@@ -192,31 +194,32 @@
 <p>Wikipedia provides a detailed description on the <a href="https://en.wikipedia.org/wiki/Quantile">quantiles</a>, but, since here we are only interested in plotting some data, we&rsquo;ll just use a simplified definition that a quantile represents a value from the data which is higher than a percentage of the rest of the values (e.g. the 75% quantile represents the value which is higher than 75% of all the points in the data set). We don&rsquo;t even need to worry about determining these quantiles, since Racket provides a <a href="https://docs.racket-lang.org/math/stats.html#%28def._%28%28lib._math%2Fstatistics..rkt%29._quantile%29%29">quantile</a> function for this purpose:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span> <span class="n">math/distribution</span> <span class="n">math/statistics</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">math/distribution</span><span class="w"> </span><span class="n">math/statistics</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-distribution</span> <span class="p">(</span><span class="n">normal-dist</span> <span class="mi">2</span> <span class="mi">5</span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-samples</span> <span class="p">(</span><span class="n">sample</span> <span class="n">the-distribution</span> <span class="mi">100</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-distribution</span><span class="w"> </span><span class="p">(</span><span class="n">normal-dist</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">5</span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-samples</span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="w"> </span><span class="n">the-distribution</span><span class="w"> </span><span class="mi">100</span><span class="p">))</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">quantile</span> <span class="mf">0.25</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">the-samples</span><span class="p">)</span> <span class="c1">;; =&gt; -1.3059228859987178</span>
-<span class="p">(</span><span class="n">quantile</span> <span class="mf">0.5</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">the-samples</span><span class="p">)</span>  <span class="c1">;; =&gt; 2.100636503124511</span>
-<span class="p">(</span><span class="n">quantile</span> <span class="mf">0.75</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">the-samples</span><span class="p">)</span> <span class="c1">;; =&gt; 4.959056403217783</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.25</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">the-samples</span><span class="p">)</span><span class="w"> </span><span class="c1">;; =&gt; -1.3059228859987178</span><span class="w"></span>
+<span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">the-samples</span><span class="p">)</span><span class="w">  </span><span class="c1">;; =&gt; 2.100636503124511</span><span class="w"></span>
+<span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.75</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">the-samples</span><span class="p">)</span><span class="w"> </span><span class="c1">;; =&gt; 4.959056403217783</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Note that, if you run the example above, it will produce different values each time, since the samples are random.</p>
@@ -230,61 +233,62 @@
 <p>Finally, the outlier points are determined as the values from the data set which are outside the lower-upper whisker range:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span> <span class="n">bnw-data</span>
-  <span class="p">(</span><span class="n">q1</span> <span class="n">median</span> <span class="n">q3</span> <span class="n">lower-whisker</span> <span class="n">uppwer-whisker</span> <span class="n">outliers</span><span class="p">)</span>
-  <span class="kd">#:transparent</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">bnw-data</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">q1</span><span class="w"> </span><span class="n">median</span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="n">lower-whisker</span><span class="w"> </span><span class="n">uppwer-whisker</span><span class="w"> </span><span class="n">outliers</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kd">#:transparent</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">samples-&gt;bnw-data</span> <span class="n">vs</span> <span class="kd">#:iqr-scale</span> <span class="p">[</span><span class="n">iqr-scale</span> <span class="mf">1.5</span><span class="p">])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span> <span class="p">([</span><span class="n">q1</span> <span class="p">(</span><span class="n">quantile</span> <span class="mf">0.25</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">vs</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">median</span> <span class="p">(</span><span class="n">quantile</span> <span class="mf">0.5</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">vs</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">q3</span> <span class="p">(</span><span class="n">quantile</span> <span class="mf">0.75</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">vs</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">iqr</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">q3</span> <span class="n">q1</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">lower-limit</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">q1</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">iqr-scale</span> <span class="n">iqr</span><span class="p">))]</span>
-         <span class="p">[</span><span class="n">upper-limit</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">q3</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="n">iqr-scale</span> <span class="n">iqr</span><span class="p">))]</span>
-         <span class="p">[</span><span class="n">lower-whisker</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-fold))" style="color: inherit">sequence-fold</a></span>
-                         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">a</span> <span class="n">sample</span><span class="p">)</span>
-                           <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="n">sample</span> <span class="n">lower-limit</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span> <span class="n">a</span> <span class="n">sample</span><span class="p">)</span> <span class="n">a</span><span class="p">))</span>
-                         <span class="n">q1</span> <span class="n">vs</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">upper-whisker</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-fold))" style="color: inherit">sequence-fold</a></span>
-                         <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">a</span> <span class="n">sample</span><span class="p">)</span>
-                           <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span> <span class="n">sample</span> <span class="n">upper-limit</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span> <span class="n">a</span> <span class="n">sample</span><span class="p">)</span> <span class="n">a</span><span class="p">))</span>
-                         <span class="n">q3</span> <span class="n">vs</span><span class="p">)]</span>
-         <span class="p">[</span><span class="n">outliers</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-filter))" style="color: inherit">sequence-filter</a></span>
-                    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span> <span class="n">sample</span> <span class="n">upper-whisker</span><span class="p">)</span>
-                                         <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">sample</span> <span class="n">lower-whisker</span><span class="p">)))</span> <span class="n">vs</span><span class="p">)])</span>
-    <span class="p">(</span><span class="n">bnw-data</span> <span class="n">q1</span> <span class="n">median</span> <span class="n">q3</span> <span class="n">lower-whisker</span> <span class="n">upper-whisker</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-~3elist))" style="color: inherit">sequence-&gt;list</a></span> <span class="n">outliers</span><span class="p">))))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">samples-&gt;bnw-data</span><span class="w"> </span><span class="n">vs</span><span class="w"> </span><span class="kd">#:iqr-scale</span><span class="w"> </span><span class="p">[</span><span class="n">iqr-scale</span><span class="w"> </span><span class="mf">1.5</span><span class="p">])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span><span class="w"> </span><span class="p">([</span><span class="n">q1</span><span class="w"> </span><span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.25</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">vs</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">median</span><span class="w"> </span><span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">vs</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">q3</span><span class="w"> </span><span class="p">(</span><span class="n">quantile</span><span class="w"> </span><span class="mf">0.75</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">vs</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">iqr</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="n">q1</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">lower-limit</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">iqr-scale</span><span class="w"> </span><span class="n">iqr</span><span class="p">))]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">upper-limit</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">iqr-scale</span><span class="w"> </span><span class="n">iqr</span><span class="p">))]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">lower-whisker</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-fold))" style="color: inherit">sequence-fold</a></span><span class="w"></span>
+<span class="w">                         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="n">sample</span><span class="p">)</span><span class="w"></span>
+<span class="w">                           </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="n">lower-limit</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._min))" style="color: inherit">min</a></span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">sample</span><span class="p">)</span><span class="w"> </span><span class="n">a</span><span class="p">))</span><span class="w"></span>
+<span class="w">                         </span><span class="n">q1</span><span class="w"> </span><span class="n">vs</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">upper-whisker</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-fold))" style="color: inherit">sequence-fold</a></span><span class="w"></span>
+<span class="w">                         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="n">sample</span><span class="p">)</span><span class="w"></span>
+<span class="w">                           </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c~3d))" style="color: inherit">&lt;=</a></span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="n">upper-limit</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._max))" style="color: inherit">max</a></span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">sample</span><span class="p">)</span><span class="w"> </span><span class="n">a</span><span class="p">))</span><span class="w"></span>
+<span class="w">                         </span><span class="n">q3</span><span class="w"> </span><span class="n">vs</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="p">[</span><span class="n">outliers</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-filter))" style="color: inherit">sequence-filter</a></span><span class="w"></span>
+<span class="w">                    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._or))" style="color: inherit">or</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)))</span><span class="w"> </span><span class="n">vs</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">bnw-data</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="n">median</span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="n">lower-whisker</span><span class="w"> </span><span class="n">upper-whisker</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/sequence..rkt)._sequence-~3elist))" style="color: inherit">sequence-&gt;list</a></span><span class="w"> </span><span class="n">outliers</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <h2 id="initial-renderer">Initial Renderer</h2>
@@ -298,65 +302,68 @@
 <p>The second point is worth clarifying a bit. Most people familiar with the plot package know that you can plot two or more data sets by putting them in a list. For example, this will plot the sine and cosine functions on the same plot:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">)</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">))</span> <span class="kd">#:x-min</span> <span class="mi">-5</span> <span class="kd">#:x-max</span> <span class="mi">+5</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">))</span><span class="w"> </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">+5</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>However, the plot function accepts arbitrarily nested lists of renderers, so, we can add a sublist with three horizontal lines to the plot:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">)</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">)</span>
-            <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">hrule</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="n">hrule</span> <span class="mf">0.5</span><span class="p">)</span> <span class="p">(</span><span class="n">hrule</span> <span class="mf">-0.5</span><span class="p">)))</span>
-      <span class="kd">#:x-min</span> <span class="mi">-5</span> <span class="kd">#:x-max</span> <span class="mi">+5</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="mf">-0.5</span><span class="p">)))</span><span class="w"></span>
+<span class="w">      </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">+5</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Also, things like <code>function</code> and <code>hrule</code> are functions which produce renderer values, and they can be given names and returned from functions themselves:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-sine</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">the-cos</span> <span class="p">(</span><span class="n">function</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">))</span>
-<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">make-horizontal-markers</span> <span class="n">low</span> <span class="n">mid</span> <span class="n">high</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">hrule</span> <span class="n">low</span><span class="p">)</span> <span class="p">(</span><span class="n">hrule</span> <span class="n">mid</span><span class="p">)</span> <span class="p">(</span><span class="n">hrule</span> <span class="n">high</span><span class="p">)))</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-sine</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._sin))" style="color: inherit">sin</a></span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">the-cos</span><span class="w"> </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._cos))" style="color: inherit">cos</a></span><span class="p">))</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">make-horizontal-markers</span><span class="w"> </span><span class="n">low</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="n">high</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="n">low</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="n">mid</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">hrule</span><span class="w"> </span><span class="n">high</span><span class="p">)))</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="n">the-sine</span> <span class="n">the-cos</span> <span class="p">(</span><span class="n">make-horizontal-markers</span> <span class="mf">-0.5</span> <span class="mi">0</span> <span class="mf">0.5</span><span class="p">))</span>
-      <span class="kd">#:x-min</span> <span class="mi">-5</span> <span class="kd">#:x-max</span> <span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="n">the-sine</span><span class="w"> </span><span class="n">the-cos</span><span class="w"> </span><span class="p">(</span><span class="n">make-horizontal-markers</span><span class="w"> </span><span class="mf">-0.5</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">0.5</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>This means that we can construct a function which returns a list of renderers and this would be able to be used in <code>plot</code> together with other built-in renderers.</p>
@@ -376,97 +383,99 @@
 <p>Here is the first version of the <code>box-and-whiskers</code> renderer. The function extracts the data from a <code>bnw-data</code> structure and returns a list of renderers to construct the plot. Perhaps the most unusual renderer is the whiskers renderer: <code>lines</code> do not need to specify a data series that is continuous: gaps can be introduced by having a point with <code>+nan.0</code> coordinates, also the lines can be in arbitrary directions and do not need to follow horizontal path:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">box-and-whiskers-0</span>
-         <span class="n">data</span>
-         <span class="kd">#:x</span> <span class="p">[</span><span class="n">x</span> <span class="mi">0</span><span class="p">]</span>
-         <span class="kd">#:gap</span> <span class="p">[</span><span class="n">gap</span> <span class="p">(</span><span class="n">discrete-histogram-gap</span><span class="p">)])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">bnw-data</span> <span class="n">q1</span> <span class="n">median</span> <span class="n">q3</span> <span class="n">lower-whisker</span> <span class="n">upper-whisker</span> <span class="n">outliers</span><span class="p">)</span> <span class="n">data</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">half-width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="m">1/2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">1</span> <span class="n">gap</span><span class="p">)))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">quater-width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="m">1/4</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">1</span> <span class="n">gap</span><span class="p">)))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">skip</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mf">+nan.0</span> <span class="mf">+nan.0</span><span class="p">))</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
-   <span class="c1">;; Box</span>
-   <span class="p">(</span><span class="n">rectangles</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="n">ivl</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">))</span> <span class="p">(</span><span class="n">ivl</span> <span class="n">q1</span> <span class="n">q3</span><span class="p">)))</span>
-   <span class="c1">;; Median line</span>
-    <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="n">median</span><span class="p">)</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="n">median</span><span class="p">)))</span>
-    <span class="c1">;; Whiskers</span>
-    <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">lower-whisker</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">q1</span><span class="p">)</span>
-                 <span class="n">skip</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">q3</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">upper-whisker</span><span class="p">)</span>
-                 <span class="n">skip</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">lower-whisker</span><span class="p">)</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">lower-whisker</span><span class="p">)</span>
-                 <span class="n">skip</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">upper-whisker</span><span class="p">)</span>
-                 <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">upper-whisker</span><span class="p">)))</span>
-    <span class="c1">;; Outliers</span>
-    <span class="p">(</span><span class="n">points</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">o</span> <span class="n">outliers</span><span class="p">])</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">x</span> <span class="n">o</span><span class="p">))))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">box-and-whiskers-0</span><span class="w"></span>
+<span class="w">         </span><span class="n">data</span><span class="w"></span>
+<span class="w">         </span><span class="kd">#:x</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="w"></span>
+<span class="w">         </span><span class="kd">#:gap</span><span class="w"> </span><span class="p">[</span><span class="n">gap</span><span class="w"> </span><span class="p">(</span><span class="n">discrete-histogram-gap</span><span class="p">)])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="n">bnw-data</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="n">median</span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="n">lower-whisker</span><span class="w"> </span><span class="n">upper-whisker</span><span class="w"> </span><span class="n">outliers</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">half-width</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="m">1/2</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">gap</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">quater-width</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="m">1/4</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">gap</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">skip</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="mf">+nan.0</span><span class="w"> </span><span class="mf">+nan.0</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Box</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">rectangles</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="n">ivl</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="n">ivl</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="n">q3</span><span class="p">)))</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Median line</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">lines</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="n">median</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="n">median</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; Whiskers</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">lines</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">q1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">q3</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="c1">;; Outliers</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">points</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">o</span><span class="w"> </span><span class="n">outliers</span><span class="p">])</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">o</span><span class="p">))))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Here is how to use the new renderer, placing three box-and-whiskers plots next to each other:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot-pen-color-map</span> <span class="o">'</span><span class="ss">tab20</span><span class="p">)</span>  <span class="c1">;; use more interesting colors...</span>
-<span class="p">(</span><span class="n">plot-brush-color-map</span> <span class="o">'</span><span class="ss">tab20</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot-pen-color-map</span><span class="w"> </span><span class="o">'</span><span class="ss">tab20</span><span class="p">)</span><span class="w">  </span><span class="c1">;; use more interesting colors...</span><span class="w"></span>
+<span class="p">(</span><span class="n">plot-brush-color-map</span><span class="w"> </span><span class="o">'</span><span class="ss">tab20</span><span class="p">)</span><span class="w"></span>
 
-<span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">box-and-whiskers-0</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="p">(</span><span class="n">box-and-whiskers-0</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="p">(</span><span class="n">box-and-whiskers-0</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">2</span><span class="p">))</span>
-      <span class="kd">#:x-min</span> <span class="mi">-1</span> <span class="kd">#:x-max</span> <span class="mi">3</span> <span class="kd">#:y-min</span> <span class="mi">-10</span> <span class="kd">#:y-max</span> <span class="mi">25</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">box-and-whiskers-0</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">box-and-whiskers-0</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">box-and-whiskers-0</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w"></span>
+<span class="w">      </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:y-min</span><span class="w"> </span><span class="mi">-10</span><span class="w"> </span><span class="kd">#:y-max</span><span class="w"> </span><span class="mi">25</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <div class="figure"><img src="/img/a047/bnw-0.svg" alt="" />
@@ -477,95 +486,97 @@
 <p>The initial <code>box-and-whiskers</code> renderer will construct a vertical plot, but some people prefer a horizontal layout with plots stacked on top of each other. This layout can be achieved simply by swapping the coordinates of all the points in the plot, that is, changing all instances of <code>(vector x y)</code> to <code>(vector y x)</code>. Of course, this needs to be a parameter for the <code>box-and-whiskers</code> renderer and the swap needs to be made conditionally. We could replace every instance of <code>vector</code> with an <code>if</code> conditional, but it is simpler if we define a <code>maybe-invert</code> function, which swaps the parameters conditionally and replace all uses of <code>vector</code> with this new function:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">box-and-whiskers-1</span>
-         <span class="n">data</span>
-         <span class="kd">#:x</span> <span class="p">[</span><span class="n">x</span> <span class="mi">0</span><span class="p">]</span>
-         <span class="kd">#:gap</span> <span class="p">[</span><span class="n">gap</span> <span class="p">(</span><span class="n">discrete-histogram-gap</span><span class="p">)]</span>
-         <span class="kd">#:invert?</span> <span class="p">[</span><span class="n">invert?</span> <span class="no">#f</span><span class="p">])</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span> <span class="p">(</span><span class="n">bnw-data</span> <span class="n">q1</span> <span class="n">median</span> <span class="n">q3</span> <span class="n">lower-whisker</span> <span class="n">upper-whisker</span> <span class="n">outliers</span><span class="p">)</span> <span class="n">data</span><span class="p">)</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">half-width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="m">1/2</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">1</span> <span class="n">gap</span><span class="p">)))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">quater-width</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span> <span class="m">1/4</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="mi">1</span> <span class="n">gap</span><span class="p">)))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">skip</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="mf">+nan.0</span> <span class="mf">+nan.0</span><span class="p">))</span>
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="n">maybe-invert</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span> <span class="n">invert?</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">(</span><span class="n">x</span> <span class="n">y</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span> <span class="n">y</span> <span class="n">x</span><span class="p">))</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="p">))</span>
-  <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span>
-   <span class="c1">;; Box</span>
-   <span class="p">(</span><span class="n">rectangles</span>
-    <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="n">ivl</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">))</span> <span class="p">(</span><span class="n">ivl</span> <span class="n">q1</span> <span class="n">q3</span><span class="p">))))</span>
-   <span class="c1">;; Median line</span>
-   <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="n">median</span><span class="p">)</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">half-width</span><span class="p">)</span> <span class="n">median</span><span class="p">)))</span>
-   <span class="c1">;; Whiskers</span>
-   <span class="p">(</span><span class="n">lines</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="n">x</span> <span class="n">lower-whisker</span><span class="p">)</span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="n">x</span> <span class="n">q1</span><span class="p">)</span>
-                <span class="n">skip</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="n">x</span> <span class="n">q3</span><span class="p">)</span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="n">x</span> <span class="n">upper-whisker</span><span class="p">)</span>
-                <span class="n">skip</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">lower-whisker</span><span class="p">)</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">lower-whisker</span><span class="p">)</span>
-                <span class="n">skip</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">upper-whisker</span><span class="p">)</span>
-                <span class="p">(</span><span class="n">maybe-invert</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span> <span class="n">x</span> <span class="n">quater-width</span><span class="p">)</span> <span class="n">upper-whisker</span><span class="p">)))</span>
-   <span class="c1">;; outliers</span>
-   <span class="p">(</span><span class="n">points</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">o</span> <span class="n">outliers</span><span class="p">])</span> <span class="p">(</span><span class="n">maybe-invert</span> <span class="n">x</span> <span class="n">o</span><span class="p">)))))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"></span>
+<span class="w">         </span><span class="n">data</span><span class="w"></span>
+<span class="w">         </span><span class="kd">#:x</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="w"></span>
+<span class="w">         </span><span class="kd">#:gap</span><span class="w"> </span><span class="p">[</span><span class="n">gap</span><span class="w"> </span><span class="p">(</span><span class="n">discrete-histogram-gap</span><span class="p">)]</span><span class="w"></span>
+<span class="w">         </span><span class="kd">#:invert?</span><span class="w"> </span><span class="p">[</span><span class="n">invert?</span><span class="w"> </span><span class="no">#f</span><span class="p">])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="n">bnw-data</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="n">median</span><span class="w"> </span><span class="n">q3</span><span class="w"> </span><span class="n">lower-whisker</span><span class="w"> </span><span class="n">upper-whisker</span><span class="w"> </span><span class="n">outliers</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">half-width</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="m">1/2</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">gap</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">quater-width</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="m">1/4</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">gap</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">skip</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="mf">+nan.0</span><span class="w"> </span><span class="mf">+nan.0</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">invert?</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">x</span><span class="p">))</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Box</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">rectangles</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="n">ivl</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="n">ivl</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="n">q3</span><span class="p">))))</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Median line</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">lines</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="n">median</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">half-width</span><span class="p">)</span><span class="w"> </span><span class="n">median</span><span class="p">)))</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Whiskers</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">lines</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">q1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">q3</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">lower-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="n">skip</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">quater-width</span><span class="p">)</span><span class="w"> </span><span class="n">upper-whisker</span><span class="p">)))</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; outliers</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">points</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">o</span><span class="w"> </span><span class="n">outliers</span><span class="p">])</span><span class="w"> </span><span class="p">(</span><span class="n">maybe-invert</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">o</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>Here is how the plot looks when inverted. Note that we also had to change the range of the X and Y axes since the range of the data set is now on the X axis, while the plots themselves are stacked on the Y coordinate:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="n">plot</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">0</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">)</span>
-            <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">1</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">)</span>
-            <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">2</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">))</span>
-    <span class="kd">#:y-min</span> <span class="mi">-1</span> <span class="kd">#:y-max</span> <span class="mi">3</span> <span class="kd">#:x-min</span> <span class="mi">-12</span> <span class="kd">#:x-max</span> <span class="mi">25</span><span class="p">)</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="kd">#:y-min</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="kd">#:y-max</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-12</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">25</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <div class="figure"><img src="/img/a047/bnw-1.svg" alt="" />
@@ -580,31 +591,32 @@
 <p>We can define our own ticks to assign a label to the X or Y coordinate of a box plot, which would be used like this:</p>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span> <span class="p">([</span><span class="n">plot-y-label</span> <span class="no">#f</span><span class="p">]</span>
-               <span class="p">[</span><span class="n">plot-y-ticks</span> <span class="p">(</span><span class="n">bnw-ticks</span> <span class="o">'</span><span class="p">((</span><span class="mi">0</span> <span class="o">.</span> <span class="s2">"experiment 1"</span><span class="p">)</span>
-                                          <span class="p">(</span><span class="mi">1</span> <span class="o">.</span> <span class="s2">"experiment 2"</span><span class="p">)</span>
-                                          <span class="p">(</span><span class="mi">2</span> <span class="o">.</span> <span class="s2">"experiment 3"</span><span class="p">)))])</span>
-  <span class="p">(</span><span class="n">plot-file</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span> <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">0</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">)</span>
-                   <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">1</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">)</span>
-                   <span class="p">(</span><span class="n">box-and-whiskers-1</span> <span class="n">bnw</span> <span class="kd">#:x</span> <span class="mi">2</span> <span class="kd">#:invert?</span> <span class="no">#t</span><span class="p">))</span>
-             <span class="kd">#:y-min</span> <span class="mi">-1</span> <span class="kd">#:y-max</span> <span class="mi">3</span> <span class="kd">#:x-min</span> <span class="mi">-12</span> <span class="kd">#:x-max</span> <span class="mi">25</span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-y-label</span><span class="w"> </span><span class="no">#f</span><span class="p">]</span><span class="w"></span>
+<span class="w">               </span><span class="p">[</span><span class="n">plot-y-ticks</span><span class="w"> </span><span class="p">(</span><span class="n">bnw-ticks</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="mi">0</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="s2">"experiment 1"</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                          </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="s2">"experiment 2"</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                          </span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="s2">"experiment 3"</span><span class="p">)))])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">plot-file</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="w">                   </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="w">                   </span><span class="p">(</span><span class="n">box-and-whiskers-1</span><span class="w"> </span><span class="n">bnw</span><span class="w"> </span><span class="kd">#:x</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="kd">#:invert?</span><span class="w"> </span><span class="no">#t</span><span class="p">))</span><span class="w"></span>
+<span class="w">             </span><span class="kd">#:y-min</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="kd">#:y-max</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="kd">#:x-min</span><span class="w"> </span><span class="mi">-12</span><span class="w"> </span><span class="kd">#:x-max</span><span class="w"> </span><span class="mi">25</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <div class="figure"><img src="/img/a047/bnw-2.svg" alt="" />
@@ -617,43 +629,44 @@
  <li>a <strong>format</strong> function is responsible for providing a string representation  for each tick in a list. The function receives a list of ticks (actually  <code>pre-tick</code> structures) and returns a list of strings representing the  labels.</li></ul>
 
 <div class="brush: racket">
- <table class="sourcetable">
-  <tbody>
-   <tr>
-    <td class="linenos">
-     <div class="linenodiv">
-      <pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14</pre></div></td>
-    <td class="code">
-     <div class="source">
-      <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">bnw-ticks</span> <span class="n">labels</span><span class="p">)</span>
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">bnw-ticks</span><span class="w"> </span><span class="n">labels</span><span class="p">)</span><span class="w"></span>
 
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="n">layout</span> <span class="n">low</span> <span class="n">high</span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">label</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">labels</span><span class="p">)]</span>
-               <span class="kd">#:when</span> <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span> <span class="p">([</span><span class="n">v</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">label</span><span class="p">)])</span>
-                        <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span> <span class="n">v</span> <span class="n">low</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span> <span class="n">v</span> <span class="n">high</span><span class="p">))))</span>
-      <span class="p">(</span><span class="n">pre-tick</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span> <span class="n">label</span><span class="p">)</span> <span class="no">#t</span><span class="p">)))</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">layout</span><span class="w"> </span><span class="n">low</span><span class="w"> </span><span class="n">high</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">label</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">labels</span><span class="p">)]</span><span class="w"></span>
+<span class="w">               </span><span class="kd">#:when</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">label</span><span class="p">)])</span><span class="w"></span>
+<span class="w">                        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a></span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="n">low</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="n">high</span><span class="p">))))</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="n">pre-tick</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">label</span><span class="p">)</span><span class="w"> </span><span class="no">#t</span><span class="p">)))</span><span class="w"></span>
 
-  <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span> <span class="n">low</span> <span class="n">high</span> <span class="n">pre-ticks</span><span class="p">)</span>
-    <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span> <span class="p">([</span><span class="n">t</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span> <span class="n">pre-ticks</span><span class="p">)])</span>
-      <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/dicts.html#(def._((lib._racket/dict..rkt)._dict-ref))" style="color: inherit">dict-ref</a></span> <span class="n">labels</span> <span class="p">(</span><span class="n">pre-tick-value</span> <span class="n">t</span><span class="p">)</span>
-                <span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span> <span class="p">()</span> <span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span> <span class="p">(</span><span class="n">pre-tick-value</span> <span class="n">t</span><span class="p">))))))</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="w"> </span><span class="n">low</span><span class="w"> </span><span class="n">high</span><span class="w"> </span><span class="n">pre-ticks</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">t</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-list))" style="color: inherit">in-list</a></span><span class="w"> </span><span class="n">pre-ticks</span><span class="p">)])</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/dicts.html#(def._((lib._racket/dict..rkt)._dict-ref))" style="color: inherit">dict-ref</a></span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="p">(</span><span class="n">pre-tick-value</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span><span class="w"> </span><span class="p">(</span><span class="n">pre-tick-value</span><span class="w"> </span><span class="n">t</span><span class="p">))))))</span><span class="w"></span>
 
-  <span class="p">(</span><span class="n">ticks</span> <span class="n">layout</span> <span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="p">))</span>
-</pre></div>
-</td></tr></tbody></table>
+<span class="w">  </span><span class="p">(</span><span class="n">ticks</span><span class="w"> </span><span class="n">layout</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
 </div>
 
 <p>The <code>bnw-ticks</code> function receives an association list of axis positions and their corresponding labels and returns a <code>ticks</code> structure with the layout and format functions. The layout function is straightforward: when called, it constructs pre-ticks containing all the positions which are in the range from <code>low</code> to <code>high</code>. The format function will simply reference the label for each received <code>pre-tick</code>, and, if a label is not found, simply format the value using <code>~a</code>. This last aspect is needed, because the ticks are also used to label special positions on the axes (such as when selecting a region of the plot), and the format function cannot rely on the fact that it only needs to format <code>pre-tics</code> produced by the corresponding layout function.</p>
@@ -690,28 +703,6 @@
         </ul>
       </nav>
     </div>
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.identifier = undefined;
-        this.page.url = undefined;
-        this.page.title = undefined;
-        this.page.category_id = undefined;
-      };
-      var disqus_shortname = 'alex-hhh-github-com';
-      (function() {
-          var dsq = document.createElement('script');
-          dsq.type = 'text/javascript';
-          dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          dsq.setAttribute('data-timestamp', +new Date());
-          (document.head || document.body).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
   </footer>
 </article>
         </div>
