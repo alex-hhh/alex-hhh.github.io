@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/data-visualization.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/data-visualization.html" />
  <id>urn:https-alex-hhh-github-io:-tags-data-visualization-html</id>
- <updated>2022-10-16T07:23:00Z</updated>
+ <updated>2023-04-29T00:36:55Z</updated>
+ <entry>
+  <title type="text">A Racket Array Tutorial</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2023/04/array-tutorial.html?utm_source=data-visualization&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2023-04-array-tutorial-html</id>
+  <published>2023-04-29T00:36:55Z</published>
+  <updated>2023-04-29T00:36:55Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;If you are unfamiliar with NumPy or Matlab, Racket&amp;rsquo;s &lt;a href="https://docs.racket-lang.org/math/array.html"&gt;arrays&lt;/a&gt; can look strange and unusual, and we&amp;rsquo;ll try to figure out some use cases for them in this tutorial.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2023/04/array-tutorial.html?utm_source=data-visualization&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Pumpkin Plot</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2022/10/pumpkin-plot.html?utm_source=data-visualization&amp;utm_medium=Atom" />

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>A Racket Array Tutorial</title>
+    <meta name="description" content="If you are unfamiliar with NumPy or Matlab, Racket's arrays can look strange and unusual, and we'll try to figure out some use cases for them in this tutorial....">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="racket, data visualization">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2023/04/array-tutorial.html">
+    <link rel="next" href="/2022/10/pumpkin-plot.html">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script src="/main.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#"
+                 class="nav-link dropdown-toggle"
+                 data-bs-toggle="dropdown"
+                 aria-expanded="false">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>A Racket Array Tutorial</h1>
+    <p class='date-and-tags'>
+<time datetime="2023-04-29" pubdate="true">2023-04-29</time> :: <span class="tags"><a href="/tags/racket.html">racket</a>, <a href="/tags/data-visualization.html">data visualization</a></span></p>
+  </header>
+
+<p>If you are unfamiliar with NumPy or Matlab, Racket&rsquo;s <a href="https://docs.racket-lang.org/math/array.html">arrays</a> can look strange and unusual, and we&rsquo;ll try to figure out some use cases for them in this tutorial.</p>
+<!-- more-->
+
+<p>If you are familiar with <code>vector</code> data types, individual element access is important, with program code just iterating over the individual elements of the array to implement data processing. For <code>math/array</code> objects, individual element access is both complicated and inefficient, as the library is designed for operations on entire arrays, but using whole-array, or &ldquo;lifted&rdquo; operations requires a change in the way we think about the program code.</p>
+
+<p>To make this tutorial more concrete, we&rsquo;ll look at a hypothetical "data modeling" task, and see how we can use arrays to model a process as well as data collected from experiments.</p>
+
+<hr />
+
+<p>Before we begin, the examples below use a few racket libraries which need to be required, so make sure you start your program with the following prelude:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">racket</span><span class="w"></span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/require.html#(form._((lib._racket/private/base..rkt)._require))" style="color: inherit">require</a></span><span class="w"> </span><span class="n">math/array</span><span class="w"></span>
+<span class="w">         </span><span class="n">math/distributions</span><span class="w"></span>
+<span class="w">         </span><span class="n">math/statistics</span><span class="w"></span>
+<span class="w">         </span><span class="n">plot</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<hr />
+
+<h2 id="the-process">The Process</h2>
+
+<p>Suppose we want to model how errors affect measurements for some real-world process and how we can reconstruct the process function from observations. The process we&rsquo;ll try to &ldquo;model&rdquo; will be defined by the following power function, where the scale, 1.5, and exponent, 3.5 are chosen arbitrarily &mdash; we&rsquo;ll try to rediscover these parameters from observations.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">the-process</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mf">3.5</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We can plot this function to see how it looks on a graph, and, for power functions it is more interesting to plot them on log-log plots, that is, on plots where axes change logarithmically instead of linearily. The racket <code>plot</code> package supports logarithmic plots directly and, to show it, we&rsquo;ll define a renderer for this function:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">renderers0</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">tick-grid</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="n">the-process</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="mi">5000</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"orange"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"original function"</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Renderers are not plotted directly, they are an object, or, in our case, list of objects, that can be passed to the plot function. We can plot the function on both a linear and log-log grid by controlling the <code>plot-x-transform</code> and <code>plot-y-transform</code> parameters for the plot:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Linear Grid"</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="n">renderers0</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Log-Log Grid"</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-x-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-y-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot</span><span class="w"> </span><span class="n">renderers0</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="figure"><img src="/img/a058/p0-p1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Both these plots show the same function, and, on the linear scale plot, the function shows up as expected for an exponential function. The log-log plot however, shows a straight line &mdash; which is also expected, if you are familiar with logarithmic scale plots. If you are not, the function shows up as a line, because the <code>plot</code> package takes the logarithm of our process function and this becomes a line with the slope being <code>3.5</code> and intercept being <code>log(1.5)</code>:</p>
+
+<pre><code>y = log(f(x)) = log(1.5 * x³͘͘͘ ⁵) = log(1.5) + 3.5 * log(x)</code></pre>
+
+<p>To model the data collection from experiments, for our process, we will need to generate some X values for which we take &ldquo;measurements&rdquo; and some Y values, which are the actual measurements. For X values, we&rsquo;ll use evenly spaced numbers between a &ldquo;low&rdquo; and &ldquo;high&rdquo; end, and, to generate these we&rsquo;ll need a function called <code>linspace</code>.</p>
+
+<h2 id="the-linspace-function">The Linspace Function</h2>
+
+<p><code>linspace</code> is a function that constructs a one-dimensional array of evenly spaced numbers over a specified interval. NumpPy has this function <a href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html">built-in</a>, but it is not available in Racket&rsquo;s <code>math/array</code> library. Fortunately, the implementation is simple, and we&rsquo;ll have the first oportunity to look at arrays in Racket.</p>
+
+<p>We&rsquo;ll start by implementing a <code>linspace</code> variant which builds a vector, NOT an array. The function takes as arguments <code>start</code>, <code>stop</code> and <code>num</code> (number of elements) and uses <code>build-vector</code> to produce the result:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace/as-vector</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="p">[</span><span class="n">num</span><span class="w"> </span><span class="mi">50</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">endpoint?</span><span class="w"> </span><span class="no">#t</span><span class="p">])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">span</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="n">start</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">num</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">endpoint?</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span><span class="w"> </span><span class="n">num</span><span class="p">)</span><span class="w"> </span><span class="n">num</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((lib._racket/private/list..rkt)._build-vector))" style="color: inherit">build-vector</a></span><span class="w"></span>
+<span class="w">   </span><span class="n">shape</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">span</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">x</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here is how the <code>linspace/as-vector</code> function works:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace/as-vector</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="mi">5000</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="o">'#</span><span class="p">(</span><span class="mi">500</span><span class="w"> </span><span class="mi">950</span><span class="w"> </span><span class="mi">1400</span><span class="w"> </span><span class="mi">1850</span><span class="w"> </span><span class="mi">2300</span><span class="w"> </span><span class="mi">2750</span><span class="w"> </span><span class="mi">3200</span><span class="w"> </span><span class="mi">3650</span><span class="w"> </span><span class="mi">4100</span><span class="w"> </span><span class="mi">4550</span><span class="w"> </span><span class="mi">5000</span><span class="p">)</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>linspace</code> variant which builds arrays, is almost identical, but uses <code>build-array</code> instead of <code>build-vector</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace/as-array</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="p">[</span><span class="n">num</span><span class="w"> </span><span class="mi">50</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">endpoint?</span><span class="w"> </span><span class="no">#t</span><span class="p">])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">span</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="n">start</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">num</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">endpoint?</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span><span class="w"> </span><span class="n">num</span><span class="p">)</span><span class="w"> </span><span class="n">num</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">build-array</span><span class="w"></span>
+<span class="w">   </span><span class="n">shape</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/match.html#(form._((lib._racket/match..rkt)._match-define))" style="color: inherit">match-define</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">index</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">span</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">x</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>There are, however some other differences between <code>linspace/as-array</code> and <code>linspace/as-vector</code>:</p>
+
+<ul>
+ <li>the <strong>shape</strong> for the array, which for <code>linspace/as-vector</code> is just a  number, becomes a vector containing one value in <code>linspace/as-array</code> &mdash; this  is because arrays can have multiple dimensions and each dimension can have a  different number of elements. In our case, however, the resulting array has  just one dimension.</li>
+ <li>the function passed to <code>build-array</code> is slightly different from the one  passed to <code>build-vector</code>: the build vector variant, receives an index which  becomes the element in the vector; the array variant also receives an index,  but, since arrays can be multi-dimensional, this index is now a vector of  values representing the index on each &ldquo;axis&rdquo; or &ldquo;dimension&rdquo; of the array.  In our case, the index contains one element, since the array has just one  dimension.</li></ul>
+
+<p>Here is how the <code>linspace/as-array</code> function works. Notice that the output is different from the <code>linspace/as-vector</code> variant, the result is now an array of one dimension:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace/as-array</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="mi">5000</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="o">#</span><span class="p">[</span><span class="mi">500</span><span class="w"> </span><span class="mi">950</span><span class="w"> </span><span class="mi">1400</span><span class="w"> </span><span class="mi">1850</span><span class="w"> </span><span class="mi">2300</span><span class="w"> </span><span class="mi">2750</span><span class="w"> </span><span class="mi">3200</span><span class="w"> </span><span class="mi">3650</span><span class="w"> </span><span class="mi">4100</span><span class="w"> </span><span class="mi">4550</span><span class="w"> </span><span class="mi">5000</span><span class="p">])</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Finally, let&rsquo;s look at an implementation of <code>linspace</code> which uses array operations. In this implementation, the expression which generates the actual values, <code>(+ start (* span step x))</code>, is &ldquo;lifted&rdquo; to work on arrays:</p>
+
+<ul>
+ <li>we start by generating an &ldquo;index array&rdquo; of the required shape &mdash; this is is  an array where each element is the corresponding index, to its location:  <code>(index-array #(4)) =&gt; (array #[0 1 2 3])</code></li>
+ <li>next, we create array based versions of the <code>start</code>, <code>span</code> and <code>step</code>  scalars &mdash; perhaps surprisingly, arrays can have zero dimensions, in which  case they hold a single value.</li>
+ <li>finally, we create the result by applying the linspace &ldquo;formula&rdquo; <code>(+ start (* span step x))</code>  to our arrays using <code>array+</code> and <code>array*</code> operations instead of using <code>+</code> and <code>*</code>:</li></ul>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="p">[</span><span class="n">num</span><span class="w"> </span><span class="mi">50</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">endpoint?</span><span class="w"> </span><span class="no">#t</span><span class="p">])</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/vectors.html#(def._((quote._~23~25kernel)._vector))" style="color: inherit">vector</a></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">endpoint?</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._add1))" style="color: inherit">add1</a></span><span class="w"> </span><span class="n">num</span><span class="p">)</span><span class="w"> </span><span class="n">num</span><span class="p">)))</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">indexes</span><span class="w"> </span><span class="p">(</span><span class="n">index-array</span><span class="w"> </span><span class="n">shape</span><span class="p">))</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">a-start</span><span class="w"> </span><span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="n">start</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">a-span</span><span class="w"> </span><span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="n">start</span><span class="p">)))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">a-step</span><span class="w"> </span><span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">num</span><span class="p">)))</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">(</span><span class="n">array+</span><span class="w"> </span><span class="n">a-start</span><span class="w"> </span><span class="p">(</span><span class="n">array*</span><span class="w"> </span><span class="n">a-span</span><span class="w"> </span><span class="p">(</span><span class="n">array*</span><span class="w"> </span><span class="n">a-step</span><span class="w"> </span><span class="n">indexes</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>You might be wondering how is it possible for an expression such as <code>(array* a-step indexes)</code> to work, since <code>a-step</code> is an array of zero dimensions with one element, while <code>indexes</code> is an array of one dimension of <code>num</code> elements. In our case, it multiplies the value of <code>a-step</code> with each value from the <code>indexes</code> array. This is called broadcasting and the description for how it works is found in the <a href="https://docs.racket-lang.org/math/array_broadcasting.html">broadcasting section</a> of the <code>math/array</code> library documentation.</p>
+
+<p>And, of course, we can verify that this version of <code>linspace</code> also works as expected:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e))" style="color: inherit">&gt;</a></span><span class="w"> </span><span class="p">(</span><span class="n">linspace</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="mi">5000</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="o">#</span><span class="p">[</span><span class="mi">500</span><span class="w"> </span><span class="mi">950</span><span class="w"> </span><span class="mi">1400</span><span class="w"> </span><span class="mi">1850</span><span class="w"> </span><span class="mi">2300</span><span class="w"> </span><span class="mi">2750</span><span class="w"> </span><span class="mi">3200</span><span class="w"> </span><span class="mi">3650</span><span class="w"> </span><span class="mi">4100</span><span class="w"> </span><span class="mi">4550</span><span class="w"> </span><span class="mi">5000</span><span class="p">])</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h2 id="the-observatios">The Observatios</h2>
+
+<p>We can use <code>linspace</code> to generate an array of X values for which we will &ldquo;measure&rdquo; our process function as follows:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="p">(</span><span class="n">linspace</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="mi">5000</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="no">#t</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>There are several options for generating the Y values which correspond to each value from the <code>xs</code> array. The first option is to use <code>array-map</code>:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">ys</span><span class="w"> </span><span class="p">(</span><span class="n">array-map</span><span class="w"> </span><span class="n">the-process</span><span class="w"> </span><span class="n">xs</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Another option is to use lifted array operations and express the process in terms of these. There is no <code>array-expt</code> function in the array library, but we can easily define it. In this case the &ldquo;process&rdquo; expression is more visible when the ys array is generated:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">array-expt</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">array-map</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">e</span><span class="p">))</span><span class="w"> </span><span class="n">a</span><span class="p">))</span><span class="w"></span>
+
+<span class="p">(</span><span class="n">deifne</span><span class="w"> </span><span class="n">ys</span><span class="w"> </span><span class="p">(</span><span class="n">array*</span><span class="w"> </span><span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="mf">1.5</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">array-expt</span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="mf">3.5</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The <code>ys</code> array contains exact values for our &ldquo;process&rdquo; function, to model real world data collection, we can add some errors to our observations. We&rsquo;ll first build an array of error values drawn from a normal distribution and add the errors to the <code>ys</code> array. We build our <code>errors</code> array with the same shape as the <code>ys</code> array:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">errors</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">normal-dist</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">0.25</span><span class="p">)])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">build-array</span><span class="w"> </span><span class="p">(</span><span class="n">array-shape</span><span class="w"> </span><span class="n">ys</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">_i</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="w"> </span><span class="n">d</span><span class="p">)))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Finally, we can &ldquo;add&rdquo; these errors to our <code>ys</code> array. There are several ways to add errors to observations, in our case, we&rsquo;ll multiply each Y value with the error, since simply using addition will add small values to the large exponential values produced by our process function, and this will not produce visibly different measurements. Of course, you can model any kind of errors, including no errors at all &mdash; but this method produces nice looking plots&hellip;</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">ys-observations</span><span class="w"> </span><span class="p">(</span><span class="n">array*</span><span class="w"> </span><span class="n">ys</span><span class="w"> </span><span class="p">(</span><span class="n">array+</span><span class="w"> </span><span class="p">(</span><span class="n">array</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">errors</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h2 id="plotting-the-observations">Plotting the observations</h2>
+
+<p>We can plot the observations as individual data points using <code>points</code> plot renderer, however, this renderer expects a single sequence of points with the X and Y &ldquo;packed&rdquo; in a vector, while we have separate <code>xs</code> and <code>ys</code> arrays. However, it is easy to convert these two arrays into one using <code>array-map</code>:</p>
+
+<pre><code>(define observations
+  (array-map (lambda (x y) (vector x y)) xs ys-observations))</code></pre>
+
+<p>We can add the observations to our renderers:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">renderers1</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">tick-grid</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="n">the-process</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"orange"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"the process"</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">points</span><span class="w"> </span><span class="p">(</span><span class="n">in-array</span><span class="w"> </span><span class="n">observations</span><span class="p">)</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"indianred"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"observations"</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip; and plot them in both linear and log-log grids. Note how in both cases, the observations follow the &ldquo;process&rdquo; line, although with some errors:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Linear Grid"</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot-pict</span><span class="w"> </span><span class="n">renderers1</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Log-Log Grid"</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-x-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-y-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot-pict</span><span class="w"> </span><span class="n">renderers1</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="figure"><img src="/img/a058/p2-p3.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="linear-regression">Linear Regression</h2>
+
+<p>We started with a known &ldquo;process&rdquo; and we generated some sample observations which contained some errors. We can now try the reverse operation, where we attempt to determine the original process from our sample observations &mdash; this is the method that would be applied in the real world, where some measurements would be obtained thrhough some experiment and we would attempt to reconstruct the original process function from these.</p>
+
+<p>The insight for doing this relies on the observation that, on the log-log plot, all measurements are on a straight line, and we can determine the slope and intercept of this line using <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Simple Linear Regression</a>. The details of this process are beyond this blog post, but, in short, it allows us to determine the line that best approximates a set of observations using their average, standard deviation and <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">correlation</a>.</p>
+
+<p>Racket has no function to calculate the linear regression of a set of observations, but all the basic ingredients are available in the <code>math/statistics</code> library. First, the mean and standard deviation of a data set can be constructed using a statistics object using <code>update-statistics</code>. Here is how we &ldquo;reduce&rdquo; a one dimensional array to a single statistics object, using the <code>array-all-fold</code> function.</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">array-statistics</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">update-statistics</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="n">x</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">array-all-fold</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="n">empty-statistics</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>There is a <code>correlation</code> function in the Racket statistics library, however that one works on sequences instead of arrays. Here is how to write an <code>array-correlation</code> function which determines the correlation between two arrays:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">array-correlation</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">correlation</span><span class="w"> </span><span class="p">(</span><span class="n">in-array</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">in-array</span><span class="w"> </span><span class="n">b</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>With these two operations defined for arrays, we can define a <code>simple-linear-regression</code> function as shown below. The function returns two values, a slope and an intercept:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">simple-linear-regression</span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="n">ys</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">((</span><span class="n">x-stats</span><span class="w"> </span><span class="p">(</span><span class="n">array-statistics</span><span class="w"> </span><span class="n">xs</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">y-stats</span><span class="w"> </span><span class="p">(</span><span class="n">array-statistics</span><span class="w"> </span><span class="n">ys</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="p">(</span><span class="n">array-correlation</span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="n">ys</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span><span class="w"> </span><span class="p">((</span><span class="n">slope</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._/))" style="color: inherit">/</a></span><span class="w"> </span><span class="p">(</span><span class="n">statistics-stddev</span><span class="w"> </span><span class="n">y-stats</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">statistics-stddev</span><span class="w"> </span><span class="n">x-stats</span><span class="p">))))</span><span class="w"></span>
+<span class="w">           </span><span class="p">(</span><span class="n">intercept</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="p">(</span><span class="n">statistics-mean</span><span class="w"> </span><span class="n">y-stats</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">slope</span><span class="w"> </span><span class="p">(</span><span class="n">statistics-mean</span><span class="w"> </span><span class="n">x-stats</span><span class="p">)))))</span><span class="w"></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span><span class="w"> </span><span class="n">slope</span><span class="w"> </span><span class="n">intercept</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We cannot apply <code>simple-linear-regression</code> directly to our <code>xs</code> and <code>ys-observations</code> arrays, since they are observations for a power function, this function only appears linear in log-log space. Instead we need to do the regression on the logarithms of these values, which is what the plot library does when it transforms the data for plotting. We can write another short helper function to take the logarithm of an array like so:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">array-log</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">array-map</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._log))" style="color: inherit">log</a></span><span class="w"> </span><span class="n">a</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip; and with this defined, we can obtain the slope and intercept values for the line that best matches our observations:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span><span class="w"> </span><span class="p">(</span><span class="n">slope</span><span class="w"> </span><span class="n">intercept</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="n">simple-linear-regression</span><span class="w"> </span><span class="p">(</span><span class="n">array-log</span><span class="w"> </span><span class="n">xs</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">array-log</span><span class="w"> </span><span class="n">ys-observations</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>If you inspect the <code>slope</code> and <code>intercept</code>, you&rsquo;ll notice that <code>slope</code> matches the original slope of 3.5 closely, but the intercept value does not match our scale value of 1.5 in the original function. This is because, when converting to log-log space, the &ldquo;intercept&rdquo; is actually the logarithm of this scale value, so we need to use <code>exp</code> on the <code>intercept</code> value:</p>
+
+<pre><code>y = log(f(x)) = log(1.5 * x³͘͘͘ ⁵) = log(1.5) + 3.5 * log(x)</code></pre>
+
+<p>The &ldquo;best fit&rdquo; function for our data set can be defined as:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">best-fit</span><span class="w"> </span><span class="n">slope</span><span class="w"> </span><span class="n">intercept</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._lambda))" style="color: inherit">lambda</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._exp))" style="color: inherit">exp</a></span><span class="w"> </span><span class="n">intercept</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._expt))" style="color: inherit">expt</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">slope</span><span class="p">))))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Finally, we can add our &ldquo;best fit&rdquo; line to the plot to see how it matches up:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">renderers2</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">tick-grid</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="n">the-process</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"orange"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"original function"</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">points</span><span class="w"> </span><span class="p">(</span><span class="n">in-array</span><span class="w"> </span><span class="n">observations</span><span class="p">)</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"indianred"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"observations"</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">function</span><span class="w"> </span><span class="p">(</span><span class="n">best-fit</span><span class="w"> </span><span class="n">slope</span><span class="w"> </span><span class="n">intercept</span><span class="p">)</span><span class="w"> </span><span class="kd">#:color</span><span class="w"> </span><span class="s2">"steelblue"</span><span class="w"> </span><span class="kd">#:label</span><span class="w"> </span><span class="s2">"best fit"</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip; and plot them in both linear and log-log grids:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Linear Grid"</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot-pict</span><span class="w"> </span><span class="n">renderers2</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/parameters.html#(form._((lib._racket/private/more-scheme..rkt)._parameterize))" style="color: inherit">parameterize</a></span><span class="w"> </span><span class="p">([</span><span class="n">plot-title</span><span class="w"> </span><span class="s2">"Log-Log Grid"</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-x-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">]</span><span class="w"></span>
+<span class="w">                 </span><span class="p">[</span><span class="n">plot-y-transform</span><span class="w"> </span><span class="n">log-transform</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">plot-pict</span><span class="w"> </span><span class="n">renderers2</span><span class="p">)))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="figure"><img src="/img/a058/p4-p5.png" alt="" />
+ <p class="caption"></p></div>
+
+<hr />
+
+<p>A few notes if you try to run these examples yourself:</p>
+
+<ul>
+ <li>the values for the observations, and the slope and intercept for the best  fit will be different every time you try to run the program. This is  because the errors added to the <code>ys</code> array will be different every time the  program is run.</li>
+ <li>the best fit parameters, slope and intercept, will be poor fit in the  examples above, this is because we generate a small number of samples for  our observations and the error is large. This is done so the plot is not  overly cluttered, but it does produce poor regression results. Regression  values can be improved by generating larger number of samples for the <code>xs</code>  array, for example 100 samples seems to work well.</li></ul>
+
+<hr />
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>The <code>math/array</code> Racket library allows working with multi-dimensional arrays without having to work with iteration, either as a <code>for</code> loop or as a <code>map</code> operation. It is a common way of working in signal processing applications as supported by Matlab and Numpy, but it is not common to see arrays in Racket code, perhaps because Racket is not used for such applications. <code>math/array</code> is stil useful as a library, and enables some programming techniques that would be more cumbersome otherwise.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2022/10/pumpkin-plot.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; Pumpkin Plot</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+  </body>
+</html>

@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: Posts tagged 'data visualization'</title>
   <description>The Blog of Alex Harsányi: Posts tagged 'data visualization'</description>
   <link>https://alex-hhh.github.io/tags/data-visualization.html</link>
-  <lastBuildDate>Sun, 16 Oct 2022 07:23:00 UT</lastBuildDate>
-  <pubDate>Sun, 16 Oct 2022 07:23:00 UT</pubDate>
+  <lastBuildDate>Sat, 29 Apr 2023 00:36:55 UT</lastBuildDate>
+  <pubDate>Sat, 29 Apr 2023 00:36:55 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>A Racket Array Tutorial</title>
+   <link>https://alex-hhh.github.io/2023/04/array-tutorial.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2023-04-array-tutorial-html</guid>
+   <pubDate>Sat, 29 Apr 2023 00:36:55 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;If you are unfamiliar with NumPy or Matlab, Racket&amp;rsquo;s &lt;a href="https://docs.racket-lang.org/math/array.html"&gt;arrays&lt;/a&gt; can look strange and unusual, and we&amp;rsquo;ll try to figure out some use cases for them in this tutorial.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2023/04/array-tutorial.html?utm_source=data-visualization&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>Pumpkin Plot</title>
    <link>https://alex-hhh.github.io/2022/10/pumpkin-plot.html?utm_source=data-visualization&amp;utm_medium=RSS</link>
