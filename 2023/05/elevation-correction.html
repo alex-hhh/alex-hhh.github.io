@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Elevation Correction</title>
+    <meta name="description" content="From having a nice and consistent elevation plot and an accurate total ascent/descent for an activity, to calculating effects of slope on performance, such as Grade Adjusted Pace for running, it is important to have accurate elevation data. Unfortunately,...">
+    <meta name="author"      content="Alex Harsányi">
+    <meta name="keywords"    content="activitylog2">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="canonical" href="https://alex-hhh.github.io/2023/05/elevation-correction.html">
+    <link rel="next" href="/2023/04/array-tutorial.html">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds/all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds/all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+    <script src="/main.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110325732-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-110325732-1');
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="/index.html" class="navbar-brand">Alex Harsányi</a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbar_collapse" aria-controls="navbar_collapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item dropdown">
+              <a href="#"
+                 class="nav-link dropdown-toggle"
+                 data-bs-toggle="dropdown"
+                 aria-expanded="false">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu" id="tags-menu-content">
+                <!-- will be filled in dynamically by custom.js -->
+              </ul>
+            </li>
+            <li>
+              <a class="nav-link" href="/About.html">About</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/arduino.html">Arduino</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/racket.html">Racket</a>
+            </li> 
+            <li>
+              <a class="nav-link" href="/tags/activitylog2.html">ActivityLog2</a>
+            </li> 
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <!-- NOTE: there is a bug in the web server template renderer which
+             indents all items inside if blocks.  This means that we cannot
+             put the contents inside an if block, as all the <pre> tags will
+             be indented.
+          -->
+        <div id="content" class=col-md-9>
+
+
+
+
+
+          <article>
+  <header>
+    <h1>Elevation Correction</h1>
+    <p class='date-and-tags'>
+<time datetime="2023-05-27" pubdate="true">2023-05-27</time> :: <span class="tags"><a href="/tags/activitylog2.html">activitylog2</a></span></p>
+  </header>
+
+<p>From having a nice and consistent elevation plot and an accurate total ascent/descent for an activity, to calculating effects of slope on performance, such as Grade Adjusted Pace for running, it is important to have accurate elevation data. Unfortunately, elevation data is one of the measures most prone to errors during an activity. On-line elevation services can be used to correct this data, but in <a href="https://github.com/alex-hhh/ActivityLog2">ActivityLog2</a>, I decided to use solution runs on the user&rsquo;s computer only, and does not depend on cloud services.</p>
+<!-- more-->
+
+<div class="figure"><img src="/img/a059/weir-climbout-segment.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="why-does-elevation-data-contain-errors">Why does elevation data contain errors?</h2>
+
+<p>Elevation data recorded during a sport activity, such as running or cycling, can come from two sources: GPS (GNSS), or a barometric altimeter. Altitude readings from GPS suffer from most of the errors, which are inherent to how the system works. An internet search for &ldquo;Why is GPS elevation inaccurate?&rdquo; will return many results with explanations about this problem.</p>
+
+<p>Most high end sport watches these days have a baromethric altimeter and calculate elvation data from changes in atmospheric pressure as the athlete climbs or descends. However, these devices are sensitive to changes in atmospheric pressure due to weather fronts passing over.</p>
+
+<p>To verify the quality of barometric sensor readings, I analyzed some of my training data for my indoor rides, since my Garmin FR920 device would record altitude from its barometric sensor for all indoor rides. This is convenient because I had lots of readings, on many different days, for the same altitude. I wrote a <a href="/2020/08/barometric-altitude-measurement.html">blog post</a> about this analysis but here is the summary:</p>
+
+<ul>
+ <li>My home has an elevation of about 26 meters above sea level, but the  measurements range from –138 meters to +257 meters, which is quite a bit of  error</li>
+ <li>Even within a single activity, which lasts between 1 and 1.5 hours, the  elevation change is about 4 meters on average, with the maximum I&rsquo;ve seen  for my data is 14.5 meters.</li></ul>
+
+<p>I suspect most sport watches will initialize the barometric altimeter reading either from a GPS altitude reading or from weather data, since I have never seen a huge absolute error for outdoor rides, however the altitude change due to weather fronts is present even for these outdoor rides, which causes routes that are out-and-back or routes that contain laps to have elevation data that is different for the same road sections covered by the route.</p>
+
+<h2 id="how-does-activitylog2-do-elevation-correction">How does ActivityLog2 do elevation correction?</h2>
+
+<p>When running, cycling, hiking, etc, most athletes will train on the same routes, or at least there will be an overlap for these routes. When these activities are imported into ActivityLog2, its database will contain several elevation data points for the same, or very close, locations. This means that, in order to find the best elevation estimate for a certain location, the ActivityLog2 can simply look at the elevation of nearby points and calculate the average for them.</p>
+
+<p>To illustrate how this works, here is a climbing segment which I traversed many times in different activities, collecting 34&prime;000 data samples along it from several years. A 3D view of the data points shows that, while the latitude/longitude seems to be quite good, all points are &ldquo;on top of each other&rdquo;, the elevation data seems to be slightly different for each activity:</p>
+
+<div style="text-align:center">
+ <video width="800" height="400" autoplay="autoplay" loop="loop" controls="controls">
+  <source src="/img/a059/weir-point-cloud.mp4" type="video/mp4" /> Your browser does not support the video tag.</video></div>
+
+<p>And here is a 2D elevation plot of the same segment showing the minimum and maximum elevation recorded along the route, the green band, along with the average of these samples, or mean elevation, at each location, shown as a red line. For comparison, the blue line shows the elevation of the segment obtained from an online elevation service:</p>
+
+<div class="figure"><img src="/img/a059/elevation-profile.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="implementation-details">Implementation details</h2>
+
+<p>The elevation correction algorithm used by ActivityLog2 is quite straightforward: for each GPS point in an activity, it finds nearby points from previous activities in the database and calculates their average altitude. Unfortunately, a naive implementation will be very inefficient: finding nearby locations based on latitude and longitude can only be done with inspecting each data point, and, with millions of them, this can be very slow.</p>
+
+<p>I first read about Google&rsquo;s <a href="https://s2geometry.io/">S2 Geometry</a> library a few years ago and I was impressed by the possibility of building indexes for fast lookup of geographic data. This library allows associating a 64 bit integer with every region on Earth, with the smallest regions that can be indexed being less than 1 cm². Regions that are close to each other geographically have close integer IDs, which allows building indexes from sorted list of IDs.</p>
+
+<p>Here is an <a href="https://blog.christianperone.com/2015/08/googles-s2-geometry-on-the-sphere-cells-and-hilbert-curve/">overview of the S2 library</a> and what it can do, however, I wrote my own Racket based implementation, the <a href="https://github.com/alex-hhh/geoid">geoid</a> package, based on the same ideas. The ActivityLog2 database stores a geoid (an 64bit integer) for each data point, and these geoids can be queried quickly, below is some code that can quickly scan millions of data points to find nearby altitude samples, the full <a href="https://github.com/alex-hhh/ActivityLog2/blob/master/rkt/models/elevation-correction.rkt">elevation correction implementation</a> is a bit more sophisticated, including some in-memory caching:</p>
+
+<div class="brush: racket">
+ <div class="source">
+  <table class="sourcetable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">fetch-altitude-sql</span><span class="w"> </span><span class="s2">"""</span>
+<span class="s2">select altitude</span>
+<span class="s2">  from A_TRACKPOINT</span>
+<span class="s2"> where altitude is <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> <a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._null))" style="color: inherit">null</a></span>
+<span class="s2">   <a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a> geoid <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3e~3d))" style="color: inherit">&gt;=</a> ? <a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a> geoid <a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a> ?</span>
+<span class="s2">   """</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">fetch-altitude-samples</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="n">geoid</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((quote._~23~25kernel)._define-values))" style="color: inherit">define-values</a></span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="w"> </span><span class="n">end</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">leaf-span</span><span class="w"> </span><span class="n">geoid</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">query-list</span><span class="w"> </span><span class="n">database</span><span class="w"></span>
+<span class="w">                </span><span class="n">fetch-altitude-sql</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">geoid-&gt;sqlite-integer</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">(</span><span class="n">geoid-&gt;sqlite-integer</span><span class="w"> </span><span class="n">end</span><span class="p">)))</span><span class="w"></span>
+<span class="w">                </span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">nearby-samples</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; geoid for this location, an area about 1cm²</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">lat-lon-&gt;geoid</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="n">lon</span><span class="p">))</span><span class="w"></span>
+<span class="w">   </span><span class="c1">;; Get the larger enclosing GEOID (level 10 is about 8 m²)</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">area-geoid</span><span class="w"> </span><span class="p">(</span><span class="n">enclosing-geoid</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="mi">10</span><span class="p">))</span><span class="w"></span>
+<span class="w">   </span><span class="p">(</span><span class="n">fetch-altitude-samples</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="n">area-geoid</span><span class="p">))</span><span class="w"></span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h2 id="what-alternatives-exist">What alternatives exist?</h2>
+
+<p>There are several online services available for elevation correction, where one can make a web request with a list of waypoints and get an elevation profile back. Most of these services cost money, although some do provide a free tier.</p>
+
+<p>There are also free alternatives, such as <a href="https://github.com/Jorl17/open-elevation">Open-Elevation</a>, which also allow hosting the site locally, although the actual elevation data is quite large and it is more complex to set up.</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>The approach of averaging the elevation from nearby locations works remarkably well, even when there are limited amounts of data, like a simple out-and-back route, where altitude points from the &ldquo;out&rdquo; part of the route can be averaged with the altitude from the &ldquo;back&rdquo; part of the route and vice versa. The approach is not limited to averaging data points from the same route: nearby locations can be looked up form any activity in the ActivityLog2 database.</p>
+
+<p>Overall, the ActivityLog2 approach is perhaps the simplest option for a fitness application, especially when choosing to use only data available on the users machine, and avoid depending on external services. It does, however depend on traversing the route multiple times, which is the case for athletes training over the same routes, but it is not generic enough for all types of applications &mdash; for example, it cannot fix elevation for a route which is only &ldquo;planned&rdquo; but not executed yet and where there is no elevation data in the ActivityLog2 database.</p>
+  <footer>
+    <div class="fine-print">© Alex Harsányi, licensed under
+      <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      , and there's a <a href="/Cookies.html">cookie policy</a>.
+    </div>
+    <div class="row justify-content-center">
+      <nav aria-label="Page Navigation">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/2023/04/array-tutorial.html"
+               aria-label="Previous">
+              <span aria-hidden="true">&larr; A Racket Array Tutorial</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</article>
+        </div>
+        <div id="sidebar-content" class="col-md-3">
+          <!-- will be filled in dynamically by custom.js -->
+        </div>
+
+      </div>
+
+    </div>
+  </body>
+</html>

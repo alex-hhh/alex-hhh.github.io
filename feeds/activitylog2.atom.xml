@@ -4,7 +4,17 @@
  <link rel="self" href="https://alex-hhh.github.io/feeds/activitylog2.atom.xml" />
  <link href="https://alex-hhh.github.io/tags/activitylog2.html" />
  <id>urn:https-alex-hhh-github-io:-tags-activitylog2-html</id>
- <updated>2022-05-14T23:34:40Z</updated>
+ <updated>2023-05-26T23:45:14Z</updated>
+ <entry>
+  <title type="text">Elevation Correction</title>
+  <link rel="alternate" href="https://alex-hhh.github.io/2023/05/elevation-correction.html?utm_source=activitylog2&amp;utm_medium=Atom" />
+  <id>urn:https-alex-hhh-github-io:-2023-05-elevation-correction-html</id>
+  <published>2023-05-26T23:45:14Z</published>
+  <updated>2023-05-26T23:45:14Z</updated>
+  <author>
+   <name>Alex Harsányi</name></author>
+  <content type="html">
+&lt;p&gt;From having a nice and consistent elevation plot and an accurate total ascent/descent for an activity, to calculating effects of slope on performance, such as Grade Adjusted Pace for running, it is important to have accurate elevation data. Unfortunately, elevation data is one of the measures most prone to errors during an activity. On-line elevation services can be used to correct this data, but in &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt;, I decided to use solution runs on the user&amp;rsquo;s computer only, and does not depend on cloud services.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2023/05/elevation-correction.html?utm_source=activitylog2&amp;amp;utm_medium=Atom"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</content></entry>
  <entry>
   <title type="text">Synchronizing FIT files using a Raspberry Pi</title>
   <link rel="alternate" href="https://alex-hhh.github.io/2022/05/pi-fit-sync.html?utm_source=activitylog2&amp;utm_medium=Atom" />

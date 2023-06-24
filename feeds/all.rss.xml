@@ -4,9 +4,17 @@
   <title>The Blog of Alex Harsányi: The Blog of Alex Harsányi</title>
   <description>The Blog of Alex Harsányi: The Blog of Alex Harsányi</description>
   <link>https://alex-hhh.github.io/index.html</link>
-  <lastBuildDate>Sat, 29 Apr 2023 00:36:55 UT</lastBuildDate>
-  <pubDate>Sat, 29 Apr 2023 00:36:55 UT</pubDate>
+  <lastBuildDate>Fri, 26 May 2023 23:45:14 UT</lastBuildDate>
+  <pubDate>Fri, 26 May 2023 23:45:14 UT</pubDate>
   <ttl>1800</ttl>
+  <item>
+   <title>Elevation Correction</title>
+   <link>https://alex-hhh.github.io/2023/05/elevation-correction.html?utm_source=all&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:https-alex-hhh-github-io:-2023-05-elevation-correction-html</guid>
+   <pubDate>Fri, 26 May 2023 23:45:14 UT</pubDate>
+   <author>Alex Harsányi</author>
+   <description>
+&lt;p&gt;From having a nice and consistent elevation plot and an accurate total ascent/descent for an activity, to calculating effects of slope on performance, such as Grade Adjusted Pace for running, it is important to have accurate elevation data. Unfortunately, elevation data is one of the measures most prone to errors during an activity. On-line elevation services can be used to correct this data, but in &lt;a href="https://github.com/alex-hhh/ActivityLog2"&gt;ActivityLog2&lt;/a&gt;, I decided to use solution runs on the user&amp;rsquo;s computer only, and does not depend on cloud services.&lt;/p&gt;&lt;a href="https://alex-hhh.github.io/2023/05/elevation-correction.html?utm_source=all&amp;amp;utm_medium=RSS"&gt;&lt;em&gt;More&amp;hellip;&lt;/em&gt;&lt;/a&gt;</description></item>
   <item>
    <title>A Racket Array Tutorial</title>
    <link>https://alex-hhh.github.io/2023/04/array-tutorial.html?utm_source=all&amp;utm_medium=RSS</link>
